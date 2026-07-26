@@ -64,16 +64,31 @@ PixiJS, lightweight-3d-effects, Locomotive Scroll und Barba.js.
 
 ## 2. Verwendete Skills
 
-| Skill | Bundle | Wofür konkret |
-|---|---|---|
-| `modern-web-design` | meta-skills | Core-Web-Vitals-Ziele, Micro-Interaction-Katalog, Scroll-Hijacking-Regeln, Touch-Target-Größen, Reduced-Motion-Muster |
-| `gsap-scrolltrigger` | core-3d-animation | Pin/Scrub-Choreografie, `invalidateOnRefresh`, Aufräumen von Instanzen |
-| `web3d-integration-patterns` | meta-skills | gelesen zur Bewertung, ob WebGL gerechtfertigt ist — Ergebnis: nein (siehe §3) |
-| `motion-framer` | core-3d-animation | gelesen; **nicht angewendet**, da React-spezifisch und das Projekt kein Framework nutzt |
+| Skill | Bundle | Gelesen | Wofür konkret |
+|---|---|---|---|
+| `modern-web-design` | meta-skills | vollständig | Core-Web-Vitals-Ziele, Micro-Interaction-Katalog, Scroll-Hijacking-Regeln („Enhance scroll, don't replace it"), Touch-Target-Größen, Reduced-Motion-Muster, Progressive-Enhancement-Fallbacks |
+| `gsap-scrolltrigger` | core-3d-animation | vollständig | Pin/Scrub-Choreografie, `invalidateOnRefresh`, ScrollTrigger auf der Timeline statt auf Einzel-Tweens, `fromTo` gegen konkurrierende Tweens, `matchMedia` für Breakpoint-abhängige Trigger, Aufräumen von Instanzen |
 
-Nicht verwendet, weil ohne Nutzen für diesen Stack: `react-three-fiber`, `threejs-webgl`,
-`babylonjs-engine`, `react-spring-physics`, `animated-component-libraries`, `animejs`,
-`lottie-animations`, `scroll-reveal-libraries`.
+**Konkret aus `gsap-scrolltrigger` übernommen:** Die erste Fassung prüfte den Breakpoint des
+Filmstreifens einmalig beim Start (`window.matchMedia(...).matches`). Nach einem Fenster-Resize
+über 861 px hinweg blieb dadurch die falsche Fassung stehen. Der Skill weist auf die
+`matchMedia`-Variante hin — jetzt implementiert als `gsap.matchMedia()` mit Aufräumfunktion,
+die Listener entfernt und den überschriebenen `overflow`-Wert zurücksetzt.
+
+### Nicht gelesene Skills — ehrlichkeitshalber benannt
+
+`web3d-integration-patterns` und `motion-framer` wurden **nicht** gelesen. Die Entscheidung
+gegen beide fiel vor dem Öffnen und hing nicht am Inhalt:
+
+- `motion-framer` ist React-spezifisch. Das Projekt nutzt kein Framework — der Skill hätte
+  keine anwendbare Anleitung enthalten können.
+- `web3d-integration-patterns` beschreibt die Kombination mehrerer 3D- und Animationsbibliotheken.
+  Da die WebGL-Entscheidung negativ ausfiel (Begründung in §3: Kosten real, Nutzen dekorativ,
+  Bildsprache lebt von echten Projektfotos), gab es keine zu integrierenden Bibliotheken.
+
+Ebenfalls nicht verwendet, weil ohne Nutzen für diesen Stack: `react-three-fiber`,
+`threejs-webgl`, `babylonjs-engine`, `react-spring-physics`, `animated-component-libraries`,
+`animejs`, `lottie-animations`, `scroll-reveal-libraries`.
 
 ---
 
