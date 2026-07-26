@@ -54,6 +54,11 @@
   Header set X-Content-Type-Options "nosniff"
   Header set Referrer-Policy "strict-origin-when-cross-origin"
   Header set Permissions-Policy "geolocation=(), microphone=(), camera=(), interest-cohort=()"
+  # Clickjacking-Schutz. frame-ancestors MUSS als HTTP-Header kommen —
+  # in einem <meta http-equiv="Content-Security-Policy"> wird die Direktive
+  # von allen Browsern ignoriert. Deshalb steht sie hier und nicht im HTML.
+  Header set X-Frame-Options "SAMEORIGIN"
+  Header set Content-Security-Policy "frame-ancestors 'self'"
   # HSTS erst aktivieren, wenn HTTPS dauerhaft läuft:
   # Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
 </IfModule>

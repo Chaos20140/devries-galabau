@@ -518,36 +518,64 @@
   if (svcIndex) {
     var svcBgs = $$(".svc-index__bg", svcIndex);
     var svcRows = $$(".svc-row", svcIndex);
+    var svcProg = $(".svc-prog__fill", svcIndex);
+    var svcHovering = false;
 
     var svcShow = function (idx) {
       svcIndex.classList.add("is-lit");
       svcBgs.forEach(function (b) { b.classList.toggle("is-active", b.getAttribute("data-bg") === String(idx)); });
       svcRows.forEach(function (r) { r.classList.toggle("is-current", r.getAttribute("data-bg") === String(idx)); });
     };
+    var svcClear = function () {
+      svcIndex.classList.remove("is-lit");
+      svcBgs.forEach(function (b) { b.classList.remove("is-active"); });
+      svcRows.forEach(function (r) { r.classList.remove("is-current"); });
+    };
 
-    /* Desktop mit Zeigegerät: Hover/Fokus führt. */
+    /* Scrollgesteuert — auf JEDEM Gerät, nicht nur auf Touch.
+       Die Zeile, die durch die Bildschirmmitte läuft, bestimmt das Bild.
+       Dadurch erzählt die Sektion auch ohne Maus, und der Hover ist eine
+       Verfeinerung obendrauf statt die einzige Bedienart. */
+    if ("IntersectionObserver" in window && !reduce) {
+      var sio = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (en.isIntersecting && !svcHovering) svcShow(en.target.getAttribute("data-bg"));
+        });
+      }, { rootMargin: "-45% 0px -45% 0px", threshold: 0 });
+      svcRows.forEach(function (r) { sio.observe(r); });
+
+      /* Verlässt die Sektion den Viewport, wird abgedunkelt zurückgesetzt. */
+      var secIo = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) { if (!en.isIntersecting) svcClear(); });
+      }, { threshold: 0 });
+      secIo.observe(svcIndex);
+    }
+
+    /* Fortschrittsanzeige der Sektion (rein visuell, daher aria-hidden). */
+    if (svcProg && !reduce) {
+      var svcTick = false;
+      var svcUpdate = function () {
+        svcTick = false;
+        var r = svcIndex.getBoundingClientRect();
+        var p = (window.innerHeight * 0.55 - r.top) / r.height;
+        svcProg.style.transform = "scaleY(" + Math.max(0, Math.min(1, p)).toFixed(3) + ")";
+      };
+      window.addEventListener("scroll", function () {
+        if (!svcTick) { svcTick = true; requestAnimationFrame(svcUpdate); }
+      }, { passive: true });
+      svcUpdate();
+    }
+
+    /* Zeigegerät: Hover und Tastaturfokus übersteuern die Scrollposition. */
     if (!isTouch && isFinePointer) {
       var svcList = $("#svcList");
       svcRows.forEach(function (r) {
-        var lit = function () { svcShow(r.getAttribute("data-bg")); };
+        var lit = function () { svcHovering = true; svcShow(r.getAttribute("data-bg")); };
         r.addEventListener("mouseenter", lit);
         r.addEventListener("focus", lit);
+        r.addEventListener("blur", function () { svcHovering = false; });
       });
-      var unlit = function () {
-        svcIndex.classList.remove("is-lit");
-        svcBgs.forEach(function (b) { b.classList.remove("is-active"); });
-        svcRows.forEach(function (r) { r.classList.remove("is-current"); });
-      };
-      if (svcList) svcList.addEventListener("mouseleave", unlit);
-      svcRows.forEach(function (r) { r.addEventListener("blur", unlit); });
-    }
-
-    /* Touch / schmale Viewports: die Zeile in Bildschirmmitte führt. */
-    if ((isTouch || isNarrow) && "IntersectionObserver" in window && !reduce) {
-      var sio = new IntersectionObserver(function (entries) {
-        entries.forEach(function (en) { if (en.isIntersecting) svcShow(en.target.getAttribute("data-bg")); });
-      }, { rootMargin: "-45% 0px -45% 0px", threshold: 0 });
-      svcRows.forEach(function (r) { sio.observe(r); });
+      if (svcList) svcList.addEventListener("mouseleave", function () { svcHovering = false; });
     }
   }
 
@@ -619,39 +647,61 @@
     };
     updateCounter(0);
 
-    if (hasGsap && !reduce && window.matchMedia("(min-width: 861px)").matches) {
-      var filmDist = function () { return Math.max(0, filmTrack.scrollWidth - filmVp.clientWidth); };
-      filmVp.style.overflow = "hidden";
-      var filmTween = gsap.to(filmTrack, {
-        x: function () { return -filmDist(); },
-        ease: "none",
-        scrollTrigger: {
-          trigger: film,
-          start: "top top",
-          end: function () { return "+=" + filmDist(); },
-          pin: true,
-          scrub: 0.6,
-          invalidateOnRefresh: true,
-          anticipatePin: 1,
-          onUpdate: function (self) { updateCounter(Math.min(filmItems.length - 1, Math.round(self.progress * (filmItems.length - 1)))); }
-        }
-      });
-      /* Fokus im gepinnten Bereich: an die passende Stelle der Timeline springen. */
-      filmItems.forEach(function (it, i) {
-        it.addEventListener("focus", function () {
-          var st = filmTween.scrollTrigger;
-          if (!st) return;
-          var target = st.start + (st.end - st.start) * (i / Math.max(1, filmItems.length - 1));
-          if (lenis) lenis.scrollTo(target, { immediate: true });
-          else window.scrollTo({ top: target, behavior: "auto" });
+    /* gsap.matchMedia() statt einer einmaligen Breakpoint-Abfrage: Wechselt der
+       Nutzer die Fenstergröße über 861px hinweg, wird die gepinnte Fassung
+       sauber auf- bzw. abgebaut. Die vorherige Variante prüfte den Breakpoint
+       nur beim Start — nach einem Resize blieb die falsche Fassung stehen.
+       Der reduce-Zweig ist Teil derselben Abfrage, damit auch ein Wechsel der
+       Bewegungseinstellung berücksichtigt wird. */
+    if (hasGsap && typeof gsap.matchMedia === "function") {
+      var mm = gsap.matchMedia();
+
+      mm.add("(min-width: 861px) and (prefers-reduced-motion: no-preference)", function () {
+        var filmDist = function () { return Math.max(0, filmTrack.scrollWidth - filmVp.clientWidth); };
+        filmVp.style.overflow = "hidden";
+        var filmTween = gsap.to(filmTrack, {
+          x: function () { return -filmDist(); },
+          ease: "none",
+          scrollTrigger: {
+            trigger: film,
+            start: "top top",
+            end: function () { return "+=" + filmDist(); },
+            pin: true,
+            scrub: 0.6,
+            invalidateOnRefresh: true,
+            anticipatePin: 1,
+            onUpdate: function (self) { updateCounter(Math.min(filmItems.length - 1, Math.round(self.progress * (filmItems.length - 1)))); }
+          }
         });
+        /* Fokus im gepinnten Bereich: an die passende Stelle der Timeline springen,
+           damit das fokussierte Element sichtbar wird. */
+        var onFocus = filmItems.map(function (it, i) {
+          var h = function () {
+            var st = filmTween.scrollTrigger;
+            if (!st) return;
+            var target = st.start + (st.end - st.start) * (i / Math.max(1, filmItems.length - 1));
+            if (lenis) lenis.scrollTo(target, { immediate: true });
+            else window.scrollTo({ top: target, behavior: "auto" });
+          };
+          it.addEventListener("focus", h);
+          return h;
+        });
+        /* Aufräumen beim Verlassen des Breakpoints — sonst bleiben Listener
+           und der überschriebene overflow-Wert zurück. */
+        return function () {
+          filmItems.forEach(function (it, i) { it.removeEventListener("focus", onFocus[i]); });
+          filmVp.style.overflow = "";
+        };
       });
-    } else if (!reduce && "IntersectionObserver" in window) {
-      /* Mobile/Touch: natives Snap-Scrolling mit eigener Fortschrittsanzeige. */
-      var fio = new IntersectionObserver(function (entries) {
-        entries.forEach(function (en) { if (en.isIntersecting) updateCounter(filmItems.indexOf(en.target)); });
-      }, { root: filmVp, threshold: 0.6 });
-      filmItems.forEach(function (it) { fio.observe(it); });
+
+      mm.add("(max-width: 860px) and (prefers-reduced-motion: no-preference)", function () {
+        if (!("IntersectionObserver" in window)) return;
+        var fio = new IntersectionObserver(function (entries) {
+          entries.forEach(function (en) { if (en.isIntersecting) updateCounter(filmItems.indexOf(en.target)); });
+        }, { root: filmVp, threshold: 0.6 });
+        filmItems.forEach(function (it) { fio.observe(it); });
+        return function () { fio.disconnect(); };
+      });
     }
   }
 

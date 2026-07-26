@@ -290,6 +290,14 @@ main{display:block;}
 .svc-index__bg::after{content:"";position:absolute;inset:0;background:rgba(18,22,15,.62);}
 .svc-index__bg.is-active{opacity:1;}
 .svc-index > .wrap{position:relative;z-index:1;}
+/* Fortschrittsanzeige entlang der Leistungsliste — main.js schreibt scaleY.
+   Ab 860px ausgeblendet: bei 1,2rem Seitenrand haette die Linie ausserhalb
+   des Containers gelegen, und die Hervorhebung der aktiven Zeile genuegt dort. */
+.svc-prog{position:absolute;left:-1.5rem;top:0;bottom:0;width:1px;background:var(--line);}
+.svc-prog__fill{display:block;width:100%;height:100%;background:var(--rust);transform:scaleY(0);transform-origin:top;}
+.svc-index.is-lit .svc-prog{background:rgba(255,255,255,.22);}
+.svc-index.is-lit .svc-prog__fill{background:var(--rust-soft);}
+@media (max-width:1080px){.svc-prog{display:none;}}
 .svc-list{border-top:1px solid var(--line);transition:border-color .4s;}
 .svc-row{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:2rem;
   padding-block:clamp(1.6rem,1rem + 2.2vw,3rem);border-bottom:1px solid var(--line);
@@ -482,14 +490,30 @@ main{display:block;}
 .region{display:grid;grid-template-columns:1fr 1fr;gap:clamp(2rem,1rem + 3vw,4.5rem);align-items:center;}
 .region__places{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1.6rem;}
 .region__place{font-family:var(--mono);font-size:.78rem;padding:.4em .9em;border:1px solid var(--line);color:var(--ink-2);border-radius:var(--r);}
-/* Legacy Unterseiten-Komponenten (flach/editorial re-skinned) */
-.plots{display:grid;grid-template-columns:repeat(2,1fr);border-top:1px solid var(--line);}
-.plot{position:relative;display:flex;flex-direction:column;padding:clamp(1.8rem,1rem + 2vw,2.8rem);border-bottom:1px solid var(--line);overflow:hidden;isolation:isolate;transition:background .5s var(--ease);min-height:240px;}
-.plot:nth-child(odd){border-right:1px solid var(--line);}
-.plot:hover{background:var(--ink);color:var(--paper);}
-.plot:hover h3,.plot:hover .plot__no{color:var(--chalk);} .plot:hover .plot__desc{color:rgba(241,238,228,.8);} .plot:hover .link-arrow{color:var(--rust-soft);}
-.plot__no{font-family:var(--mono);font-size:.74rem;letter-spacing:.1em;text-transform:uppercase;color:var(--rust);}
-.plot h3{margin-top:auto;padding-top:2.2rem;} .plot__desc{color:var(--muted);margin-top:.7rem;transition:color .4s;font-size:.98rem;} .plot .link-arrow{margin-top:1.3rem;}
+/* §21b Weiterführende Links auf Unterseiten -------------------------
+   War bis v6 ein zweispaltiges Kachelraster mit Hover-Einfärbung — also
+   genau die Template-Optik, die auf der Startseite abgeschafft wurde.
+   Jetzt dieselbe Zeilensprache wie der Leistungsindex: Haarlinie, Mono-Label,
+   grosser Serif-Name, Beschreibung rechts, Einzug beim Hover. */
+.plots{display:grid;grid-template-columns:1fr;border-top:1px solid var(--line);}
+.plot{position:relative;display:grid;grid-template-columns:1fr auto;align-items:center;
+  gap:.4rem 2rem;padding-block:clamp(1.4rem,1rem + 1.8vw,2.4rem);
+  border-bottom:1px solid var(--line);
+  transition:padding-left var(--dur-m) var(--ease-out),border-color var(--dur-s);}
+.plot__no{grid-column:1;font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--rust);}
+.plot h3{grid-column:1;margin:0;font-size:clamp(1.8rem,1.1rem + 3vw,3.6rem);line-height:.98;
+  transition:color var(--dur-s);}
+.plot__desc{grid-column:1;color:var(--muted);font-size:.96rem;max-width:52ch;margin-top:.2rem;}
+.plot .link-arrow{grid-column:2;grid-row:1 / span 3;align-self:center;white-space:nowrap;}
+@media (hover:hover){
+  .plot:hover{padding-left:clamp(.6rem,.3rem + 1.2vw,1.6rem);border-color:var(--line-2);}
+  .plot:hover h3{color:var(--rust);}
+}
+@media (max-width:700px){
+  .plot{grid-template-columns:1fr;}
+  .plot .link-arrow{grid-column:1;grid-row:auto;margin-top:1rem;}
+}
 .quotes{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(1.5rem,1rem + 2vw,3rem);}
 .quote{border-top:1px solid var(--line);padding-top:1.4rem;display:flex;flex-direction:column;}
 .bg-ink .quote,.bg-pine .quote{border-color:var(--line-light);}
