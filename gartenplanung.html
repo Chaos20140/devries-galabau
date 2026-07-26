@@ -5,7 +5,11 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-src https://*.google.com https://maps.google.com; form-action 'self' mailto:">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script>document.documentElement.classList.add('js');</script>
+<script>(function(d){var r=d.documentElement;r.classList.add('js');
+/* Sicherheitsnetz: .js blendet alle [data-reveal] aus. Faellt main.js aus (Netzfehler,
+   CSP, Syntaxfehler), bliebe der Inhalt dauerhaft unsichtbar. Nach 2,5 s wird er
+   ungeachtet dessen freigegeben; main.js raeumt den Timer beim Start wieder ab. */
+window.__dvgFailsafe=setTimeout(function(){r.classList.add('motion-failed');},2500);})(document);</script>
 <title>Gartenplanung in Salzhemmendorf – Konzept &amp; Zeichnung | de Vries Galabau</title>
 <meta name="description" content="de Vries Galabau bietet individuelle Gartenplanung in Salzhemmendorf. Wir entwickeln kreative Konzepte, die perfekt zu Ihren Vorstellungen passen.">
 <link rel="canonical" href="https://devries-galabau.de/gartenplanung.html">
@@ -24,9 +28,12 @@
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png?v=1">
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/instrument-serif-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/manrope-latin.woff2" crossorigin>
-<link rel="stylesheet" href="assets/css/style.css?v=6">
+<link rel="stylesheet" href="assets/css/style.css?v=7">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"Service","serviceType":"Gartenplanung","provider":{"@type":"LandscapingBusiness","name":"de Vries Galabau","telephone":"+4951531552","address":{"@type":"PostalAddress","streetAddress":"An den Flachsrotten 2","postalCode":"31020","addressLocality":"Salzhemmendorf","addressCountry":"DE"}},"areaServed":["Salzhemmendorf","Hameln","Hildesheim"],"description":"Individuelle Gartenplanung: persönliche Vor-Ort-Beratung, maßgeschneiderte Konzepte, detaillierte Zeichnungen und Betreuung von der ersten Skizze bis zur Umsetzung."}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Start","item":"https://devries-galabau.de/"},{"@type":"ListItem","position":2,"name":"Gartenplanung","item":"https://devries-galabau.de/gartenplanung.html"}]},{"@type":"Service","name":"Gartenplanung","serviceType":"Gartenplanung","description":"Konzept und Zeichnung für Ihren Garten – von der Vor-Ort-Beratung über die Skizze bis zur Umsetzungsplanung.","provider":{"@type":"LandscapingBusiness","@id":"https://devries-galabau.de/","name":"de Vries Galabau"},"areaServed":["Salzhemmendorf","Hameln","Hildesheim","Weserbergland"],"url":"https://devries-galabau.de/gartenplanung.html"}]}
 </script>
 </head>
 <body>
@@ -102,7 +109,7 @@
 <!-- PHERO -->
 <section class="phero">
   <div class="wrap">
-    <p class="phero__crumb"><a href="index.html">Start</a> · Gartenplanung</p>
+    <nav class="phero__crumb" aria-label="Brotkrumen"><a href="index.html">Start</a> · Gartenplanung</nav>
     <span class="eyebrow mt-s">Leistung B · Planung</span>
     <h1 class="mt-s reveal-words">Gartenplanung – Ihr individueller Garten, perfekt durchdacht</h1>
     <p class="lead">Mit unserem Rundum-Service begleiten wir Sie durch den gesamten Prozess – von der Planung über die Umsetzung bis hin zur Neu- und Umgestaltung Ihres Gartens. Ob Sie einen komplett neuen Garten anlegen möchten oder einem bestehenden Garten frische Ideen verleihen wollen: Wir stehen Ihnen mit unserer Expertise zur Seite und sorgen dafür, dass Ihr Garten Ihren Vorstellungen entspricht.</p>
@@ -152,25 +159,25 @@
       <div class="tnode">
         <span class="tnode__dot"></span>
         <span class="tnode__no">Schritt 1</span>
-        <h4>Vor-Ort-Beratung</h4>
+        <h3>Vor-Ort-Beratung</h3>
         <p>Wir besuchen Sie direkt vor Ort, um Ihre Wünsche und Bedürfnisse für Ihren Garten genau zu verstehen.</p>
       </div>
       <div class="tnode">
         <span class="tnode__dot"></span>
         <span class="tnode__no">Schritt 2</span>
-        <h4>Skizze &amp; Entwurf</h4>
+        <h3>Skizze &amp; Entwurf</h3>
         <p>Aus dem Gespräch entsteht die erste Skizze – die Basis für ein maßgeschneidertes Konzept, ästhetisch und funktional zugleich.</p>
       </div>
       <div class="tnode">
         <span class="tnode__dot"></span>
         <span class="tnode__no">Schritt 3</span>
-        <h4>Materialauswahl &amp; Abstimmung</h4>
+        <h3>Materialauswahl &amp; Abstimmung</h3>
         <p>Gemeinsam stimmen wir Materialien und Details ab – Ihre Ideen können jederzeit in den Entstehungsprozess einfließen.</p>
       </div>
       <div class="tnode">
         <span class="tnode__dot"></span>
         <span class="tnode__no">Schritt 4</span>
-        <h4>Umsetzung</h4>
+        <h3>Umsetzung</h3>
         <p>Unser Team begleitet Sie von Anfang bis Ende, bis Ihr Traumgarten Realität wird.</p>
       </div>
     </div>
@@ -226,7 +233,7 @@
         </div>
       </div>
       <div>
-        <h4>Leistungen</h4>
+        <h2 class="footer__h">Leistungen</h2>
         <ul>
           <li><a href="gartengestaltung.html">Gartengestaltung</a></li>
           <li><a href="gartenplanung.html">Gartenplanung</a></li>
@@ -235,7 +242,7 @@
         </ul>
       </div>
       <div>
-        <h4>Unternehmen</h4>
+        <h2 class="footer__h">Unternehmen</h2>
         <ul>
           <li><a href="ueber-uns.html">Über uns</a></li>
           <li><a href="referenzen.html">Referenzen</a></li>
@@ -244,7 +251,7 @@
         </ul>
       </div>
       <div>
-        <h4>Kontakt</h4>
+        <h2 class="footer__h">Kontakt</h2>
         <ul>
           <li><a href="tel:051531552">05153 1552</a></li>
           <li><a href="mailto:info@devries-galabau.de">info@devries-galabau.de</a></li>
@@ -265,14 +272,14 @@
   <a href="anfrage.html" class="btn btn--clay"><span>Anfragen</span></a>
 </div>
 
-<div class="cookie" id="cookie" role="dialog" aria-live="polite" aria-label="Cookie-Hinweis">
+<div class="cookie" id="cookie" role="region" aria-label="Hinweis zu Cookies">
   <div class="cookie__inner">
     <p>Diese Website verwendet nur technisch notwendige Cookies. Externe Inhalte (z.&nbsp;B. Karten) werden erst nach Ihrer Zustimmung geladen. Mehr in der <a href="datenschutz.html">Datenschutzerklärung</a>.</p>
     <div class="cookie__actions"><button class="btn btn--light" data-cookie-accept><span>Verstanden</span></button></div>
   </div>
 </div>
 
-<script src="assets/js/lenis.min.js"></script>
-<script src="assets/js/main.js?v=6"></script>
+<script src="assets/js/lenis.min.js?v=7"></script>
+<script src="assets/js/main.js?v=7"></script>
 </body>
 </html>

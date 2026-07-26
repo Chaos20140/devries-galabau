@@ -5,7 +5,11 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-src https://*.google.com https://maps.google.com; form-action 'self' mailto:">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script>document.documentElement.classList.add('js');</script>
+<script>(function(d){var r=d.documentElement;r.classList.add('js');
+/* Sicherheitsnetz: .js blendet alle [data-reveal] aus. Faellt main.js aus (Netzfehler,
+   CSP, Syntaxfehler), bliebe der Inhalt dauerhaft unsichtbar. Nach 2,5 s wird er
+   ungeachtet dessen freigegeben; main.js raeumt den Timer beim Start wieder ab. */
+window.__dvgFailsafe=setTimeout(function(){r.classList.add('motion-failed');},2500);})(document);</script>
 <title>Referenzen – Gartenprojekte aus Salzhemmendorf | de Vries Galabau</title>
 <meta name="description" content="Einblicke in unsere Gartenprojekte: Natursteinmauern, Vorgärten, Pflasterflächen, Terrassen, Formschnitte und naturnahe Gestaltung rund um Salzhemmendorf, Hameln und Hildesheim.">
 <link rel="canonical" href="https://devries-galabau.de/referenzen.html">
@@ -24,7 +28,10 @@
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png?v=1">
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/instrument-serif-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/manrope-latin.woff2" crossorigin>
-<link rel="stylesheet" href="assets/css/style.css?v=6">
+<link rel="stylesheet" href="assets/css/style.css?v=7">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Start","item":"https://devries-galabau.de/"},{"@type":"ListItem","position":2,"name":"Referenzen","item":"https://devries-galabau.de/referenzen.html"}]},{"@type":"CollectionPage","name":"Referenzen – Gartenprojekte aus Salzhemmendorf","description":"Umgesetzte Projekte von de Vries Galabau rund um Salzhemmendorf, Hameln und Hildesheim.","url":"https://devries-galabau.de/referenzen.html","isPartOf":{"@type":"WebSite","@id":"https://devries-galabau.de/","name":"de Vries Galabau"}}]}
+</script>
 </head>
 <body>
 <a class="skip" href="#main">Zum Inhalt springen</a>
@@ -97,7 +104,7 @@
 <main id="main">
 <section class="phero">
   <div class="wrap">
-    <p class="phero__crumb"><a href="index.html">Start</a> · Referenzen</p>
+    <nav class="phero__crumb" aria-label="Brotkrumen"><a href="index.html">Start</a> · Referenzen</nav>
     <span class="eyebrow mt-s">Unsere Arbeit</span>
     <h1 class="mt-s">Referenzen – Einblicke in unsere Gartenprojekte</h1>
     <p class="lead">Von Natursteinmauern und Pflasterflächen bis zur naturnahen Gestaltung: eine Auswahl umgesetzter Projekte rund um Salzhemmendorf, Hameln und Hildesheim. Klicken Sie ein Bild an, um es groß zu sehen.</p>
@@ -106,6 +113,7 @@
 
 <section class="section" style="padding-top:0">
   <div class="wrap">
+    <p class="sr-only" id="galleryCount" role="status" aria-live="polite"></p>
     <div class="filterbar" id="filterbar" role="group" aria-label="Projekte filtern">
       <button class="chip" data-filter="all" aria-pressed="true">Alle</button>
       <button class="chip" data-filter="mauer" aria-pressed="false">Mauern &amp; Naturstein</button>
@@ -117,23 +125,23 @@
     </div>
 
     <div class="gallery">
-      <div class="gitem" data-cat="mauer" data-full="assets/img/ref-natursteinmauer-1600.webp" data-alt="Natursteinmauer in einem Garten in Salzhemmendorf"><img src="assets/img/ref-natursteinmauer-800.webp" alt="Natursteinmauer in einem Garten" width="800" height="600" loading="lazy"><span class="gitem__cap">Natursteinmauer</span></div>
-      <div class="gitem" data-cat="mauer" data-full="assets/img/ref-mauergestaltung-1600.webp" data-alt="Mauergestaltung im Garten"><img src="assets/img/ref-mauergestaltung-800.webp" alt="Mauergestaltung im Garten" width="800" height="600" loading="lazy"><span class="gitem__cap">Mauergestaltung</span></div>
-      <div class="gitem" data-cat="vorgarten pflaster" data-full="assets/img/ref-vorgarten-1600.webp" data-alt="Neu gestalteter Vorgarten mit Wegen und Beeten"><img src="assets/img/ref-vorgarten-800.webp" alt="Neu gestalteter Vorgarten" width="800" height="600" loading="lazy"><span class="gitem__cap">Vorgarten-Gestaltung</span></div>
-      <div class="gitem" data-cat="pflaster" data-full="assets/img/ref-pflasterflaeche-1600.webp" data-alt="Gepflasterte Fläche mit klarer Linienführung"><img src="assets/img/ref-pflasterflaeche-800.webp" alt="Gepflasterte Fläche" width="800" height="600" loading="lazy"><span class="gitem__cap">Pflasterfläche</span></div>
-      <div class="gitem" data-cat="terrasse" data-full="assets/img/ref-holzterrasse-1600.webp" data-alt="Holzterrasse als Sitzbereich im Garten"><img src="assets/img/ref-holzterrasse-800.webp" alt="Holzterrasse im Garten" width="800" height="597" loading="lazy"><span class="gitem__cap">Holzterrasse</span></div>
-      <div class="gitem" data-cat="mauer vorgarten" data-full="assets/img/ref-vorgartenmauer-1600.webp" data-alt="Vorgartenmauer aus Naturstein"><img src="assets/img/ref-vorgartenmauer-800.webp" alt="Vorgartenmauer aus Naturstein" width="800" height="597" loading="lazy"><span class="gitem__cap">Vorgartenmauer</span></div>
-      <div class="gitem" data-cat="naturnah mauer" data-full="assets/img/projekt-naturnahe-1-1600.webp" data-alt="Naturnahe Gartengestaltung mit Rindenmulchwegen und Natursteinmauern"><img src="assets/img/projekt-naturnahe-1-800.webp" alt="Naturnahe Gartengestaltung mit Rindenmulch und Naturstein" width="800" height="600" loading="lazy"><span class="gitem__cap">Naturnahe Gestaltung</span></div>
-      <div class="gitem" data-cat="formschnitt" data-full="assets/img/ref-formschnitte-1600.webp" data-alt="Formschnitt an Hecken und Sträuchern"><img src="assets/img/ref-formschnitte-800.webp" alt="Formschnitt an Hecken und Sträuchern" width="800" height="600" loading="lazy"><span class="gitem__cap">Formschnitt</span></div>
-      <div class="gitem" data-cat="mauer" data-full="assets/img/ref-gabionen-1600.webp" data-alt="Gabionen als moderne Gartenabgrenzung"><img src="assets/img/ref-gabionen-800.webp" alt="Gabionen als moderne Gartenabgrenzung" width="800" height="560" loading="lazy"><span class="gitem__cap">Gabionen</span></div>
-      <div class="gitem" data-cat="naturnah mauer" data-full="assets/img/projekt-klinkermauer-1600.webp" data-alt="Rustikale Klinkermauer als gestalterisches Zentrum im Garten"><img src="assets/img/projekt-klinkermauer-800.webp" alt="Rustikale Klinkermauer im Garten" width="800" height="452" loading="lazy"><span class="gitem__cap">Klinkermauer</span></div>
-      <div class="gitem" data-cat="vorgarten naturnah" data-full="assets/img/projekt-beeteinfassung-1600.webp" data-alt="Beeteinfassung mit Zierkies und Rindenmulch im Vorgarten"><img src="assets/img/projekt-beeteinfassung-800.webp" alt="Beeteinfassung mit Zierkies und Rindenmulch" width="800" height="600" loading="lazy"><span class="gitem__cap">Beeteinfassung</span></div>
-      <div class="gitem" data-cat="pflaster" data-full="assets/img/projekt-pflaster-einfahrt-1600.webp" data-alt="Hochwertig gepflasterte Einfahrt"><img src="assets/img/projekt-pflaster-einfahrt-800.webp" alt="Hochwertig gepflasterte Einfahrt" width="800" height="600" loading="lazy"><span class="gitem__cap">Einfahrt pflastern</span></div>
-      <div class="gitem" data-cat="terrasse" data-full="assets/img/ref-terrassenbau-1600.webp" data-alt="Terrassenbau im Garten"><img src="assets/img/ref-terrassenbau-800.webp" alt="Terrassenbau im Garten" width="800" height="600" loading="lazy"><span class="gitem__cap">Terrassenbau</span></div>
-      <div class="gitem" data-cat="naturnah" data-full="assets/img/projekt-insektenhotel-1600.webp" data-alt="Insektenhotel als Blickfang im naturnah gestalteten Garten"><img src="assets/img/projekt-insektenhotel-800.webp" alt="Insektenhotel im naturnahen Garten" width="800" height="600" loading="lazy"><span class="gitem__cap">Insektenhotel</span></div>
-      <div class="gitem" data-cat="pflaster" data-full="assets/img/hofeinfahrt-pflaster-1600.webp" data-alt="Gepflasterte Hofeinfahrt mit klaren Linien"><img src="assets/img/hofeinfahrt-pflaster-800.webp" alt="Gepflasterte Hofeinfahrt" width="800" height="600" loading="lazy"><span class="gitem__cap">Hofeinfahrt</span></div>
-      <div class="gitem" data-cat="vorgarten" data-full="assets/img/ref-vorgarten2-1600.webp" data-alt="Vorgarten mit farbenfrohem Beet"><img src="assets/img/ref-vorgarten2-800.webp" alt="Vorgarten mit farbenfrohem Beet" width="800" height="597" loading="lazy"><span class="gitem__cap">Vorgarten mit Beet</span></div>
-      <div class="gitem" data-cat="naturnah" data-full="assets/img/teichbau-1600.webp" data-alt="Teichbau in einem Garten in Salzhemmendorf"><img src="assets/img/teichbau-800.webp" alt="Teichbau im Garten" width="780" height="406" loading="lazy"><span class="gitem__cap">Teichbau</span></div>
+      <div class="gitem" data-cursor="Projekt ansehen" data-cat="mauer" data-full="assets/img/ref-natursteinmauer-1600.webp" data-alt="Natursteinmauer in einem Garten in Salzhemmendorf"><img src="assets/img/ref-natursteinmauer-800.webp" alt="Natursteinmauer in einem Garten" width="800" height="600" loading="lazy"><span class="gitem__cap">Natursteinmauer</span></div>
+      <div class="gitem" data-cursor="Projekt ansehen" data-cat="mauer" data-full="assets/img/ref-mauergestaltung-1600.webp" data-alt="Mauergestaltung im Garten"><img src="assets/img/ref-mauergestaltung-800.webp" alt="Mauergestaltung im Garten" width="800" height="600" loading="lazy"><span class="gitem__cap">Mauergestaltung</span></div>
+      <div class="gitem" data-cursor="Projekt ansehen" data-cat="vorgarten pflaster" data-full="assets/img/ref-vorgarten-1600.webp" data-alt="Neu gestalteter Vorgarten mit Wegen und Beeten"><img src="assets/img/ref-vorgarten-800.webp" alt="Neu gestalteter Vorgarten" width="800" height="600" loading="lazy"><span class="gitem__cap">Vorgarten-Gestaltung</span></div>
+      <div class="gitem" data-cursor="Projekt ansehen" data-cat="pflaster" data-full="assets/img/ref-pflasterflaeche-1600.webp" data-alt="Gepflasterte Fläche mit klarer Linienführung"><img src="assets/img/ref-pflasterflaeche-800.webp" alt="Gepflasterte Fläche" width="800" height="600" loading="lazy"><span class="gitem__cap">Pflasterfläche</span></div>
+      <div class="gitem" data-cursor="Projekt ansehen" data-cat="terrasse" data-full="assets/img/ref-holzterrasse-1600.webp" data-alt="Holzterrasse als Sitzbereich im Garten"><img src="assets/img/ref-holzterrasse-800.webp" alt="Holzterrasse im Garten" width="800" height="597" loading="lazy"><span class="gitem__cap">Holzterrasse</span></div>
+      <div class="gitem" data-cursor="Projekt ansehen" data-cat="mauer vorgarten" data-full="assets/img/ref-vorgartenmauer-1600.webp" data-alt="Vorgartenmauer aus Naturstein"><img src="assets/img/ref-vorgartenmauer-800.webp" alt="Vorgartenmauer aus Naturstein" width="800" height="597" loading="lazy"><span class="gitem__cap">Vorgartenmauer</span></div>
+      <div class="gitem" data-cursor="Projekt ansehen" data-cat="naturnah mauer" data-full="assets/img/projekt-naturnahe-1-1600.webp" data-alt="Naturnahe Gartengestaltung mit Rindenmulchwegen und Natursteinmauern"><img src="assets/img/projekt-naturnahe-1-800.webp" alt="Naturnahe Gartengestaltung mit Rindenmulch und Naturstein" width="800" height="600" loading="lazy"><span class="gitem__cap">Naturnahe Gestaltung</span></div>
+      <div class="gitem" data-cursor="Projekt ansehen" data-cat="formschnitt" data-full="assets/img/ref-formschnitte-1600.webp" data-alt="Formschnitt an Hecken und Sträuchern"><img src="assets/img/ref-formschnitte-800.webp" alt="Formschnitt an Hecken und Sträuchern" width="800" height="600" loading="lazy"><span class="gitem__cap">Formschnitt</span></div>
+      <div class="gitem" data-cursor="Projekt ansehen" data-cat="mauer" data-full="assets/img/ref-gabionen-1600.webp" data-alt="Gabionen als moderne Gartenabgrenzung"><img src="assets/img/ref-gabionen-800.webp" alt="Gabionen als moderne Gartenabgrenzung" width="800" height="560" loading="lazy"><span class="gitem__cap">Gabionen</span></div>
+      <div class="gitem" data-cursor="Projekt ansehen" data-cat="naturnah mauer" data-full="assets/img/projekt-klinkermauer-1600.webp" data-alt="Rustikale Klinkermauer als gestalterisches Zentrum im Garten"><img src="assets/img/projekt-klinkermauer-800.webp" alt="Rustikale Klinkermauer im Garten" width="800" height="452" loading="lazy"><span class="gitem__cap">Klinkermauer</span></div>
+      <div class="gitem" data-cursor="Projekt ansehen" data-cat="vorgarten naturnah" data-full="assets/img/projekt-beeteinfassung-1600.webp" data-alt="Beeteinfassung mit Zierkies und Rindenmulch im Vorgarten"><img src="assets/img/projekt-beeteinfassung-800.webp" alt="Beeteinfassung mit Zierkies und Rindenmulch" width="800" height="600" loading="lazy"><span class="gitem__cap">Beeteinfassung</span></div>
+      <div class="gitem" data-cursor="Projekt ansehen" data-cat="pflaster" data-full="assets/img/projekt-pflaster-einfahrt-1600.webp" data-alt="Hochwertig gepflasterte Einfahrt"><img src="assets/img/projekt-pflaster-einfahrt-800.webp" alt="Hochwertig gepflasterte Einfahrt" width="800" height="600" loading="lazy"><span class="gitem__cap">Einfahrt pflastern</span></div>
+      <div class="gitem" data-cursor="Projekt ansehen" data-cat="terrasse" data-full="assets/img/ref-terrassenbau-1600.webp" data-alt="Terrassenbau im Garten"><img src="assets/img/ref-terrassenbau-800.webp" alt="Terrassenbau im Garten" width="800" height="600" loading="lazy"><span class="gitem__cap">Terrassenbau</span></div>
+      <div class="gitem" data-cursor="Projekt ansehen" data-cat="naturnah" data-full="assets/img/projekt-insektenhotel-1600.webp" data-alt="Insektenhotel als Blickfang im naturnah gestalteten Garten"><img src="assets/img/projekt-insektenhotel-800.webp" alt="Insektenhotel im naturnahen Garten" width="800" height="600" loading="lazy"><span class="gitem__cap">Insektenhotel</span></div>
+      <div class="gitem" data-cursor="Projekt ansehen" data-cat="pflaster" data-full="assets/img/hofeinfahrt-pflaster-1600.webp" data-alt="Gepflasterte Hofeinfahrt mit klaren Linien"><img src="assets/img/hofeinfahrt-pflaster-800.webp" alt="Gepflasterte Hofeinfahrt" width="800" height="600" loading="lazy"><span class="gitem__cap">Hofeinfahrt</span></div>
+      <div class="gitem" data-cursor="Projekt ansehen" data-cat="vorgarten" data-full="assets/img/ref-vorgarten2-1600.webp" data-alt="Vorgarten mit farbenfrohem Beet"><img src="assets/img/ref-vorgarten2-800.webp" alt="Vorgarten mit farbenfrohem Beet" width="800" height="597" loading="lazy"><span class="gitem__cap">Vorgarten mit Beet</span></div>
+      <div class="gitem" data-cursor="Projekt ansehen" data-cat="naturnah" data-full="assets/img/teichbau-1600.webp" data-alt="Teichbau in einem Garten in Salzhemmendorf"><img src="assets/img/teichbau-800.webp" alt="Teichbau im Garten" width="780" height="406" loading="lazy"><span class="gitem__cap">Teichbau</span></div>
     </div>
   </div>
 </section>
@@ -150,7 +158,7 @@
       </div>
     </div>
     <div class="stories">
-      <article class="story" data-reveal>
+      <article class="story" id="projekt-beeteinfassung" data-reveal style="scroll-margin-top:96px">
         <div class="story__media"><img src="assets/img/projekt-beeteinfassung-800.webp" alt="Beeteinfassung mit Metallkante, Zierkies und Rindenmulch" width="800" height="600" loading="lazy"></div>
         <div>
           <p class="story__meta">Vorgarten · pflegeleicht</p>
@@ -158,7 +166,7 @@
           <p>Ein geschwungenes Zierbeet im Vorgarten, eingefasst mit einer dezenten Metallkante. Helle Zierkiesel, dunkles Pflanzsubstrat und großflächiger Rindenmulch sorgen für ein sauberes, gepflegtes Bild – langlebig, modern und mit wenig Pflegeaufwand.</p>
         </div>
       </article>
-      <article class="story story--rev" data-reveal>
+      <article class="story story--rev" id="projekt-naturnahe-wege" data-reveal style="scroll-margin-top:96px">
         <div class="story__media"><img src="assets/img/projekt-naturnahe-1-800.webp" alt="Naturnahe Gartengestaltung mit Rindenmulchwegen und Natursteinmauern" width="800" height="600" loading="lazy"></div>
         <div>
           <p class="story__meta">Naturnah · Wegeführung</p>
@@ -166,7 +174,7 @@
           <p>Geschwungene Wege aus Rindenmulch, gerahmt von Natursteinmauern, fügen sich harmonisch in den Garten ein. Eine naturnahe Gestaltung, die Struktur gibt und zugleich Lebensraum schafft.</p>
         </div>
       </article>
-      <article class="story" data-reveal>
+      <article class="story" id="projekt-trockenmauer" data-reveal style="scroll-margin-top:96px">
         <div class="story__media"><img src="assets/img/projekt-naturnahe-2-800.webp" alt="Trockenmauer aus Naturstein zur Hangbefestigung" width="800" height="600" loading="lazy"></div>
         <div>
           <p class="story__meta">Naturstein · Hangsicherung</p>
@@ -174,7 +182,7 @@
           <p>Eine Trockenmauer aus Naturstein sichert den Hang und setzt zugleich einen zeitlosen gestalterischen Akzent – robust, natürlich und dauerhaft.</p>
         </div>
       </article>
-      <article class="story story--rev" data-reveal>
+      <article class="story story--rev" id="projekt-klinkermauer" data-reveal style="scroll-margin-top:96px">
         <div class="story__media"><img src="assets/img/projekt-klinkermauer-800.webp" alt="Rustikale Klinkermauer mit Ziegeldachabschluss als Blickfang" width="800" height="452" loading="lazy"></div>
         <div>
           <p class="story__meta">Klinker · Gartendeko</p>
@@ -182,7 +190,7 @@
           <p>Eine rotbraune Klinkermauer mit Ziegeldachabschluss als Blickfang – die halbrunden Ziegel auf der Krone dienen als Wetterschutz und verleihen der Mauer eine traditionelle, fast mediterrane Anmutung.</p>
         </div>
       </article>
-      <article class="story" data-reveal>
+      <article class="story" id="projekt-insektenhotel" data-reveal style="scroll-margin-top:96px">
         <div class="story__media"><img src="assets/img/projekt-insektenhotel-800.webp" alt="Insektenhotel als Blickfang und Beitrag zur Artenvielfalt" width="800" height="600" loading="lazy"></div>
         <div>
           <p class="story__meta">Artenvielfalt · Lebensraum</p>
@@ -190,7 +198,7 @@
           <p>Ein Insektenhotel als Blickfang und Beitrag zur Artenvielfalt, kombiniert mit Mulchflächen und Trittplatten. So entsteht Lebensraum – und ein Garten, der Natur und Gestaltung verbindet.</p>
         </div>
       </article>
-      <article class="story story--rev" data-reveal>
+      <article class="story story--rev" id="projekt-pflaster-einfahrt" data-reveal style="scroll-margin-top:96px">
         <div class="story__media"><img src="assets/img/projekt-pflaster-einfahrt-800.webp" alt="Hochwertig gepflasterte Einfahrt, langlebig und funktional" width="800" height="600" loading="lazy"></div>
         <div>
           <p class="story__meta">Pflaster · Einfahrt</p>
@@ -258,7 +266,7 @@
         </div>
       </div>
       <div>
-        <h4>Leistungen</h4>
+        <h2 class="footer__h">Leistungen</h2>
         <ul>
           <li><a href="gartengestaltung.html">Gartengestaltung</a></li>
           <li><a href="gartenplanung.html">Gartenplanung</a></li>
@@ -267,7 +275,7 @@
         </ul>
       </div>
       <div>
-        <h4>Unternehmen</h4>
+        <h2 class="footer__h">Unternehmen</h2>
         <ul>
           <li><a href="ueber-uns.html">Über uns</a></li>
           <li><a href="referenzen.html">Referenzen</a></li>
@@ -276,7 +284,7 @@
         </ul>
       </div>
       <div>
-        <h4>Kontakt</h4>
+        <h2 class="footer__h">Kontakt</h2>
         <ul>
           <li><a href="tel:051531552">05153 1552</a></li>
           <li><a href="mailto:info@devries-galabau.de">info@devries-galabau.de</a></li>
@@ -297,14 +305,14 @@
   <a href="anfrage.html" class="btn btn--clay"><span>Anfragen</span></a>
 </div>
 
-<div class="cookie" id="cookie" role="dialog" aria-live="polite" aria-label="Cookie-Hinweis">
+<div class="cookie" id="cookie" role="region" aria-label="Hinweis zu Cookies">
   <div class="cookie__inner">
     <p>Diese Website verwendet nur technisch notwendige Cookies. Externe Inhalte (z.&nbsp;B. Karten) werden erst nach Ihrer Zustimmung geladen. Mehr in der <a href="datenschutz.html">Datenschutzerklärung</a>.</p>
     <div class="cookie__actions"><button class="btn btn--light" data-cookie-accept><span>Verstanden</span></button></div>
   </div>
 </div>
 
-<script src="assets/js/lenis.min.js"></script>
-<script src="assets/js/main.js?v=6"></script>
+<script src="assets/js/lenis.min.js?v=7"></script>
+<script src="assets/js/main.js?v=7"></script>
 </body>
 </html>

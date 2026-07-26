@@ -5,7 +5,11 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-src https://*.google.com https://maps.google.com; form-action 'self' mailto:">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script>document.documentElement.classList.add('js');</script>
+<script>(function(d){var r=d.documentElement;r.classList.add('js');
+/* Sicherheitsnetz: .js blendet alle [data-reveal] aus. Faellt main.js aus (Netzfehler,
+   CSP, Syntaxfehler), bliebe der Inhalt dauerhaft unsichtbar. Nach 2,5 s wird er
+   ungeachtet dessen freigegeben; main.js raeumt den Timer beim Start wieder ab. */
+window.__dvgFailsafe=setTimeout(function(){r.classList.add('motion-failed');},2500);})(document);</script>
 <title>Kontakt – de Vries Galabau in Salzhemmendorf</title>
 <meta name="description" content="Kontakt zu de Vries Galabau: Telefon 05153 1552, info@devries-galabau.de, Büro An den Flachsrotten 2, 31020 Salzhemmendorf. Mo–Fr 8–16 Uhr. Schreiben Sie uns über das Kontaktformular.">
 <link rel="canonical" href="https://devries-galabau.de/kontakt.html">
@@ -24,9 +28,12 @@
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png?v=1">
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/instrument-serif-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/manrope-latin.woff2" crossorigin>
-<link rel="stylesheet" href="assets/css/style.css?v=6">
+<link rel="stylesheet" href="assets/css/style.css?v=7">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"LandscapingBusiness","name":"de Vries Galabau","telephone":"+4951531552","email":"info@devries-galabau.de","url":"https://devries-galabau.de/","address":{"@type":"PostalAddress","streetAddress":"An den Flachsrotten 2","postalCode":"31020","addressLocality":"Salzhemmendorf","addressCountry":"DE"},"openingHoursSpecification":[{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday"],"opens":"08:00","closes":"16:00"}]}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Start","item":"https://devries-galabau.de/"},{"@type":"ListItem","position":2,"name":"Kontakt","item":"https://devries-galabau.de/kontakt.html"}]}]}
 </script>
 </head>
 <body>
@@ -100,7 +107,7 @@
 <main id="main">
 <section class="phero">
   <div class="wrap">
-    <p class="phero__crumb"><a href="index.html">Start</a> · Kontakt</p>
+    <nav class="phero__crumb" aria-label="Brotkrumen"><a href="index.html">Start</a> · Kontakt</nav>
     <span class="eyebrow mt-s">Kontakt &amp; Anfahrt</span>
     <h1 class="mt-s">Sprechen Sie mit uns über Ihren Garten</h1>
     <p class="lead">Ob kurze Frage oder konkretes Projekt – wir sind gern für Sie da. Rufen Sie an, schreiben Sie eine Nachricht oder besuchen Sie uns in Salzhemmendorf.</p>
@@ -113,12 +120,12 @@
       <div class="infocard" data-reveal="left">
         <div class="infoblock">
           <p class="k">Büro / Hauptsitz</p>
-          <h4>de Vries Galabau</h4>
+          <h2>de Vries Galabau</h2>
           <p class="muted">An den Flachsrotten 2<br>31020 Salzhemmendorf</p>
         </div>
         <div class="infoblock">
           <p class="k">Bauhof</p>
-          <h4>OKAL Industriepark</h4>
+          <h2>OKAL Industriepark</h2>
           <p class="muted">Salzhemmendorfer Straße 2<br>31020 Salzhemmendorf</p>
         </div>
         <div class="infoblock">
@@ -160,6 +167,7 @@
             <span class="field__err">Bitte geben Sie eine Nachricht ein.</span>
           </div>
           <label class="consent"><input type="checkbox" id="c-consent"> <span>Ich habe die <a href="datenschutz.html" style="color:var(--green-deep);border-bottom:1px solid var(--line-strong)">Datenschutzerklärung</a> gelesen und bin mit der Verarbeitung meiner Angaben zur Bearbeitung meiner Anfrage einverstanden.</span></label>
+          <p class="form__note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/></svg><span>Mit dem Absenden öffnet sich Ihr E-Mail-Programm mit der fertig ausgefüllten Nachricht – Sie behalten die Kontrolle und klicken dort selbst auf „Senden“. Falls kein E-Mail-Programm eingerichtet ist, können Sie Ihre Angaben anschließend kopieren.</span></p>
           <div class="form__status" role="status" aria-live="polite"></div>
           <button type="submit" class="btn btn--lg" data-magnetic="0.2"><span>Senden</span>
             <svg class="btn__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M7 7h10v10"/></svg></button>
@@ -203,7 +211,7 @@
         </div>
       </div>
       <div>
-        <h4>Leistungen</h4>
+        <h2 class="footer__h">Leistungen</h2>
         <ul>
           <li><a href="gartengestaltung.html">Gartengestaltung</a></li>
           <li><a href="gartenplanung.html">Gartenplanung</a></li>
@@ -212,7 +220,7 @@
         </ul>
       </div>
       <div>
-        <h4>Unternehmen</h4>
+        <h2 class="footer__h">Unternehmen</h2>
         <ul>
           <li><a href="ueber-uns.html">Über uns</a></li>
           <li><a href="referenzen.html">Referenzen</a></li>
@@ -221,7 +229,7 @@
         </ul>
       </div>
       <div>
-        <h4>Kontakt</h4>
+        <h2 class="footer__h">Kontakt</h2>
         <ul>
           <li><a href="tel:051531552">05153 1552</a></li>
           <li><a href="mailto:info@devries-galabau.de">info@devries-galabau.de</a></li>
@@ -242,14 +250,14 @@
   <a href="anfrage.html" class="btn btn--clay"><span>Anfragen</span></a>
 </div>
 
-<div class="cookie" id="cookie" role="dialog" aria-live="polite" aria-label="Cookie-Hinweis">
+<div class="cookie" id="cookie" role="region" aria-label="Hinweis zu Cookies">
   <div class="cookie__inner">
     <p>Diese Website verwendet nur technisch notwendige Cookies. Externe Inhalte (z.&nbsp;B. Karten) werden erst nach Ihrer Zustimmung geladen. Mehr in der <a href="datenschutz.html">Datenschutzerklärung</a>.</p>
     <div class="cookie__actions"><button class="btn btn--light" data-cookie-accept><span>Verstanden</span></button></div>
   </div>
 </div>
 
-<script src="assets/js/lenis.min.js"></script>
-<script src="assets/js/main.js?v=6"></script>
+<script src="assets/js/lenis.min.js?v=7"></script>
+<script src="assets/js/main.js?v=7"></script>
 </body>
 </html>

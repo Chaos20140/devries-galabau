@@ -5,7 +5,11 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-src https://*.google.com https://maps.google.com; form-action 'self' mailto:">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script>document.documentElement.classList.add('js');</script>
+<script>(function(d){var r=d.documentElement;r.classList.add('js');
+/* Sicherheitsnetz: .js blendet alle [data-reveal] aus. Faellt main.js aus (Netzfehler,
+   CSP, Syntaxfehler), bliebe der Inhalt dauerhaft unsichtbar. Nach 2,5 s wird er
+   ungeachtet dessen freigegeben; main.js raeumt den Timer beim Start wieder ab. */
+window.__dvgFailsafe=setTimeout(function(){r.classList.add('motion-failed');},2500);})(document);</script>
 <title>Impressum | de Vries Galabau</title>
 <meta name="description" content="Impressum von de Vries Galabau: Anbieterkennzeichnung gemäß § 5 TMG, Kontaktdaten, Umsatzsteuer-ID und rechtliche Hinweise.">
 <link rel="canonical" href="https://devries-galabau.de/impressum.html">
@@ -24,7 +28,10 @@
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png?v=1">
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/instrument-serif-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/manrope-latin.woff2" crossorigin>
-<link rel="stylesheet" href="assets/css/style.css?v=6">
+<link rel="stylesheet" href="assets/css/style.css?v=7">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Start","item":"https://devries-galabau.de/"},{"@type":"ListItem","position":2,"name":"Impressum","item":"https://devries-galabau.de/impressum.html"}]}]}
+</script>
 </head>
 <body>
 <a class="skip" href="#main">Zum Inhalt springen</a>
@@ -99,7 +106,7 @@
 <!-- PHERO -->
 <section class="phero">
   <div class="wrap">
-    <p class="phero__crumb"><a href="index.html">Start</a> · Impressum</p>
+    <nav class="phero__crumb" aria-label="Brotkrumen"><a href="index.html">Start</a> · Impressum</nav>
     <h1 class="mt-s reveal-words">Impressum</h1>
   </div>
 </section>
@@ -162,7 +169,7 @@
         </div>
       </div>
       <div>
-        <h4>Leistungen</h4>
+        <h2 class="footer__h">Leistungen</h2>
         <ul>
           <li><a href="gartengestaltung.html">Gartengestaltung</a></li>
           <li><a href="gartenplanung.html">Gartenplanung</a></li>
@@ -171,7 +178,7 @@
         </ul>
       </div>
       <div>
-        <h4>Unternehmen</h4>
+        <h2 class="footer__h">Unternehmen</h2>
         <ul>
           <li><a href="ueber-uns.html">Über uns</a></li>
           <li><a href="referenzen.html">Referenzen</a></li>
@@ -180,7 +187,7 @@
         </ul>
       </div>
       <div>
-        <h4>Kontakt</h4>
+        <h2 class="footer__h">Kontakt</h2>
         <ul>
           <li><a href="tel:051531552">05153 1552</a></li>
           <li><a href="mailto:info@devries-galabau.de">info@devries-galabau.de</a></li>
@@ -201,14 +208,14 @@
   <a href="anfrage.html" class="btn btn--clay"><span>Anfragen</span></a>
 </div>
 
-<div class="cookie" id="cookie" role="dialog" aria-live="polite" aria-label="Cookie-Hinweis">
+<div class="cookie" id="cookie" role="region" aria-label="Hinweis zu Cookies">
   <div class="cookie__inner">
     <p>Diese Website verwendet nur technisch notwendige Cookies. Externe Inhalte (z.&nbsp;B. Karten) werden erst nach Ihrer Zustimmung geladen. Mehr in der <a href="datenschutz.html">Datenschutzerklärung</a>.</p>
     <div class="cookie__actions"><button class="btn btn--light" data-cookie-accept><span>Verstanden</span></button></div>
   </div>
 </div>
 
-<script src="assets/js/lenis.min.js"></script>
-<script src="assets/js/main.js?v=6"></script>
+<script src="assets/js/lenis.min.js?v=7"></script>
+<script src="assets/js/main.js?v=7"></script>
 </body>
 </html>

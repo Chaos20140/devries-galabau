@@ -5,7 +5,11 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-src https://*.google.com https://maps.google.com; form-action 'self' mailto:">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script>document.documentElement.classList.add('js');</script>
+<script>(function(d){var r=d.documentElement;r.classList.add('js');
+/* Sicherheitsnetz: .js blendet alle [data-reveal] aus. Faellt main.js aus (Netzfehler,
+   CSP, Syntaxfehler), bliebe der Inhalt dauerhaft unsichtbar. Nach 2,5 s wird er
+   ungeachtet dessen freigegeben; main.js raeumt den Timer beim Start wieder ab. */
+window.__dvgFailsafe=setTimeout(function(){r.classList.add('motion-failed');},2500);})(document);</script>
 <title>Kostenlose Anfrage – Ihr Gartenprojekt | de Vries Galabau</title>
 <meta name="description" content="Jetzt unkompliziert &amp; unverbindlich anfragen: Beantworten Sie ein paar kurze Fragen zu Ihrem Gartenprojekt – ob Pflege, Bepflanzung oder Neugestaltung. Wir melden uns mit einem passenden Vorschlag.">
 <link rel="canonical" href="https://devries-galabau.de/anfrage.html">
@@ -24,7 +28,10 @@
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png?v=1">
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/instrument-serif-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/manrope-latin.woff2" crossorigin>
-<link rel="stylesheet" href="assets/css/style.css?v=6">
+<link rel="stylesheet" href="assets/css/style.css?v=7">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Start","item":"https://devries-galabau.de/"},{"@type":"ListItem","position":2,"name":"Kostenlose Anfrage","item":"https://devries-galabau.de/anfrage.html"}]}]}
+</script>
 </head>
 <body>
 <a class="skip" href="#main">Zum Inhalt springen</a>
@@ -97,7 +104,7 @@
 <main id="main">
 <section class="phero">
   <div class="wrap">
-    <p class="phero__crumb"><a href="index.html">Start</a> · Kostenlose Anfrage</p>
+    <nav class="phero__crumb" aria-label="Brotkrumen"><a href="index.html">Start</a> · Kostenlose Anfrage</nav>
     <span class="eyebrow mt-s">Kostenlos &amp; unverbindlich</span>
     <h1 class="mt-s">Erzählen Sie uns von Ihrem Garten</h1>
     <p class="lead">Beantworten Sie ein paar kurze Fragen zu Ihrem Projekt – egal ob Pflege, Bepflanzung oder Neugestaltung. So können wir Ihnen schnell die passende Lösung vorschlagen.</p>
@@ -113,7 +120,7 @@
       </div>
       <!-- 1 -->
       <div class="step is-active">
-        <h3>Handelt es sich um ein privates oder gewerbliches Projekt?</h3>
+        <h2 class="step__title">Handelt es sich um ein privates oder gewerbliches Projekt?</h2>
         <p class="step__hint">Wählen Sie, was für Sie zutrifft.</p>
         <div class="optgrid">
           <label class="opt"><input type="radio" name="art" value="Privat" required><span class="opt__box">Privat</span></label>
@@ -124,7 +131,7 @@
       </div>
       <!-- 2 -->
       <div class="step">
-        <h3>In welchem Bereich benötigen Sie Unterstützung?</h3>
+        <h2 class="step__title">In welchem Bereich benötigen Sie Unterstützung?</h2>
         <p class="step__hint">Mehr Details geben Sie im nächsten Schritt an.</p>
         <div class="optgrid">
           <label class="opt"><input type="radio" name="bereich" value="Gartengestaltung" required><span class="opt__box">Gartengestaltung</span></label>
@@ -134,11 +141,13 @@
           <label class="opt"><input type="radio" name="bereich" value="Sonstiges"><span class="opt__box">Sonstiges</span></label>
         </div>
         <p class="step__err field__err" style="display:none">Bitte treffen Sie eine Auswahl.</p>
+        <p class="form__note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/></svg><span>Mit dem Absenden öffnet sich Ihr E-Mail-Programm mit der fertig ausgefüllten Nachricht – Sie behalten die Kontrolle und klicken dort selbst auf „Senden“. Falls kein E-Mail-Programm eingerichtet ist, können Sie Ihre Angaben anschließend kopieren.</span></p>
+        <div class="form__status" role="status" aria-live="polite"></div>
         <div class="step__nav"><button type="button" class="btn btn--ghost" data-prev><span>Zurück</span></button><button type="button" class="btn" data-next data-magnetic="0.2"><span>Weiter</span><svg class="btn__arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
       </div>
       <!-- 3 -->
       <div class="step">
-        <h3>Was genau soll gemacht werden?</h3>
+        <h2 class="step__title">Was genau soll gemacht werden?</h2>
         <p class="step__hint">Beschreiben Sie Ihr Vorhaben kurz – Fläche, Wünsche, Besonderheiten.</p>
         <div class="field">
           <label for="beschreibung">Projektbeschreibung <span class="req" aria-hidden="true">*</span></label>
@@ -149,7 +158,7 @@
       </div>
       <!-- 4 -->
       <div class="step">
-        <h3>In welchem Zeitraum soll es umgesetzt werden?</h3>
+        <h2 class="step__title">In welchem Zeitraum soll es umgesetzt werden?</h2>
         <p class="step__hint">Eine grobe Einschätzung genügt.</p>
         <div class="optgrid">
           <label class="opt"><input type="radio" name="zeitraum" value="Nächste Woche" required><span class="opt__box">Nächste Woche</span></label>
@@ -162,7 +171,7 @@
       </div>
       <!-- 5 -->
       <div class="step">
-        <h3>Wie erreichen wir Sie?</h3>
+        <h2 class="step__title">Wie erreichen wir Sie?</h2>
         <p class="step__hint">Wir melden uns telefonisch, um die Details zu besprechen.</p>
         <div class="field">
           <label for="an-name">Vollständiger Name <span class="req" aria-hidden="true">*</span></label>
@@ -224,7 +233,7 @@
         </div>
       </div>
       <div>
-        <h4>Leistungen</h4>
+        <h2 class="footer__h">Leistungen</h2>
         <ul>
           <li><a href="gartengestaltung.html">Gartengestaltung</a></li>
           <li><a href="gartenplanung.html">Gartenplanung</a></li>
@@ -233,7 +242,7 @@
         </ul>
       </div>
       <div>
-        <h4>Unternehmen</h4>
+        <h2 class="footer__h">Unternehmen</h2>
         <ul>
           <li><a href="ueber-uns.html">Über uns</a></li>
           <li><a href="referenzen.html">Referenzen</a></li>
@@ -242,7 +251,7 @@
         </ul>
       </div>
       <div>
-        <h4>Kontakt</h4>
+        <h2 class="footer__h">Kontakt</h2>
         <ul>
           <li><a href="tel:051531552">05153 1552</a></li>
           <li><a href="mailto:info@devries-galabau.de">info@devries-galabau.de</a></li>
@@ -263,14 +272,14 @@
   <a href="#anfrageForm" class="btn btn--clay"><span>Zum Formular</span></a>
 </div>
 
-<div class="cookie" id="cookie" role="dialog" aria-live="polite" aria-label="Cookie-Hinweis">
+<div class="cookie" id="cookie" role="region" aria-label="Hinweis zu Cookies">
   <div class="cookie__inner">
     <p>Diese Website verwendet nur technisch notwendige Cookies. Externe Inhalte (z.&nbsp;B. Karten) werden erst nach Ihrer Zustimmung geladen. Mehr in der <a href="datenschutz.html">Datenschutzerklärung</a>.</p>
     <div class="cookie__actions"><button class="btn btn--light" data-cookie-accept><span>Verstanden</span></button></div>
   </div>
 </div>
 
-<script src="assets/js/lenis.min.js"></script>
-<script src="assets/js/main.js?v=6"></script>
+<script src="assets/js/lenis.min.js?v=7"></script>
+<script src="assets/js/main.js?v=7"></script>
 </body>
 </html>

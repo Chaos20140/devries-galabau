@@ -5,7 +5,11 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-src https://*.google.com https://maps.google.com; form-action 'self' mailto:">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script>document.documentElement.classList.add('js');</script>
+<script>(function(d){var r=d.documentElement;r.classList.add('js');
+/* Sicherheitsnetz: .js blendet alle [data-reveal] aus. Faellt main.js aus (Netzfehler,
+   CSP, Syntaxfehler), bliebe der Inhalt dauerhaft unsichtbar. Nach 2,5 s wird er
+   ungeachtet dessen freigegeben; main.js raeumt den Timer beim Start wieder ab. */
+window.__dvgFailsafe=setTimeout(function(){r.classList.add('motion-failed');},2500);})(document);</script>
 <title>de Vries Galabau – Garten- &amp; Landschaftsbau in Salzhemmendorf</title>
 <meta name="description" content="Garten- und Landschaftsbau aus Salzhemmendorf. Seit 1998 planen, bauen und pflegen wir Gärten im Weserbergland – naturnah, handwerklich präzise, individuell. Jetzt kostenlos anfragen.">
 <link rel="canonical" href="https://devries-galabau.de/">
@@ -27,19 +31,15 @@
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png?v=1">
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/instrument-serif-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/manrope-latin.woff2" crossorigin>
-<link rel="stylesheet" href="assets/css/style.css?v=6">
+<link rel="stylesheet" href="assets/css/style.css?v=7">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"LandscapingBusiness","name":"de Vries Galabau","alternateName":"de Vries Garten- und Landschaftsbau","image":"https://devries-galabau.de/assets/img/og-default.jpg","logo":"https://devries-galabau.de/assets/img/icon-512.png","@id":"https://devries-galabau.de/","url":"https://devries-galabau.de/","telephone":"+4951531552","email":"info@devries-galabau.de","founder":"Andreas de Vries","foundingDate":"1998","priceRange":"€€","address":{"@type":"PostalAddress","streetAddress":"An den Flachsrotten 2","postalCode":"31020","addressLocality":"Salzhemmendorf","addressCountry":"DE"},"areaServed":["Salzhemmendorf","Hameln","Hildesheim","Weserbergland"],"knowsAbout":["Gartengestaltung","Gartenplanung","Gartenpflege","Bepflanzung","Pflasterarbeiten","Natursteinmauern"],"openingHoursSpecification":[{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday"],"opens":"08:00","closes":"16:00"}],"sameAs":["https://www.facebook.com/devriesdienstleistungen","https://www.instagram.com/dv_devries/"]}
 </script>
 </head>
 <body>
-<div class="loader" id="loader" aria-hidden="true">
-  <div class="loader__inner">
-    <img class="loader__logo" src="assets/img/logo-galabau.webp" alt="" width="104" height="104">
-    <span class="loader__line"></span>
-    <span class="loader__word">Garten- &amp; Landschaftsbau · seit 1998</span>
-  </div>
-</div>
+<!-- Kein Intro-Loader mehr: Er verdeckte das LCP-Element (Hero-Bild + H1) fuer
+     mindestens 2,5 s und sperrte solange das Scrollen. Die Marke fuehrt sich
+     jetzt ueber den Hero selbst ein, nicht ueber eine Wartezeit. -->
 <a class="skip" href="#main">Zum Inhalt springen</a>
 <div class="scroll-prog" id="scrollProg"></div>
 
@@ -112,7 +112,10 @@
 
 <!-- ===== CHAPTER 1 · HERO ===== -->
 <section class="chapter" id="hero">
-  <div class="chapter__media"><img src="assets/img/hero-header-1600.webp" srcset="assets/img/hero-header-800.webp 800w, assets/img/hero-header-1600.webp 1920w" sizes="100vw" width="1920" height="1080" alt="Gartenteich mit Holzsteg und Sitzplatz in einem naturnah gestalteten Garten in Salzhemmendorf" fetchpriority="high"></div>
+  <!-- Tiefenebene 1 (langsamste): Das Hero-Bild wandert beim Scrollen minimal
+       gegen die Scrollrichtung. fetchpriority=high bleibt — das Bild ist das
+       LCP-Element und darf durch nichts verzoegert werden. -->
+  <div class="chapter__media plx-frame"><img data-layer="far" src="assets/img/hero-header-1600.webp" srcset="assets/img/hero-header-800.webp 800w, assets/img/hero-header-1600.webp 1920w" sizes="100vw" width="1920" height="1080" alt="Gartenteich mit Holzsteg und Sitzplatz in einem naturnah gestalteten Garten in Salzhemmendorf" fetchpriority="high"></div>
   <div class="chapter__scrim"></div>
   <div class="chapter__hud"><span class="tr">N 52.06° · E 9.60°</span><span class="br">Salzhemmendorf · Weserbergland</span></div>
   <div class="wrap chapter__inner">
@@ -179,15 +182,56 @@
   </div>
 </section>
 
-<!-- ===== SIGNATUR · Pinned Clip-Reveal ===== -->
-<section class="reveal-pin" id="signatur">
+<!-- ===== SIGNATUR · „Plan wird Garten" =================================
+     Leitmotiv: Ein Garten entsteht Schicht für Schicht.
+       Schicht 1  Raster        das leere Grundstück
+       Schicht 2  Planlinien    zeichnen sich beim Scrollen
+       Schicht 3  Maße & Labels die Planung wird konkret
+       Schicht 4  Foto          öffnet sich und löst den Plan ab
+     Die Linien sind KEINE freie Zeichnung, sondern folgen exakt den Kanten
+     dieses Fotos (Natursteineinfassung, Bestandsbaum, Formschnitt, Beet).
+     Der viewBox entspricht dem Bildformat 1600x1200, "slice" verhält sich
+     wie object-fit:cover — dadurch sitzen die Linien in jeder Fenstergröße
+     auf denselben Bildelementen. -->
+<section class="reveal-pin" id="signatur" aria-labelledby="signatur-title">
   <div class="reveal-pin__stage">
-    <div class="reveal-pin__grid" aria-hidden="true"></div>
-    <svg class="reveal-pin__line" id="pinLine" viewBox="0 0 1000 8" preserveAspectRatio="none" aria-hidden="true"><line x1="0" y1="4" x2="1000" y2="4"/><circle cx="1000" cy="4" r="4"/></svg>
-    <div class="reveal-pin__photo" id="pinPhoto"><img src="assets/img/ref-vorgarten2-1600.webp" alt="Fertig gestalteter Vorgarten mit farbenfrohem Beet und Natursteinmauer" width="1600" height="1200" loading="lazy"></div>
+    <div class="reveal-pin__photo" id="pinPhoto"><img src="assets/img/ref-vorgarten2-1600.webp" alt="Fertig gestalteter Vorgarten in Salzhemmendorf mit Staudenbeet, Bestandsbaum und geschwungener Natursteineinfassung" width="1600" height="1200" loading="lazy"></div>
+
+    <div class="plan-draw" aria-hidden="true">
+      <div class="plan-draw__grid"></div>
+      <svg class="plan-draw__svg" viewBox="0 0 1600 1200" preserveAspectRatio="xMidYMid slice" fill="none">
+        <!-- Natursteineinfassung: die tatsächliche Kante des Beetes -->
+        <path class="plan-draw__line plan-draw__line--accent"
+              d="M -20 918 L 268 1058 L 800 1092 L 1404 1006 L 1620 934"/>
+        <!-- Obere Beetgrenze -->
+        <path class="plan-draw__line"
+              d="M -20 636 C 180 660 300 596 470 618 C 660 642 720 586 900 604 C 1120 626 1300 566 1620 596"/>
+        <!-- Bestandsbaum: Stamm, Kronenradius, Mittelkreuz -->
+        <path class="plan-draw__line plan-draw__line--accent" d="M 792 372 L 792 800 M 836 372 L 836 800"/>
+        <circle class="plan-draw__line plan-draw__node" cx="814" cy="800" r="26"/>
+        <path class="plan-draw__line plan-draw__line--dim" d="M 814 774 L 814 826 M 788 800 L 840 800"/>
+        <circle class="plan-draw__line plan-draw__line--dim" cx="814" cy="800" r="300"/>
+        <!-- Formschnitt links -->
+        <circle class="plan-draw__line" cx="296" cy="392" r="78"/>
+        <circle class="plan-draw__line" cx="578" cy="352" r="62"/>
+        <!-- Ziergras / Staudengruppe -->
+        <circle class="plan-draw__line" cx="612" cy="770" r="96"/>
+        <!-- Blühgruppe rechts -->
+        <circle class="plan-draw__line" cx="1332" cy="666" r="132"/>
+        <!-- Maßlinie über die Beetbreite -->
+        <path class="plan-draw__line plan-draw__line--dim" d="M 280 1148 L 1400 1148 M 280 1130 L 280 1166 M 1400 1130 L 1400 1166"/>
+        <!-- Beschriftungen -->
+        <text class="plan-draw__tag" x="300" y="1124">≈ 11,00 m</text>
+        <text class="plan-draw__tag" x="866" y="806">Bestandsbaum</text>
+        <text class="plan-draw__tag" x="120" y="884">Natursteineinfassung</text>
+        <text class="plan-draw__tag" x="1148" y="628">Blühstauden</text>
+        <text class="plan-draw__tag" x="200" y="286">Formschnitt</text>
+      </svg>
+    </div>
+
     <div class="reveal-pin__cap">
-      <span class="eyebrow">Vom Strich zum Garten</span>
-      <h2>Jeder Garten beginnt als Linie – und wird zu einem Ort.</h2>
+      <span class="eyebrow">Schicht für Schicht</span>
+      <h2 id="signatur-title">Erst die Linie. Dann der Stein. Dann das Leben.</h2>
     </div>
   </div>
 </section>
@@ -201,11 +245,11 @@
       <p class="lead-sans">Wir arbeiten mit ehrlichen, langlebigen Materialien – vom ersten Spatenstich bis zum letzten Pflasterstein.</p>
     </div>
     <div class="materials" data-stagger>
-      <div class="mat mat--a img-reveal"><img src="assets/img/ref-natursteinmauer-800.webp" alt="Natursteinmauer in Nahaufnahme" width="800" height="600" loading="lazy"><span class="mat__cap">Naturstein</span></div>
-      <div class="mat mat--b img-reveal"><img src="assets/img/bepflanzung-pflanzen-800.webp" alt="Staudenbepflanzung mit Gräsern und Blüten" width="800" height="1067" loading="lazy"><span class="mat__cap">Bepflanzung</span></div>
-      <div class="mat mat--c img-reveal"><img src="assets/img/ref-holzterrasse-800.webp" alt="Holzterrasse als Sitzbereich" width="800" height="597" loading="lazy"><span class="mat__cap">Holz</span></div>
-      <div class="mat mat--d img-reveal"><img src="assets/img/hofeinfahrt-pflaster-800.webp" alt="Gepflasterte Hofeinfahrt mit klaren Linien" width="800" height="600" loading="lazy"><span class="mat__cap">Pflaster</span></div>
-      <div class="mat mat--e img-reveal"><img src="assets/img/teichbau-800.webp" alt="Teichbau im Garten" width="780" height="406" loading="lazy"><span class="mat__cap">Wasser</span></div>
+      <div class="plx-frame mat mat--a img-reveal"><img data-layer="mid" src="assets/img/ref-natursteinmauer-800.webp" alt="Natursteinmauer in Nahaufnahme" width="800" height="600" loading="lazy"><span class="mat__cap">Naturstein</span></div>
+      <div class="plx-frame mat mat--b img-reveal"><img data-layer="mid" src="assets/img/bepflanzung-pflanzen-800.webp" alt="Staudenbepflanzung mit Gräsern und Blüten" width="800" height="1067" loading="lazy"><span class="mat__cap">Bepflanzung</span></div>
+      <div class="plx-frame mat mat--c img-reveal"><img data-layer="mid" src="assets/img/ref-holzterrasse-800.webp" alt="Holzterrasse als Sitzbereich" width="800" height="597" loading="lazy"><span class="mat__cap">Holz</span></div>
+      <div class="plx-frame mat mat--d img-reveal"><img data-layer="mid" src="assets/img/hofeinfahrt-pflaster-800.webp" alt="Gepflasterte Hofeinfahrt mit klaren Linien" width="800" height="600" loading="lazy"><span class="mat__cap">Pflaster</span></div>
+      <div class="plx-frame mat mat--e img-reveal"><img data-layer="mid" src="assets/img/teichbau-800.webp" alt="Teichbau im Garten" width="780" height="406" loading="lazy"><span class="mat__cap">Wasser</span></div>
     </div>
   </div>
 </section>
@@ -218,19 +262,22 @@
       <h2 class="mt-s">Gebaut im Weserbergland</h2>
     </div>
   </div>
+  <!-- Jedes Bild führt jetzt zu SEINEM Projekt (Anker in referenzen.html),
+       nicht mehr sechsmal auf dieselbe Übersichtsseite. Bilder und Namen
+       entsprechen den sechs dort ausführlich beschriebenen Projekten. -->
   <div class="filmstrip__viewport" id="filmViewport">
     <div class="filmstrip__track" id="filmTrack">
-      <a class="film-item" href="referenzen.html"><div class="film-item__media"><img src="assets/img/projekt-naturnahe-1-800.webp" alt="Naturnahe Gartengestaltung mit Rindenmulch und Naturstein" width="800" height="600" loading="lazy"></div><div class="film-item__meta"><span class="film-item__name">Naturnaher Garten</span><span class="film-item__tag">Gestaltung</span></div></a>
-      <a class="film-item" href="referenzen.html"><div class="film-item__media"><img src="assets/img/ref-natursteinmauer-800.webp" alt="Natursteinmauer im Garten" width="800" height="600" loading="lazy"></div><div class="film-item__meta"><span class="film-item__name">Natursteinmauer</span><span class="film-item__tag">Mauerbau</span></div></a>
-      <a class="film-item" href="referenzen.html"><div class="film-item__media"><img src="assets/img/ref-holzterrasse-800.webp" alt="Holzterrasse im Garten" width="800" height="597" loading="lazy"></div><div class="film-item__meta"><span class="film-item__name">Holzterrasse</span><span class="film-item__tag">Terrassenbau</span></div></a>
-      <a class="film-item" href="referenzen.html"><div class="film-item__media"><img src="assets/img/projekt-klinkermauer-800.webp" alt="Rustikale Klinkermauer als Blickfang" width="800" height="452" loading="lazy"></div><div class="film-item__meta"><span class="film-item__name">Klinkermauer</span><span class="film-item__tag">Gartendeko</span></div></a>
-      <a class="film-item" href="referenzen.html"><div class="film-item__media"><img src="assets/img/projekt-pflaster-einfahrt-800.webp" alt="Hochwertig gepflasterte Einfahrt" width="800" height="600" loading="lazy"></div><div class="film-item__meta"><span class="film-item__name">Pflaster-Einfahrt</span><span class="film-item__tag">Pflasterbau</span></div></a>
-      <a class="film-item" href="referenzen.html"><div class="film-item__media"><img src="assets/img/ref-gabionen-800.webp" alt="Gabionen als moderne Gartenabgrenzung" width="800" height="560" loading="lazy"></div><div class="film-item__meta"><span class="film-item__name">Gabionen</span><span class="film-item__tag">Gestaltung</span></div></a>
+      <a class="film-item" href="referenzen.html#projekt-beeteinfassung" data-cursor="Projekt ansehen"><div class="film-item__media plx-frame"><img data-layer="near" src="assets/img/projekt-beeteinfassung-800.webp" alt="Beeteinfassung mit Metallkante, Zierkies und Rindenmulch im Vorgarten" width="800" height="600" loading="lazy"></div><div class="film-item__meta"><span class="film-item__name">Beeteinfassung</span><span class="film-item__tag">Vorgarten</span></div></a>
+      <a class="film-item" href="referenzen.html#projekt-naturnahe-wege" data-cursor="Projekt ansehen"><div class="film-item__media plx-frame"><img data-layer="near" src="assets/img/projekt-naturnahe-1-800.webp" alt="Naturnahe Gartengestaltung mit Rindenmulchwegen und Natursteinmauern" width="800" height="600" loading="lazy"></div><div class="film-item__meta"><span class="film-item__name">Naturnahe Wege</span><span class="film-item__tag">Wegeführung</span></div></a>
+      <a class="film-item" href="referenzen.html#projekt-trockenmauer" data-cursor="Projekt ansehen"><div class="film-item__media plx-frame"><img data-layer="near" src="assets/img/projekt-naturnahe-2-800.webp" alt="Trockenmauer aus Naturstein zur Hangbefestigung" width="800" height="600" loading="lazy"></div><div class="film-item__meta"><span class="film-item__name">Trockenmauer</span><span class="film-item__tag">Hangsicherung</span></div></a>
+      <a class="film-item" href="referenzen.html#projekt-klinkermauer" data-cursor="Projekt ansehen"><div class="film-item__media plx-frame"><img data-layer="near" src="assets/img/projekt-klinkermauer-800.webp" alt="Rustikale Klinkermauer mit Ziegeldachabschluss als Blickfang" width="800" height="452" loading="lazy"></div><div class="film-item__meta"><span class="film-item__name">Klinkermauer</span><span class="film-item__tag">Gartendeko</span></div></a>
+      <a class="film-item" href="referenzen.html#projekt-insektenhotel" data-cursor="Projekt ansehen"><div class="film-item__media plx-frame"><img data-layer="near" src="assets/img/projekt-insektenhotel-800.webp" alt="Insektenhotel als Blickfang und Beitrag zur Artenvielfalt" width="800" height="600" loading="lazy"></div><div class="film-item__meta"><span class="film-item__name">Insektenhotel</span><span class="film-item__tag">Artenvielfalt</span></div></a>
+      <a class="film-item" href="referenzen.html#projekt-pflaster-einfahrt" data-cursor="Projekt ansehen"><div class="film-item__media plx-frame"><img data-layer="near" src="assets/img/projekt-pflaster-einfahrt-800.webp" alt="Hochwertig gepflasterte Einfahrt mit klarer Linienführung" width="800" height="600" loading="lazy"></div><div class="film-item__meta"><span class="film-item__name">Pflaster-Einfahrt</span><span class="film-item__tag">Pflasterbau</span></div></a>
     </div>
   </div>
   <div class="filmstrip__foot">
     <a href="referenzen.html" class="btn btn--light" data-magnetic="0.2"><span>Alle Referenzen</span><svg class="btn__arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-    <span class="filmstrip__hint">Seitwärts scrollen<svg width="30" height="8" viewBox="0 0 30 8" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M0 4h28M25 1l4 3-4 3"/></svg></span>
+    <span class="filmstrip__hint"><span class="filmstrip__counter">01 / 06</span><svg width="30" height="8" viewBox="0 0 30 8" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M0 4h28M25 1l4 3-4 3"/></svg>Seitwärts scrollen</span>
   </div>
 </section>
 
@@ -242,11 +289,11 @@
       <h2 class="mt-s">In fünf Schritten zum Garten</h2>
     </div>
     <div class="timeline" data-stagger>
-      <div class="tnode"><span class="tnode__no">01</span><div><h4>Beratung &amp; Vor-Ort-Termin</h4><p>Wir nehmen uns Zeit für Ihre Wünsche – direkt bei Ihnen im Garten. Wir hören zu, prüfen die Gegebenheiten und finden die Richtung.</p></div></div>
-      <div class="tnode"><span class="tnode__no">02</span><div><h4>Planung &amp; Skizze</h4><p>Aus Ihren Ideen entsteht ein maßgeschneidertes Konzept mit detaillierten Zeichnungen – ästhetisch und funktional.</p></div></div>
-      <div class="tnode"><span class="tnode__no">03</span><div><h4>Material- &amp; Pflanzenauswahl</h4><p>Naturstein, Holz, Pflaster, Stauden oder Bäume – wir wählen mit Ihnen die passenden Materialien und Pflanzen.</p></div></div>
-      <div class="tnode"><span class="tnode__no">04</span><div><h4>Fachgerechte Umsetzung</h4><p>Vom ersten Spatenstich bis zum letzten Pflasterstein – termintreu, sauber und mit langlebigen Materialien.</p></div></div>
-      <div class="tnode"><span class="tnode__no">05</span><div><h4>Pflege &amp; Weiterentwicklung</h4><p>Auch danach sind wir da: mit individuellen Pflegeplänen bleibt Ihr Garten dauerhaft in Bestform.</p></div></div>
+      <div class="tnode"><span class="tnode__no">01</span><div><h3>Beratung &amp; Vor-Ort-Termin</h3><p>Wir nehmen uns Zeit für Ihre Wünsche – direkt bei Ihnen im Garten. Wir hören zu, prüfen die Gegebenheiten und finden die Richtung.</p></div></div>
+      <div class="tnode"><span class="tnode__no">02</span><div><h3>Planung &amp; Skizze</h3><p>Aus Ihren Ideen entsteht ein maßgeschneidertes Konzept mit detaillierten Zeichnungen – ästhetisch und funktional.</p></div></div>
+      <div class="tnode"><span class="tnode__no">03</span><div><h3>Material- &amp; Pflanzenauswahl</h3><p>Naturstein, Holz, Pflaster, Stauden oder Bäume – wir wählen mit Ihnen die passenden Materialien und Pflanzen.</p></div></div>
+      <div class="tnode"><span class="tnode__no">04</span><div><h3>Fachgerechte Umsetzung</h3><p>Vom ersten Spatenstich bis zum letzten Pflasterstein – termintreu, sauber und mit langlebigen Materialien.</p></div></div>
+      <div class="tnode"><span class="tnode__no">05</span><div><h3>Pflege &amp; Weiterentwicklung</h3><p>Auch danach sind wir da: mit individuellen Pflegeplänen bleibt Ihr Garten dauerhaft in Bestform.</p></div></div>
     </div>
   </div>
 </section>
@@ -291,8 +338,8 @@
           <span class="region__place">Salzhemmendorf</span><span class="region__place">Hameln</span><span class="region__place">Hildesheim</span><span class="region__place">Coppenbrügge</span><span class="region__place">Lauenstein</span><span class="region__place">Elze</span><span class="region__place">Gronau</span><span class="region__place">Weserbergland</span>
         </div>
       </div>
-      <div class="feature__media img-reveal" data-reveal="right" style="aspect-ratio:4/3">
-        <img src="assets/img/teichbau-1600.webp" alt="Teichbau in einem Garten in Salzhemmendorf" width="780" height="406" loading="lazy">
+      <div class="feature__media img-reveal plx-frame" data-reveal="right" style="aspect-ratio:4/3">
+        <img data-layer="mid" src="assets/img/teichbau-1600.webp" alt="Teichbau in einem Garten in Salzhemmendorf" width="780" height="406" loading="lazy">
         <span class="media-tag">Salzhemmendorf</span>
       </div>
     </div>
@@ -330,15 +377,15 @@
         </div>
       </div>
       <div>
-        <h4>Leistungen</h4>
+        <h2 class="footer__h">Leistungen</h2>
         <ul><li><a href="gartengestaltung.html">Gartengestaltung</a></li><li><a href="gartenplanung.html">Gartenplanung</a></li><li><a href="gartenpflege.html">Gartenpflege</a></li><li><a href="bepflanzung.html">Bepflanzung</a></li></ul>
       </div>
       <div>
-        <h4>Unternehmen</h4>
+        <h2 class="footer__h">Unternehmen</h2>
         <ul><li><a href="ueber-uns.html">Über uns</a></li><li><a href="referenzen.html">Referenzen</a></li><li><a href="stellenangebote.html">Stellenangebote</a></li><li><a href="anfrage.html">Kostenlos anfragen</a></li></ul>
       </div>
       <div>
-        <h4>Kontakt</h4>
+        <h2 class="footer__h">Kontakt</h2>
         <ul><li><a href="tel:051531552">05153 1552</a></li><li><a href="mailto:info@devries-galabau.de">info@devries-galabau.de</a></li><li>An den Flachsrotten 2<br>31020 Salzhemmendorf</li><li>Mo–Fr 8:00–16:00 Uhr</li></ul>
       </div>
     </div>
@@ -354,16 +401,16 @@
   <a href="anfrage.html" class="btn btn--solid"><span>Anfragen</span></a>
 </div>
 
-<div class="cookie" id="cookie" role="dialog" aria-live="polite" aria-label="Cookie-Hinweis">
+<div class="cookie" id="cookie" role="region" aria-label="Hinweis zu Cookies">
   <div class="cookie__inner">
     <p>Diese Website verwendet nur technisch notwendige Cookies. Externe Inhalte (z.&nbsp;B. Karten) werden erst nach Ihrer Zustimmung geladen. Mehr in der <a href="datenschutz.html">Datenschutzerklärung</a>.</p>
     <div class="cookie__actions"><button class="btn" data-cookie-accept><span>Verstanden</span></button></div>
   </div>
 </div>
 
-<script src="assets/js/gsap.min.js"></script>
-<script src="assets/js/ScrollTrigger.min.js"></script>
-<script src="assets/js/lenis.min.js"></script>
-<script src="assets/js/main.js?v=6"></script>
+<script src="assets/js/gsap.min.js?v=7"></script>
+<script src="assets/js/ScrollTrigger.min.js?v=7"></script>
+<script src="assets/js/lenis.min.js?v=7"></script>
+<script src="assets/js/main.js?v=7"></script>
 </body>
 </html>
