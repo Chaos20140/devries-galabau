@@ -220,21 +220,57 @@ Staudengruppe, Blühgruppe, Maßlinie über die Beetbreite.
 animiert werden. Die CSS-Kurzform `inset(45%)` wird sonst als ein Wert gelesen, und das
 Bild klappt nur nach unten auf statt sich aus der Mitte zu öffnen.
 
-### 6.4b Leistungen — Sticky-Scrollytelling
+### 6.4b Leistungen — gepinntes Scrollytelling
 
-Die Bühne (Bild, Zähler, Fortschrittsbalken) klebt vertikal zentriert, die vier
-Schritte laufen daran vorbei. Der Schritt, der das mittlere Viewportband schneidet
-(`rootMargin: -48% 0 -48%`), führt: er wird voll deckend, seine Rust-Marke fährt aus,
-sein Bild zieht per `clip-path` von unten auf und skaliert von 1,06 auf 1.
+**Ab 861 px:** GSAP pinnt die gesamte Sektion. Der Scroll blättert Schritt für Schritt
+durch die vier Disziplinen — sichtbar ist immer **genau ein Text rechts und ein Bild links**.
+Die Strecke beträgt 0,85 Bildschirmhöhen je Schritt, damit sich das Blättern zügig anfühlt.
+Inaktive Schritte sind `visibility: hidden`, tauchen also weder im Tab-Fokus noch im
+Screenreader auf; die vier Leistungen sind ohnehin in Hauptnavigation und Footer verlinkt.
 
-Bewusst per IntersectionObserver und nicht per Hover — der Vorgänger reagierte
-ausschließlich auf den Zeiger und war auf Touch vollständig funktionslos. Tastaturfokus
-auf einem der Links zieht das Bild ebenfalls mit.
+Im gepinnten Zustand muss alles zusammen in eine Bildschirmhöhe passen — deshalb ist der
+Sektionskopf dort deutlich kompakter (`.svcs.is-pinned .section__head`). Geprüft bei
+1280 × 720, 1440 × 900 und 1920 × 1080.
+
+**Unter 861 px:** kein Pinning. Die Bühne klebt unter der Navigation, der jeweils mittige
+Schritt führt (`rootMargin: -48% 0 -48%`) — vertikales Scrollen bleibt normal.
+
+**Bei Reduced Motion:** kein Pinning, alle vier Schritte gleichzeitig sichtbar, die Bilder
+als ruhiges 2×2-Raster darüber.
+
+Beides über `gsap.matchMedia()`, damit ein Wechsel der Fenstergröße oder der
+Bewegungseinstellung die jeweils andere Fassung sauber auf- und abbaut.
 
 **Kontrast statt Kontrastarmut:** Inaktive Schritte werden nur auf 0,72 abgedunkelt, nicht
 auf die optisch reizvolleren 0,34. Auf `--forest #26361f` ergibt der Fließtext dann noch
-4,7 : 1 — bei 0,34 wären es rund 1,9 : 1 gewesen. Die Führung übernimmt zusätzlich die
-Rust-Marke, also nicht die Helligkeit allein.
+4,7 : 1 — bei 0,34 wären es rund 1,9 : 1 gewesen.
+
+### 6.4d Die Seite als eine Erzählung
+
+Die Startseite ist nicht eine Folge von Sektionen mit Reveals, sondern ein durchgehender
+Ablauf. Was das konkret heißt:
+
+| Kapitel | Was der Scroll auslöst |
+|---|---|
+| Hero | Beim Laden gestaffelter Einlauf; beim Weiterscrollen wächst das Bild auf 1,12, eine dunkle Ebene zieht auf 0,55 auf, der Text driftet mit — man sinkt hinein |
+| Haltung | Die Statement-Headline steigt **scrollgebunden** Wort für Wort auf (`scrub`), nicht auf einen Schlag |
+| Handwerk | Gepinnt, vier Disziplinen nacheinander (6.4b) |
+| Schicht für Schicht | Gepinnt, vier Schichten: Raster → Linien → Beschriftung → Foto (6.4) |
+| Material | Die Kacheln laufen mit versetzter Tiefe durch, das Raster atmet |
+| Projekte | Gepinnter Filmstreifen mit Zähler |
+| Ablauf | Die Schiene zeichnet sich mit, die Punkte füllen sich der Reihe nach |
+| Zahlen | Steigen scrollgebunden auf, Zähler laufen hoch |
+| Ihr Projekt | Closing-Headline wie die erste, scrollgebunden |
+
+Dazu die **Kapitelspur** rechts (ab 1180 px): sechs Ankerpunkte, der aktive wächst und
+zeigt seinen Namen, die Spur färbt sich auf dunklen Abschnitten um. Bewusst als echte
+`<nav>` mit Ankerlinks und `aria-current` — sie ist Orientierung und Navigation zugleich,
+nicht Dekoration.
+
+**⚠ Regel bei Übernahmen:** Was GSAP steuert, muss vorher aus der CSS-Reveal-Steuerung
+entlassen werden (`data-reveal`/`data-stagger` entfernen, `.is-scrubbed` setzen). Sonst
+schreiben Transition und Scrub gleichzeitig auf dieselbe `transform`-Eigenschaft und die
+Bewegung stockt sichtbar.
 
 ### 6.4c Galerie — editorialer Raster-Rhythmus
 
