@@ -19,9 +19,17 @@
 /* §1 Tokens ----------------------------------------------------------- */
 :root{
   --paper:#f1eee4; --paper-2:#e9e5d8; --paper-3:#ded9c9; --chalk:#faf8f1; --white:#fff;
-  --ink:#181611; --ink-2:#453f35; --muted:#877d6c;
+  /* ⚠ --muted und --rust wurden gegenueber v4 minimal abgedunkelt.
+     Grund: gemessen mit Lighthouse/axe auf --paper (#f1eee4) lagen sie bei
+     3,49 bzw. 4,40 — beide unter dem WCAG-AA-Minimum von 4,5 fuer Fliesstext.
+     Sie werden fuer Eyebrows, Mono-Labels und Sekundaertext verwendet, also
+     genau dort, wo die Schrift klein ist. Neue Werte (berechnet):
+       --muted auf --paper 5,25 : 1 · auf --paper-2 4,84 : 1
+       --rust  auf --paper 4,95 : 1 · auf --paper-2 4,56 : 1
+     Der Farbeindruck bleibt praktisch unveraendert. */
+  --ink:#181611; --ink-2:#453f35; --muted:#6a6152;
   --pine:#141a12; --forest:#26361f;
-  --rust:#b4501e; --rust-deep:#8f3d14; --rust-soft:#e6c9b3;
+  --rust:#a9491b; --rust-deep:#8f3d14; --rust-soft:#e6c9b3;
   --green:#3c6b38; --leaf:#7d9a56;
   --line:rgba(24,22,17,.14); --line-2:rgba(24,22,17,.24); --line-light:rgba(255,255,255,.18);
   --sel:rgba(180,80,30,.18);
@@ -83,8 +91,12 @@ strong{font-weight:640;color:var(--ink);}
 .wrap--wide{width:min(100% - 2*var(--gut),1600px);margin-inline:auto;}
 main{display:block;}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
-.skip{position:fixed;left:1rem;top:-4rem;z-index:200;background:var(--ink);color:var(--paper);padding:.7rem 1.1rem;transition:top .25s var(--ease);font-weight:600;}
-.skip:focus{top:1rem;}
+/* Sprungmarke ueber transform statt top animieren — top loest Layout aus,
+   transform laeuft im Compositor. */
+.skip{position:fixed;left:1rem;top:1rem;z-index:200;background:var(--ink);color:var(--paper);
+  padding:.7rem 1.1rem;font-weight:600;border-radius:var(--r);
+  transform:translateY(-200%);transition:transform var(--dur-s) var(--ease-out);}
+.skip:focus{transform:none;}
 
 /* §3 Type utility ----------------------------------------------------- */
 .eyebrow{font-family:var(--mono);font-size:var(--fs-micro);font-weight:500;letter-spacing:.2em;
@@ -109,7 +121,19 @@ main{display:block;}
 .btn:hover{color:var(--paper);} .btn:hover::before{transform:translateY(0);}
 .btn .btn__arrow{transition:transform .5s var(--ease);}
 .btn:hover .btn__arrow{transform:translate(3px,-3px);}
-.btn--rust{border-color:var(--rust);color:var(--rust);} .btn--rust::before{background:var(--rust);} .btn--rust:hover{color:var(--paper);}
+/* Akzent-Button (Haupt-CTA „Kostenlos anfragen").
+   ⚠ .btn--clay ist der historische Name aus v1–v3 und steht in 13 HTML-Dateien;
+   .btn--rust kam mit der v4-Palette dazu, wurde aber nie im Markup verwendet.
+   Dadurch waren saemtliche Haupt-CTAs der Website ungestylt. Beide Namen sind
+   hier bewusst als ein Selektor zusammengefasst, statt 13 Dateien umzuschreiben. */
+.btn--rust,.btn--clay{border-color:var(--rust);color:var(--rust);}
+.btn--rust::before,.btn--clay::before{background:var(--rust);}
+.btn--rust:hover,.btn--clay:hover{color:var(--paper);}
+/* Zurueckhaltender Zweit-Button (z.B. „Zurueck" im Anfrage-Formular). */
+.btn--ghost{border-color:var(--line-2);color:var(--muted);}
+.btn--ghost::before{background:var(--ink);}
+.btn--ghost:hover{color:var(--paper);border-color:var(--ink);}
+.bg-ink .btn--ghost,.bg-pine .btn--ghost{border-color:var(--line-light);color:rgba(241,238,228,.7);}
 .btn--solid{background:var(--ink);color:var(--paper);} .btn--solid::before{background:var(--rust);} .btn--solid:hover{color:var(--paper);}
 .btn--light{border-color:rgba(255,255,255,.6);color:#fff;} .btn--light::before{background:#fff;} .btn--light:hover{color:var(--ink);}
 .btn--lg{padding:1.15em 2em;font-size:.84rem;}
@@ -125,7 +149,11 @@ main{display:block;}
 /* §5 Scroll progress + Topbar ---------------------------------------- */
 .scroll-prog{position:fixed;top:0;left:0;height:2px;width:100%;background:var(--rust);transform:scaleX(0);transform-origin:left;z-index:90;}
 .topbar{background:var(--ink);color:var(--paper);font-size:.78rem;position:relative;z-index:60;}
-.topbar__inner{display:flex;justify-content:space-between;align-items:center;gap:1rem;min-height:38px;padding-block:.3rem;}
+/* Feste Mindesthoehe reserviert den Platz, bevor die Schriften geladen sind.
+   Ohne sie wuchs die Leiste beim Font-Wechsel von 22px auf 68px und schob
+   den gesamten Hero nach unten — allein dafuer CLS 0,12. */
+.topbar__inner{display:flex;justify-content:space-between;align-items:center;gap:1rem;min-height:46px;padding-block:.3rem;}
+@media (max-width:620px){.topbar__inner{min-height:82px;align-items:center;}}
 /* Trefferflaeche 44px hoch, optisch aber schlank: das Padding wird per
    negativem Margin wieder aus dem Layout genommen (WCAG 2.2 – Target Size). */
 .topbar a{display:inline-flex;align-items:center;gap:.45em;color:var(--paper);opacity:.85;font-family:var(--mono);letter-spacing:.02em;font-size:.74rem;
@@ -145,7 +173,8 @@ main{display:block;}
 .brand{display:flex;align-items:center;gap:.7rem;flex:none;}
 .brand__mark{width:44px;height:44px;border-radius:9px;object-fit:cover;}
 .brand__name{font-family:var(--display);font-size:1.5rem;letter-spacing:-.01em;line-height:.9;color:var(--ink);}
-.brand__name small{display:block;font-family:var(--mono);font-size:.54rem;font-weight:500;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin-top:2px;}
+/* 0,54rem waren 8,6px — zu klein fuer eine Wortmarken-Unterzeile. */
+.brand__name small{display:block;font-family:var(--mono);font-size:.6rem;font-weight:500;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;margin-top:3px;}
 .nav__links{list-style:none;display:flex;gap:.1rem;margin-left:auto;align-items:center;}
 .nav__links a{position:relative;padding:.5rem .8rem;font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);transition:color .25s;}
 .nav__links a::after{content:"";position:absolute;left:.8rem;right:.8rem;bottom:.4rem;height:1px;background:var(--rust);transform:scaleX(0);transform-origin:left;transition:transform .3s var(--ease);}
@@ -171,7 +200,10 @@ main{display:block;}
 .mnav__link:hover,.mnav__link[aria-current="page"]{color:var(--rust-soft);}
 .mnav__label{font-family:var(--mono);font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:var(--rust-soft);opacity:.7;margin:1.1rem 0 .3rem;}
 .mobile-nav__foot{margin-top:1.4rem;display:flex;flex-direction:column;gap:1rem;border-top:1px solid var(--line-light);padding-top:1.3rem;}
+/* Stand in 14 Dateien im Markup, war aber nie definiert. */
+.mnav__cta{width:100%;justify-content:center;min-height:52px;}
 .mnav__contact{display:flex;flex-direction:column;gap:.5rem;font-family:var(--mono);font-size:.8rem;opacity:.8;}
+.mnav__contact a{min-height:44px;}
 .mnav__contact a{display:inline-flex;align-items:center;gap:.5em;color:var(--paper);}
 
 /* §8 Section scaffold ------------------------------------------------- */
@@ -201,7 +233,6 @@ main{display:block;}
 .chapter__media{position:absolute;inset:0;z-index:-2;overflow:hidden;}
 .chapter__media img{width:100%;height:100%;object-fit:cover;}
 .chapter__scrim{position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(20,26,18,.45) 0%,rgba(20,26,18,.15) 40%,rgba(20,26,18,.8) 100%);}
-.chapter__scrim--l{background:linear-gradient(90deg,rgba(20,26,18,.82) 0%,rgba(20,26,18,.4) 50%,rgba(20,26,18,.12) 100%);}
 /* ⚠ KEIN width:100% — das ueberschreibt die .wrap-Breite (gleiche Spezifitaet,
    spaetere Regel gewinnt) und laesst den Hero-Text randlos am Viewport kleben.
    Gleiche Falle wie frueher bei .hero__inner, siehe CLAUDE.md §17. */
@@ -228,6 +259,29 @@ main{display:block;}
 .statement__big em{color:var(--rust);}
 .bg-ink .statement__big,.bg-pine .statement__big{color:var(--chalk);} .bg-ink .statement__big em{color:var(--rust-soft);}
 .statement__foot{margin-top:3rem;display:flex;gap:2.5rem;flex-wrap:wrap;align-items:baseline;}
+
+/* §10b Materialschichtung — aktiviert die zuvor leere rechte Haelfte
+   und traegt das Leitmotiv „Ein Garten entsteht Schicht fuer Schicht". */
+.statement--layers .statement__grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(200px,300px);
+  gap:clamp(2rem,1rem + 4vw,6rem);align-items:end;}
+.layerstack{display:grid;gap:.75rem;padding-bottom:.4rem;}
+.layerstack__title{font-family:var(--mono);font-size:var(--fs-micro);letter-spacing:.2em;text-transform:uppercase;
+  color:var(--muted);padding-bottom:.7rem;border-bottom:1px solid var(--line);}
+/* Feste Beschriftungsspalte, damit alle Baender exakt gleich breit enden. */
+.layerstack__row{display:grid;grid-template-columns:auto 1fr 4.6rem;align-items:center;gap:.9rem;}
+.layerstack__band{min-width:0;}
+.layerstack__no{font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;color:var(--rust);}
+.layerstack__band{display:block;height:clamp(38px,3.2vw,54px);border-radius:var(--r);overflow:hidden;}
+.layerstack__band img{width:100%;height:100%;object-fit:cover;}
+.layerstack__lbl{font-family:var(--display);font-size:1.05rem;color:var(--ink-2);white-space:nowrap;}
+.bg-ink .layerstack__title,.bg-ink .layerstack__lbl{color:rgba(241,238,228,.72);}
+@media (max-width:860px){
+  /* Auf Mobile darunter statt daneben — und flacher, damit die Sektion
+     nicht unnoetig in die Laenge waechst. */
+  .statement--layers .statement__grid{grid-template-columns:1fr;gap:2.8rem;}
+  .layerstack{max-width:420px;}
+  .layerstack__band{height:34px;}
+}
 
 /* §11 Leistungen — Hover-Reveal-Index (statt Karten) ---------------- */
 .svc-index{position:relative;overflow:hidden;background:var(--paper);}
@@ -302,6 +356,9 @@ main{display:block;}
 /* §13 Referenzen — horizontaler Filmstreifen (gepinnt) -------------- */
 .filmstrip{position:relative;background:var(--ink);color:var(--paper);}
 .filmstrip h2,.filmstrip h3,.filmstrip h4{color:var(--chalk);}
+/* Die Sektion ist dunkel, traegt aber nicht .bg-ink — deshalb griff die dortige
+   Aufhellung des Eyebrows nicht: --rust auf --ink ergibt nur 3,14 : 1. */
+.filmstrip .eyebrow{color:var(--rust-soft);}
 .filmstrip__head{padding:var(--sp) var(--gut) 0;max-width:var(--wrap);margin-inline:auto;}
 .filmstrip__viewport{overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
 .filmstrip__viewport::-webkit-scrollbar{height:0;width:0;}
@@ -384,13 +441,11 @@ main{display:block;}
 .timeline{display:grid;gap:0;counter-reset:step;}
 .tnode{display:grid;grid-template-columns:auto 1fr;gap:clamp(1.5rem,1rem + 2vw,3.5rem);border-top:1px solid var(--line);padding-block:clamp(1.6rem,1rem + 2vw,2.8rem);}
 .bg-pine .tnode,.bg-ink .tnode{border-color:var(--line-light);}
-.tnode__dot{display:none;}
 .tnode__no{font-family:var(--display);font-size:clamp(2.4rem,1.5rem + 3vw,4.5rem);line-height:.8;color:var(--rust);}
 .bg-pine .tnode__no,.bg-ink .tnode__no{color:var(--rust-soft);}
 .tnode h3,.tnode h4{font-family:var(--display);font-size:clamp(1.4rem,1rem + 1.4vw,2.1rem);}
 .tnode p{color:var(--muted);margin-top:.6rem;max-width:52ch;}
 .bg-pine .tnode p,.bg-ink .tnode p{color:rgba(241,238,228,.7);}
-.timeline__prog{display:none;}
 
 /* §19 Gallery (Referenzen-Seite) + Lightbox ------------------------- */
 .filterbar{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2.4rem;}
@@ -431,18 +486,13 @@ main{display:block;}
 .plots{display:grid;grid-template-columns:repeat(2,1fr);border-top:1px solid var(--line);}
 .plot{position:relative;display:flex;flex-direction:column;padding:clamp(1.8rem,1rem + 2vw,2.8rem);border-bottom:1px solid var(--line);overflow:hidden;isolation:isolate;transition:background .5s var(--ease);min-height:240px;}
 .plot:nth-child(odd){border-right:1px solid var(--line);}
-.plot__media{position:absolute;inset:0;z-index:-1;opacity:0;transition:opacity .6s var(--ease);}
-.plot__media img{width:100%;height:100%;object-fit:cover;} .plot__media::after{content:"";position:absolute;inset:0;background:rgba(20,26,18,.72);}
-.plot:hover{background:var(--ink);color:var(--paper);} .plot:hover .plot__media{opacity:1;}
+.plot:hover{background:var(--ink);color:var(--paper);}
 .plot:hover h3,.plot:hover .plot__no{color:var(--chalk);} .plot:hover .plot__desc{color:rgba(241,238,228,.8);} .plot:hover .link-arrow{color:var(--rust-soft);}
 .plot__no{font-family:var(--mono);font-size:.74rem;letter-spacing:.1em;text-transform:uppercase;color:var(--rust);}
-.plot__idx{position:absolute;top:clamp(1.6rem,1rem + 2vw,2.4rem);right:clamp(1.4rem,1rem + 1.5vw,2rem);font-family:var(--display);font-size:clamp(2.6rem,1.5rem + 3vw,4.5rem);line-height:.8;color:var(--line-2);z-index:0;transition:color .5s;}
-.plot:hover .plot__idx{color:rgba(255,255,255,.25);}
-.plot h3{margin-top:auto;padding-top:2.2rem;} .plot__desc{color:var(--muted);margin-top:.7rem;transition:color .4s;font-size:.98rem;} .plot .link-arrow{margin-top:1.3rem;} .plot__icon{display:none;}
+.plot h3{margin-top:auto;padding-top:2.2rem;} .plot__desc{color:var(--muted);margin-top:.7rem;transition:color .4s;font-size:.98rem;} .plot .link-arrow{margin-top:1.3rem;}
 .quotes{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(1.5rem,1rem + 2vw,3rem);}
 .quote{border-top:1px solid var(--line);padding-top:1.4rem;display:flex;flex-direction:column;}
 .bg-ink .quote,.bg-pine .quote{border-color:var(--line-light);}
-.quote__mark{display:none;}
 .quote p{font-family:var(--display);font-size:1.25rem;line-height:1.3;color:var(--ink-2);margin-top:.3rem;}
 .bg-ink .quote p,.bg-pine .quote p{color:rgba(241,238,228,.8);}
 .quote__by{margin-top:auto;padding-top:1.2rem;font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--rust);}
@@ -450,6 +500,15 @@ main{display:block;}
 
 /* §22 CTA band ------------------------------------------------------- */
 .cta-band{position:relative;overflow:hidden;background:var(--ink);color:var(--paper);padding:clamp(3rem,2rem + 6vw,7rem) var(--gut);text-align:center;isolation:isolate;border-radius:var(--r-img);}
+/* Das CTA-Band trug in 7 Dateien ein leeres <div class="cta-band__grid">
+   ohne jede Regel. Statt es zu entfernen, traegt es jetzt das Leitmotiv:
+   dasselbe Planraster wie der Signature Moment, nur sehr zurueckgenommen. */
+.cta-band__grid{position:absolute;inset:0;z-index:-1;opacity:.5;pointer-events:none;
+  background-image:linear-gradient(rgba(230,201,179,.1) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(230,201,179,.1) 1px,transparent 1px);
+  background-size:56px 56px;
+  -webkit-mask:radial-gradient(ellipse 70% 80% at 50% 50%,#000 20%,transparent 100%);
+          mask:radial-gradient(ellipse 70% 80% at 50% 50%,#000 20%,transparent 100%);}
 .cta-band h2{color:var(--chalk);max-width:18ch;margin-inline:auto;}
 .cta-band .lead,.cta-band .lead-sans{color:rgba(241,238,228,.8);max-width:48ch;margin:1.4rem auto 0;}
 .cta-band__actions{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-top:2.4rem;}
@@ -708,6 +767,9 @@ html.js.motion-failed .img-reveal img{transform:none !important;}
   body::after{display:none;}
   /* Bild-Zoom im Reveal deutlich zurueckgenommen. */
   .js .img-reveal img{transform:scale(1.07);}
+  /* Der Hero-Kicker brach bei .2em Sperrung unschoen mitten im Jahr um. */
+  .chapter__kicker{letter-spacing:.12em;font-size:.66rem;}
+  .chapter__kicker::before{width:1.4em;}
 }
 
 /* §34 prefers-reduced-motion — eigene, bewusst vereinfachte Fassung ---

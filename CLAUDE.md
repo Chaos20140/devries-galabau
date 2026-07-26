@@ -103,7 +103,13 @@ Jede Unterseite bekommt **eigene Dramaturgie** (nicht überall gleicher Aufbau):
 
 ## 6. Design-System (Design-Vertrag — NICHT aufweichen)
 
-### 6.1 Farbe (CSS-Tokens in `:root`, `assets/css/style.css`)
+> **⚠ Seit v4 gilt eine andere Palette und eine andere Display-Schrift als in §6.1/§6.2 unten
+> beschrieben.** Die maßgebliche, gepflegte Fassung steht in **`DESIGN-AND-MOTION-SYSTEM.md`**
+> (Farben mit gemessenen Kontrastwerten, Typografie, Raster, Motion-Tokens, Reduced Motion,
+> Mobile Motion). Die folgenden Abschnitte 6.1–6.2 dokumentieren den v1-Stand und bleiben
+> nur als Entwicklungsgeschichte stehen — **nicht** als Vorgabe.
+
+### 6.1 Farbe — HISTORISCH (v1), ersetzt durch DESIGN-AND-MOTION-SYSTEM.md §2
 | Token | Wert | Rolle |
 |---|---|---|
 | `--ink` | `#16211A` | Haupttext, dunkle Typo |
@@ -124,7 +130,7 @@ Jede Unterseite bekommt **eigene Dramaturgie** (nicht überall gleicher Aufbau):
 | `--line-strong` | `rgba(22,33,26,.22)` | stärkere Linien |
 Dunkelmodus-Flächen: `--paper`-Text auf `--pine`. **Info nie nur über Farbe** transportieren.
 
-### 6.2 Typografie
+### 6.2 Typografie — HISTORISCH (v1), ersetzt durch DESIGN-AND-MOTION-SYSTEM.md §3
 - `--display: "Bricolage Grotesque", "Segoe UI", sans-serif` — Headlines, große Zahlen, Wortmarke.
   Charaktervolle variable Grotesk (klar verschieden von der Fraunces-Serif der Pflegeseite).
 - `--body: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif` — Fließtext/UI.
@@ -262,6 +268,40 @@ erweitern statt parallele bauen → 4. Desktop+Mobile im selben Schritt → 5. B
   `style="--i"`), `img-src 'self' data:` (Mask-SVGs), `frame-src https://*.google.com` (Consent-Karte),
   `form-action 'self' mailto:`. Bei neuem externen Einbund CSP anpassen.
 
+### Neu in v7 (2026-07-27) — teuer erkauft, NICHT zurückdrehen
+
+- **`.wrap` darf NIE direktes Flex-Item sein.** `width: min(100% - 2 * var(--gut), var(--wrap))`
+  löst im Flex-Kontext **inhaltsbasiert** auf statt gegen die Containerbreite. Gemessen:
+  688 px statt 1345 px — der Hero-Text klebte randlos am Viewport. `.chapter` ist deshalb
+  ein **Grid** mit `align-items:end` und `.chapter__inner{grid-area:1/1}`.
+  Das ist dieselbe Falle wie früher bei `.hero__inner`, nur mit anderer Ursache: damals ein
+  überschreibendes `width:100%`, jetzt der Flex-Kontext selbst. **Regressionstest:**
+  x-Offset von `.chapter__inner` muss gleich dem von `.nav__inner` sein.
+- **`.plx-frame` setzt bewusst KEIN `position`.** `.chapter__media` ist absolut positioniert;
+  ein `position:relative` von der Utility-Klasse löst es aus seiner Verankerung — das
+  Hero-Bild verschwindet ersatzlos.
+- **`clipPath` mit GSAP immer via `fromTo()` und vier expliziten Werten auf beiden Seiten.**
+  Die CSS-Kurzform `inset(45%)` wird sonst als EIN Wert gelesen; animiert wird dann nur die
+  obere Kante und das Bild klappt nach unten auf statt sich aus der Mitte zu öffnen.
+- **Der Mono-Preload ist nicht optional.** Ohne ihn wächst der Topbar-Kontaktblock beim
+  Schriftwechsel von 22 px auf 68 px und schiebt den Hero nach unten: CLS 0,094 statt 0.
+  Die reservierte Mindesthöhe allein genügt nicht, weil der Inhalt INNERHALB umbricht.
+- **`aria-label` gehört nicht auf ein `<span>` ohne Rolle** (axe: `aria-prohibited-attr`).
+  Der Wort-Splitter legt den Originaltext stattdessen als `.sr-only`-Knoten daneben.
+- **Kein `aria-label`, das den sichtbaren Text ersetzt** (axe: `label-content-name-mismatch`).
+  Beim Telefonlink ist die sichtbare Nummer der bessere zugängliche Name.
+- **`sizes` nach tatsächlicher Anzeigebreite setzen, nie pauschal `100vw`.** Der Browser
+  multipliziert selbst mit der Pixeldichte. Ein 44 px hohes Materialband lud sonst eine
+  263-KB-Datei; über alle Bilder machte das 1657 KB statt 879 KB aus.
+- **Überschriftengröße kommt aus einer Klasse, die Ebene aus der Struktur.**
+  Footer-Spalten sind `<h2 class="footer__h">` und trotzdem 0,72 rem groß. Umgekehrt
+  (kleine Ebene für kleine Optik) erzeugte auf jeder Seite H2→H4-Sprünge.
+- **Vor „fertig": Klassenabgleich fahren.** Alle `class="…"`-Werte aus dem Markup gegen CSS
+  und JS prüfen. So kam heraus, dass `.btn--clay` in 13 Dateien benutzt, aber nirgends
+  definiert war — sämtliche Haupt-CTAs waren ungestylt.
+- **Kompression ist Teil der Auslieferung, nicht des Codes.** `.htaccess` liegt bei.
+  Ohne sie: Performance 86 statt 95 bei identischem Code.
+
 ## 18. Änderungsprotokoll
 - **2026-07-21** — **Komplettbau v1.** Vollanalyse Live-Seite (21 URLs) + Referenz-Engine + Assets.
   Fonts (Bricolage/JetBrains Mono/Manrope self-hosted), 34 echte Bilder → WebP `‑1600/‑800` + Favicons +
@@ -328,3 +368,37 @@ erweitern statt parallele bauen → 4. Desktop+Mobile im selben Schritt → 5. B
 
 - **2026-07-21 · v6 (`?v=6`)** — Treibendes Blatt + Regen auf Nutzerwunsch **wieder komplett entfernt**
   (war nicht gemeint). Startseite zurück im cleanen v4-Editorial-Zustand; 0 Konsolenfehler.
+
+- **2026-07-27 · v7 „Schicht für Schicht" (`?v=7`, Branch `improvement/awwwards-motion-upgrade`).**
+  Vollaudit mit Playwright über 14 Seiten × 2 Viewports, danach Umbau. Vollständige Fassung:
+  `AUDIT-BEFORE-UPGRADE.md`, `CHANGELOG-AWWWARDS-UPGRADE.md`, `DESIGN-AND-MOTION-SYSTEM.md`.
+  **Kritisch behoben:** Hero-Container brach aus der `.wrap` aus (Flex→Grid, siehe §17) ·
+  Intro-Loader entfernt (verdeckte das LCP-Element >2,5 s) · JS-Seitenvorhang (480 ms
+  Verzögerung je Navigation) ersetzt durch die View-Transitions-API + Prefetch.
+  **Neu entdeckt:** `.btn--clay` und `.btn--ghost` standen in 13 Dateien im Markup, waren
+  aber nie im CSS definiert — alle Haupt-CTAs ungestylt. Ebenso `.cta-band__grid` und
+  `.mnav__cta`. Tote Regelblöcke entfernt.
+  **Accessibility:** Fokus-Trap für Mobile-Nav und Lightbox (existierte trotz §7 nicht),
+  `inert` für den Hintergrund, Dialogrollen, Überschriftenhierarchie auf allen 14 Seiten,
+  Kontraste (`--muted` 3,49→5,25 : 1, `--rust` 4,40→4,95 : 1), Touch-Ziele 44 px,
+  Sicherheitsnetz falls `main.js` ausfällt. **Lighthouse Accessibility 91→100.**
+  **Motion:** ein Satz Tokens für alle Dauern/Kurven · Signature Moment „Plan wird Garten"
+  (Vermessungslinien folgen exakt den Kanten des Fotos, viewBox = Bildformat) ·
+  Parallax-System in drei Tiefenstufen (vorher: null Parallax im gesamten Projekt) ·
+  Leistungs-Scrollytelling auch auf Touch · Reduced Motion als eigene, kürzere Fassung
+  statt `duration:0` · eigene Mobile-Regie.
+  **Performance (gzip, identische Bedingungen vorher/nachher):** CLS überall 0,12→0 ·
+  Startseite mobil 90→95, ueber-uns 81→97, gartengestaltung 87→98, referenzen 92→99 ·
+  Datenvolumen Startseite mobil 1657→879 KB (dreistufiges `srcset`, `sizes` nach echter
+  Anzeigebreite, eigene `-bg`-Varianten für die vier Hover-Hintergründe) · Layout-Thrashing
+  in der Scrollschleife beseitigt · `.htaccess` mit Kompression und Caching ergänzt.
+  **SEO:** BreadcrumbList auf 11 Seiten, `Service` auf den 4 Leistungsseiten,
+  `CollectionPage` auf Referenzen; strukturierte Daten 7/14 → 12/14. Kein `JobPosting`
+  (es gibt keine offenen Stellen), keine Bewertungen, keine Preise.
+  **QA:** eigene Abnahmesuite, **93/93 bestanden** — Konsole, Netzwerk, 41 interne Links
+  inkl. Anker, Fokus-Trap über 25 Tabs, Escape, Fokusrückgabe, Formulare, Filter, Lightbox,
+  Reduced Motion, 6 Viewports, Fokusring auf 30 Elementen.
+  **Offen:** Formular-Endpoint (weiterhin `mailto`, `SUBMIT_ENDPOINT` vorbereitet) ·
+  Startseite mobil LCP 2,9 s statt 2,5 s · Startseite bleibt 19,6 Bildschirmhöhen lang.
+  Merke: **Erst messen, dann urteilen.** Zwei der drei größten Funde (undefinierte
+  Button-Klassen, Flex-Kontext der `.wrap`) waren durch reine Codelektüre nicht sichtbar.

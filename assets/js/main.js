@@ -89,19 +89,30 @@
     if (el.children.length > 0) { el.classList.add("is-in"); return; } // inneres Markup (<em>) erhalten
     el.dataset.split = "1";
     var full = el.textContent.trim();
-    el.setAttribute("aria-label", full);
     el.textContent = "";
+
+    /* Der Originaltext bleibt als visuell verborgener Knoten erhalten und
+       traegt den zugaenglichen Namen. Frueher stand hier aria-label direkt
+       auf dem <span> — das ist ohne gueltige Rolle laut ARIA unzulaessig
+       (axe: aria-prohibited-attr) und wurde von Screenreadern ignoriert. */
+    var sr = document.createElement("span");
+    sr.className = "sr-only";
+    sr.textContent = full;
+    el.appendChild(sr);
+
+    var vis = document.createElement("span");
+    vis.setAttribute("aria-hidden", "true");
     full.split(/\s+/).forEach(function (w, i) {
       var outer = document.createElement("span");
       outer.className = "word";
-      outer.setAttribute("aria-hidden", "true");
       var inner = document.createElement("span");
       inner.style.setProperty("--wi", i);
       inner.textContent = w;
       outer.appendChild(inner);
-      el.appendChild(outer);
-      el.appendChild(document.createTextNode(" "));
+      vis.appendChild(outer);
+      vis.appendChild(document.createTextNode(" "));
     });
+    el.appendChild(vis);
   });
 
   var REVEAL_SEL = "[data-reveal],[data-stagger],.reveal-words,.tnode,.clip-reveal,.img-reveal";

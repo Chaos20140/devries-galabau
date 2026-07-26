@@ -1,0 +1,126 @@
+[
+  {
+    "page": "index.html",
+    "ff": "desktop",
+    "perf": 98,
+    "a11y": 100,
+    "bp": 100,
+    "seo": 100,
+    "lcp": "1.1 s",
+    "cls": "0",
+    "tbt": "0 ms",
+    "fcp": "0.3 s",
+    "si": "0.4 s",
+    "failedA11y": [],
+    "failedBp": [],
+    "failedSeo": [],
+    "opps": [
+      "Minify CSS: Est savings of 4 KiB",
+      "Minify JavaScript: Est savings of 4 KiB"
+    ]
+  },
+  {
+    "page": "index.html",
+    "ff": "mobile",
+    "perf": 95,
+    "a11y": 100,
+    "bp": 100,
+    "seo": 100,
+    "lcp": "2.9 s",
+    "cls": "0",
+    "tbt": "0 ms",
+    "fcp": "1.1 s",
+    "si": "1.4 s",
+    "failedA11y": [],
+    "failedBp": [],
+    "failedSeo": [],
+    "opps": [
+      "Minify CSS: Est savings of 4 KiB",
+      "Minify JavaScript: Est savings of 4 KiB"
+    ]
+  },
+  {
+    "page": "referenzen.html",
+    "ff": "desktop",
+    "perf": 99,
+    "a11y": 100,
+    "bp": 100,
+    "seo": 100,
+    "lcp": "0.9 s",
+    "cls": "0",
+    "tbt": "0 ms",
+    "fcp": "0.3 s",
+    "si": "0.3 s",
+    "failedA11y": [],
+    "failedBp": [],
+    "failedSeo": [],
+    "opps": [
+      "Minify CSS: Est savings of 4 KiB",
+      "Minify JavaScript: Est savings of 4 KiB",
+      "Reduce unused CSS: Est savings of 12 KiB"
+    ]
+  },
+  {
+    "page": "referenzen.html",
+    "ff": "mobile",
+    "perf": 93,
+    "a11y": 100,
+    "bp": 100,
+    "seo": 100,
+    "lcp": "3.2 s",
+    "cls": "0",
+    "tbt": "0 ms",
+    "fcp": "0.9 s",
+    "si": "0.9 s",
+    "failedA11y": [],
+    "failedBp": [],
+    "failedSeo": [],
+    "opps": [
+      "Minify CSS: Est savings of 4 KiB",
+      "Minify JavaScript: Est savings of 4 KiB",
+      "Reduce unused CSS: Est savings of 12 KiB"
+    ]
+  },
+  {
+    "page": "kontakt.html",
+    "ff": "desktop",
+    "perf": 100,
+    "a11y": 100,
+    "bp": 100,
+    "seo": 100,
+    "lcp": "0.4 s",
+    "cls": "0",
+    "tbt": "0 ms",
+    "fcp": "0.2 s",
+    "si": "0.3 s",
+    "failedA11y": [],
+    "failedBp": [],
+    "failedSeo": [],
+    "opps": [
+      "Minify CSS: Est savings of 4 KiB",
+      "Minify JavaScript: Est savings of 4 KiB",
+      "Reduce unused CSS: Est savings of 13 KiB"
+    ]
+  },
+  {
+    "page": "kontakt.html",
+    "ff": "mobile",
+    "perf": 100,
+    "a11y": 100,
+    "bp": 100,
+    "seo": 100,
+    "lcp": "1.9 s",
+    "cls": "0",
+    "tbt": "0 ms",
+    "fcp": "0.9 s",
+    "si": "1.0 s",
+    "failedA11y": [],
+    "failedBp": [],
+    "failedSeo": [],
+    "opps": [
+      "Minify CSS: Est savings of 4 KiB",
+      "Minify JavaScript: Est savings of 4 KiB",
+      "Reduce unused CSS: Est savings of 12 KiB"
+    ]
+  }
+]

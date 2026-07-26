@@ -28,6 +28,8 @@ window.__dvgFailsafe=setTimeout(function(){r.classList.add('motion-failed');},25
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png?v=1">
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/instrument-serif-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/manrope-latin.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="assets/fonts/jetbrains-mono-latin.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="assets/fonts/instrument-serif-italic-latin.woff2" crossorigin>
 <link rel="stylesheet" href="assets/css/style.css?v=7">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"Service","serviceType":"Gartenplanung","provider":{"@type":"LandscapingBusiness","name":"de Vries Galabau","telephone":"+4951531552","address":{"@type":"PostalAddress","streetAddress":"An den Flachsrotten 2","postalCode":"31020","addressLocality":"Salzhemmendorf","addressCountry":"DE"}},"areaServed":["Salzhemmendorf","Hameln","Hildesheim"],"description":"Individuelle Gartenplanung: persönliche Vor-Ort-Beratung, maßgeschneiderte Konzepte, detaillierte Zeichnungen und Betreuung von der ersten Skizze bis zur Umsetzung."}
@@ -43,8 +45,8 @@ window.__dvgFailsafe=setTimeout(function(){r.classList.add('motion-failed');},25
 <div class="topbar">
   <div class="wrap topbar__inner">
     <div class="topbar__contact">
-      <a href="tel:051531552" aria-label="Anrufen"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>05153 1552</a>
-      <a href="mailto:info@devries-galabau.de" aria-label="E-Mail schreiben"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/></svg>info@devries-galabau.de</a>
+      <a href="tel:051531552"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>05153 1552</a>
+      <a href="mailto:info@devries-galabau.de"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/></svg>info@devries-galabau.de</a>
       <span class="lbl">Mo–Fr 8–16 Uhr · Salzhemmendorf</span>
     </div>
     <div class="topbar__social">
@@ -56,7 +58,7 @@ window.__dvgFailsafe=setTimeout(function(){r.classList.add('motion-failed');},25
 
 <header class="nav" id="nav">
   <div class="wrap nav__inner">
-    <a class="brand" href="index.html" aria-label="de Vries Galabau – Startseite">
+    <a class="brand" href="index.html">
       <img class="brand__mark" src="assets/img/logo-galabau.webp" alt="" width="46" height="46">
       <span class="brand__name">de Vries<small>Garten &amp; Landschaftsbau</small></span>
     </a>
@@ -114,7 +116,7 @@ window.__dvgFailsafe=setTimeout(function(){r.classList.add('motion-failed');},25
     <h1 class="mt-s reveal-words">Gartenplanung – Ihr individueller Garten, perfekt durchdacht</h1>
     <p class="lead">Mit unserem Rundum-Service begleiten wir Sie durch den gesamten Prozess – von der Planung über die Umsetzung bis hin zur Neu- und Umgestaltung Ihres Gartens. Ob Sie einen komplett neuen Garten anlegen möchten oder einem bestehenden Garten frische Ideen verleihen wollen: Wir stehen Ihnen mit unserer Expertise zur Seite und sorgen dafür, dass Ihr Garten Ihren Vorstellungen entspricht.</p>
     <div class="phero__media" data-reveal="scale">
-      <img src="assets/img/ref-natursteinmauer-1600.webp" alt="Natursteinmauer im Garten – Ergebnis sorgfältiger Gartenplanung in Salzhemmendorf" width="1600" height="1200" fetchpriority="high">
+      <img src="assets/img/ref-natursteinmauer-1600.webp" srcset="assets/img/ref-natursteinmauer-800.webp 800w, assets/img/ref-natursteinmauer-1600.webp 1600w" sizes="(max-width: 1440px) 100vw, 1360px" alt="Natursteinmauer im Garten – Ergebnis sorgfältiger Gartenplanung in Salzhemmendorf" width="1600" height="1200" fetchpriority="high">
     </div>
   </div>
 </section>
@@ -136,7 +138,7 @@ window.__dvgFailsafe=setTimeout(function(){r.classList.add('motion-failed');},25
         </ul>
       </div>
       <div class="feature__media" data-reveal="right">
-        <img src="assets/img/gartenplan-zeichnung-800.webp" alt="Detaillierte Gartenplanung als Zeichnung – Wege, Beete und Flächen" width="800" height="549" loading="lazy">
+        <img src="assets/img/gartenplan-zeichnung-800.webp" srcset="assets/img/gartenplan-zeichnung-400.webp 400w, assets/img/gartenplan-zeichnung-800.webp 800w, assets/img/gartenplan-zeichnung-1600.webp 1600w" sizes="(max-width: 860px) 92vw, 46vw" alt="Detaillierte Gartenplanung als Zeichnung – Wege, Beete und Flächen" width="800" height="549" loading="lazy">
         <span class="media-tag">Ihr Gartenplan</span>
       </div>
     </div>
@@ -195,7 +197,7 @@ window.__dvgFailsafe=setTimeout(function(){r.classList.add('motion-failed');},25
         <p class="mt-s">Ob es um die richtige Materialwahl, die optimale Pflanzenauswahl oder andere gestalterische Fragen geht – unser Ziel ist es, Ihre Vorstellungen in die Realität umzusetzen und Ihren Garten zu einem einzigartigen Rückzugsort zu machen.</p>
       </div>
       <div class="feature__media" data-reveal="left">
-        <img src="assets/img/bepflanzung-natur-800.webp" alt="Naturnahe Bepflanzung nach individuellem Gartenkonzept" width="800" height="600" loading="lazy">
+        <img src="assets/img/bepflanzung-natur-800.webp" srcset="assets/img/bepflanzung-natur-400.webp 400w, assets/img/bepflanzung-natur-800.webp 800w, assets/img/bepflanzung-natur-1600.webp 1600w" sizes="(max-width: 860px) 92vw, 46vw" alt="Naturnahe Bepflanzung nach individuellem Gartenkonzept" width="800" height="600" loading="lazy">
         <span class="media-tag">Material- &amp; Pflanzenauswahl</span>
       </div>
     </div>

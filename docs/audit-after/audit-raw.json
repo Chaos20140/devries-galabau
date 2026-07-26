@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-26T21:28:07.727Z",
+  "generatedAt": "2026-07-26T22:01:46.742Z",
   "pages": {
     "404": {
       "file": "404.html",
@@ -7,7 +7,7 @@
         "desktop": {
           "title": "Seite nicht gefunden (404) | de Vries Galabau",
           "desc": "Diese Seite konnte leider nicht gefunden werden. Nutzen Sie die Links zu Startseite, Leistungen, Referenzen und Kontakt von de Vries Galabau.",
-          "canonical": "https://devries-galabau.de/404.html",
+          "canonical": null,
           "robots": "noindex",
           "ogImage": "https://devries-galabau.de/assets/img/og-default.jpg",
           "jsonld": 0,
@@ -16,7 +16,7 @@
           "headings": [
             {
               "t": "H1",
-              "txt": "Diese Seite konnte nicht gefunden werden"
+              "txt": "Diese Seite konnte nicht gefunden werdenDiese Seite konnte nicht gefun"
             },
             {
               "t": "H2",
@@ -93,7 +93,7 @@
           "imgsEmptyAlt": 3,
           "imgsNoDim": 0,
           "imgsBroken": [],
-          "scrollHeight": 3237,
+          "scrollHeight": 3245,
           "screens": 3.6,
           "overflowX": false,
           "scrollW": 1440,
@@ -131,7 +131,7 @@
         "mobile": {
           "title": "Seite nicht gefunden (404) | de Vries Galabau",
           "desc": "Diese Seite konnte leider nicht gefunden werden. Nutzen Sie die Links zu Startseite, Leistungen, Referenzen und Kontakt von de Vries Galabau.",
-          "canonical": "https://devries-galabau.de/404.html",
+          "canonical": null,
           "robots": "noindex",
           "ogImage": "https://devries-galabau.de/assets/img/og-default.jpg",
           "jsonld": 0,
@@ -140,7 +140,7 @@
           "headings": [
             {
               "t": "H1",
-              "txt": "Diese Seite konnte nicht gefunden werden"
+              "txt": "Diese Seite konnte nicht gefunden werdenDiese Seite konnte nicht gefun"
             },
             {
               "t": "H2",
@@ -217,7 +217,7 @@
           "imgsEmptyAlt": 3,
           "imgsNoDim": 0,
           "imgsBroken": [],
-          "scrollHeight": 3987,
+          "scrollHeight": 3992,
           "screens": 4.7,
           "overflowX": false,
           "scrollW": 390,
@@ -269,7 +269,7 @@
           "headings": [
             {
               "t": "H1",
-              "txt": "Gärten, die mit dem  Leben wachsen."
+              "txt": "Gärten, die mit demGärten, die mit dem  Leben wachsen.Leben wachsen."
             },
             {
               "t": "H2",
@@ -362,36 +362,68 @@
               "natural": 1440
             },
             {
-              "src": "assets/img/gartengestaltung-natursteine-1600.webp",
-              "alt": "",
-              "w": "1600",
-              "h": "904",
+              "src": "assets/img/hofeinfahrt-pflaster-800.webp",
+              "alt": "Gepflasterte Hofeinfahrt mit klarer Linienführung",
+              "w": "800",
+              "h": "600",
               "loading": "lazy",
-              "natural": 1600
+              "natural": 180
             },
             {
-              "src": "assets/img/treppenbau-wasser-1600.webp",
-              "alt": "",
-              "w": "1600",
-              "h": "1200",
+              "src": "assets/img/ref-natursteinmauer-800.webp",
+              "alt": "Natursteinmauer in Nahaufnahme",
+              "w": "800",
+              "h": "600",
               "loading": "lazy",
-              "natural": 1600
+              "natural": 180
             },
             {
-              "src": "assets/img/gartenpflege-1600.webp",
-              "alt": "",
-              "w": "1280",
-              "h": "854",
+              "src": "assets/img/bepflanzung-pflanzen-800.webp",
+              "alt": "Staudenbepflanzung mit Gräsern und Blüten",
+              "w": "800",
+              "h": "1067",
               "loading": "lazy",
-              "natural": 1280
+              "natural": 180
             },
             {
-              "src": "assets/img/bepflanzung-pflanzen-1600.webp",
-              "alt": "",
-              "w": "1537",
-              "h": "2050",
+              "src": "assets/img/teichbau-800.webp",
+              "alt": "Teichbau in einem Garten",
+              "w": "780",
+              "h": "406",
               "loading": "lazy",
-              "natural": 1537
+              "natural": 180
+            },
+            {
+              "src": "assets/img/gartengestaltung-natursteine-bg-1400.webp",
+              "alt": "",
+              "w": "1400",
+              "h": "900",
+              "loading": "lazy",
+              "natural": 1400
+            },
+            {
+              "src": "assets/img/treppenbau-wasser-bg-1400.webp",
+              "alt": "",
+              "w": "1400",
+              "h": "900",
+              "loading": "lazy",
+              "natural": 1400
+            },
+            {
+              "src": "assets/img/gartenpflege-bg-1400.webp",
+              "alt": "",
+              "w": "1400",
+              "h": "900",
+              "loading": "lazy",
+              "natural": 1400
+            },
+            {
+              "src": "assets/img/bepflanzung-pflanzen-bg-1400.webp",
+              "alt": "",
+              "w": "1400",
+              "h": "900",
+              "loading": "lazy",
+              "natural": 1400
             },
             {
               "src": "assets/img/ref-vorgarten2-1600.webp",
@@ -399,7 +431,7 @@
               "w": "1600",
               "h": "1200",
               "loading": "lazy",
-              "natural": 1600
+              "natural": 1440
             },
             {
               "src": "assets/img/ref-natursteinmauer-800.webp",
@@ -523,7 +555,7 @@
             "assets/img/projekt-pflaster-einfahrt-800.webp",
             "assets/img/teichbau-1600.webp"
           ],
-          "scrollHeight": 17662,
+          "scrollHeight": 17670,
           "screens": 19.6,
           "overflowX": false,
           "scrollW": 1440,
@@ -532,74 +564,74 @@
             {
               "tag": "DIV",
               "cls": "marquee__track",
-              "left": -4,
-              "right": 5105
+              "left": -3,
+              "right": 5107
             },
             {
               "tag": "SPAN",
               "cls": "marquee__item",
-              "left": -4,
-              "right": 381
+              "left": -3,
+              "right": 382
             },
             {
               "tag": "SPAN",
               "cls": "marquee__item",
-              "left": 1337,
-              "right": 1585
+              "left": 1338,
+              "right": 1586
             },
             {
               "tag": "SPAN",
               "cls": "marquee__item marquee__item--o",
-              "left": 1585,
-              "right": 1889
+              "left": 1586,
+              "right": 1890
             },
             {
               "tag": "SPAN",
               "cls": "marquee__item",
-              "left": 1889,
-              "right": 2194
+              "left": 1890,
+              "right": 2196
             },
             {
               "tag": "SPAN",
               "cls": "marquee__item marquee__item--o",
-              "left": 2194,
-              "right": 2550
+              "left": 2196,
+              "right": 2552
             },
             {
               "tag": "SPAN",
               "cls": "marquee__item",
-              "left": 2550,
-              "right": 2935
+              "left": 2552,
+              "right": 2937
             },
             {
               "tag": "SPAN",
               "cls": "marquee__item marquee__item--o",
-              "left": 2935,
-              "right": 3215
+              "left": 2937,
+              "right": 3216
             },
             {
               "tag": "SPAN",
               "cls": "marquee__item",
-              "left": 3215,
-              "right": 3576
+              "left": 3216,
+              "right": 3577
             },
             {
               "tag": "SPAN",
               "cls": "marquee__item marquee__item--o",
-              "left": 3576,
-              "right": 3892
+              "left": 3577,
+              "right": 3893
             },
             {
               "tag": "SPAN",
               "cls": "marquee__item",
-              "left": 3892,
-              "right": 4140
+              "left": 3893,
+              "right": 4141
             },
             {
               "tag": "SPAN",
               "cls": "marquee__item marquee__item--o",
-              "left": 4140,
-              "right": 4444
+              "left": 4141,
+              "right": 4445
             }
           ],
           "links": [
@@ -651,7 +683,7 @@
           "headings": [
             {
               "t": "H1",
-              "txt": "Gärten, die mit dem  Leben wachsen."
+              "txt": "Gärten, die mit demGärten, die mit dem  Leben wachsen.Leben wachsen."
             },
             {
               "t": "H2",
@@ -744,44 +776,12 @@
               "natural": 390
             },
             {
-              "src": "assets/img/gartengestaltung-natursteine-1600.webp",
-              "alt": "",
-              "w": "1600",
-              "h": "904",
+              "src": "assets/img/hofeinfahrt-pflaster-800.webp",
+              "alt": "Gepflasterte Hofeinfahrt mit klarer Linienführung",
+              "w": "800",
+              "h": "600",
               "loading": "lazy",
-              "natural": 1600
-            },
-            {
-              "src": "assets/img/treppenbau-wasser-1600.webp",
-              "alt": "",
-              "w": "1600",
-              "h": "1200",
-              "loading": "lazy",
-              "natural": 1600
-            },
-            {
-              "src": "assets/img/gartenpflege-1600.webp",
-              "alt": "",
-              "w": "1280",
-              "h": "854",
-              "loading": "lazy",
-              "natural": 1280
-            },
-            {
-              "src": "assets/img/bepflanzung-pflanzen-1600.webp",
-              "alt": "",
-              "w": "1537",
-              "h": "2050",
-              "loading": "lazy",
-              "natural": 1537
-            },
-            {
-              "src": "assets/img/ref-vorgarten2-1600.webp",
-              "alt": "Fertig gestalteter Vorgarten in Salzhemmendorf mit Staudenbeet, Bestandsbaum und geschwungener Natursteineinfassung",
-              "w": "1600",
-              "h": "1200",
-              "loading": "lazy",
-              "natural": 1600
+              "natural": 180
             },
             {
               "src": "assets/img/ref-natursteinmauer-800.webp",
@@ -789,7 +789,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 0
+              "natural": 180
             },
             {
               "src": "assets/img/bepflanzung-pflanzen-800.webp",
@@ -797,7 +797,71 @@
               "w": "800",
               "h": "1067",
               "loading": "lazy",
-              "natural": 0
+              "natural": 180
+            },
+            {
+              "src": "assets/img/teichbau-800.webp",
+              "alt": "Teichbau in einem Garten",
+              "w": "780",
+              "h": "406",
+              "loading": "lazy",
+              "natural": 180
+            },
+            {
+              "src": "assets/img/gartengestaltung-natursteine-bg-1400.webp",
+              "alt": "",
+              "w": "1400",
+              "h": "900",
+              "loading": "lazy",
+              "natural": 340
+            },
+            {
+              "src": "assets/img/treppenbau-wasser-bg-1400.webp",
+              "alt": "",
+              "w": "1400",
+              "h": "900",
+              "loading": "lazy",
+              "natural": 340
+            },
+            {
+              "src": "assets/img/gartenpflege-bg-1400.webp",
+              "alt": "",
+              "w": "1400",
+              "h": "900",
+              "loading": "lazy",
+              "natural": 340
+            },
+            {
+              "src": "assets/img/bepflanzung-pflanzen-bg-1400.webp",
+              "alt": "",
+              "w": "1400",
+              "h": "900",
+              "loading": "lazy",
+              "natural": 340
+            },
+            {
+              "src": "assets/img/ref-vorgarten2-1600.webp",
+              "alt": "Fertig gestalteter Vorgarten in Salzhemmendorf mit Staudenbeet, Bestandsbaum und geschwungener Natursteineinfassung",
+              "w": "1600",
+              "h": "1200",
+              "loading": "lazy",
+              "natural": 390
+            },
+            {
+              "src": "assets/img/ref-natursteinmauer-800.webp",
+              "alt": "Natursteinmauer in Nahaufnahme",
+              "w": "800",
+              "h": "600",
+              "loading": "lazy",
+              "natural": 179
+            },
+            {
+              "src": "assets/img/bepflanzung-pflanzen-800.webp",
+              "alt": "Staudenbepflanzung mit Gräsern und Blüten",
+              "w": "800",
+              "h": "1067",
+              "loading": "lazy",
+              "natural": 179
             },
             {
               "src": "assets/img/ref-holzterrasse-800.webp",
@@ -813,7 +877,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 0
+              "natural": 179
             },
             {
               "src": "assets/img/teichbau-800.webp",
@@ -821,7 +885,7 @@
               "w": "780",
               "h": "406",
               "loading": "lazy",
-              "natural": 0
+              "natural": 179
             },
             {
               "src": "assets/img/projekt-beeteinfassung-800.webp",
@@ -892,11 +956,7 @@
           "imgsEmptyAlt": 7,
           "imgsNoDim": 0,
           "imgsBroken": [
-            "assets/img/ref-natursteinmauer-800.webp",
-            "assets/img/bepflanzung-pflanzen-800.webp",
             "assets/img/ref-holzterrasse-800.webp",
-            "assets/img/hofeinfahrt-pflaster-800.webp",
-            "assets/img/teichbau-800.webp",
             "assets/img/projekt-beeteinfassung-800.webp",
             "assets/img/projekt-naturnahe-1-800.webp",
             "assets/img/projekt-naturnahe-2-800.webp",
@@ -905,8 +965,8 @@
             "assets/img/projekt-pflaster-einfahrt-800.webp",
             "assets/img/teichbau-1600.webp"
           ],
-          "scrollHeight": 11665,
-          "screens": 13.8,
+          "scrollHeight": 11935,
+          "screens": 14.1,
           "overflowX": false,
           "scrollW": 390,
           "clientW": 390,
@@ -914,74 +974,74 @@
             {
               "tag": "DIV",
               "cls": "marquee__track",
-              "left": -3,
-              "right": 3046
+              "left": -1,
+              "right": 3047
             },
             {
               "tag": "SPAN",
               "cls": "marquee__item",
-              "left": -3,
-              "right": 220
-            },
-            {
-              "tag": "SPAN",
-              "cls": "marquee__item",
-              "left": 391,
-              "right": 602
+              "left": -1,
+              "right": 221
             },
             {
               "tag": "SPAN",
               "cls": "marquee__item marquee__item--o",
-              "left": 602,
-              "right": 791
+              "left": 221,
+              "right": 392
             },
             {
               "tag": "SPAN",
               "cls": "marquee__item",
-              "left": 791,
-              "right": 947
+              "left": 392,
+              "right": 603
             },
             {
               "tag": "SPAN",
               "cls": "marquee__item marquee__item--o",
-              "left": 947,
-              "right": 1129
+              "left": 603,
+              "right": 792
             },
             {
               "tag": "SPAN",
               "cls": "marquee__item",
-              "left": 1129,
-              "right": 1313
+              "left": 792,
+              "right": 948
             },
             {
               "tag": "SPAN",
               "cls": "marquee__item marquee__item--o",
-              "left": 1313,
-              "right": 1522
+              "left": 948,
+              "right": 1131
             },
             {
               "tag": "SPAN",
               "cls": "marquee__item",
-              "left": 1522,
-              "right": 1744
+              "left": 1131,
+              "right": 1315
             },
             {
               "tag": "SPAN",
               "cls": "marquee__item marquee__item--o",
-              "left": 1744,
-              "right": 1915
+              "left": 1315,
+              "right": 1523
             },
             {
               "tag": "SPAN",
               "cls": "marquee__item",
-              "left": 1915,
-              "right": 2126
+              "left": 1523,
+              "right": 1746
             },
             {
               "tag": "SPAN",
               "cls": "marquee__item marquee__item--o",
-              "left": 2126,
-              "right": 2315
+              "left": 1746,
+              "right": 1917
+            },
+            {
+              "tag": "SPAN",
+              "cls": "marquee__item",
+              "left": 1917,
+              "right": 2127
             }
           ],
           "links": [
@@ -1032,13 +1092,13 @@
           "canonical": "https://devries-galabau.de/ueber-uns.html",
           "robots": "index, follow, max-image-preview:large",
           "ogImage": "https://devries-galabau.de/assets/img/og-default.jpg",
-          "jsonld": 1,
+          "jsonld": 2,
           "lang": "de",
           "h1count": 1,
           "headings": [
             {
               "t": "H1",
-              "txt": "Wir gestalten Lebensräume im Grünen"
+              "txt": "Wir gestalten Lebensräume im GrünenWir gestalten Lebensräume im Grünen"
             },
             {
               "t": "H2",
@@ -1108,7 +1168,7 @@
               "w": "1920",
               "h": "1080",
               "loading": null,
-              "natural": 1920
+              "natural": 1728
             },
             {
               "src": "assets/img/vorgarten-beet-natursteinmauer-800.webp",
@@ -1116,7 +1176,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 800
+              "natural": 662
             },
             {
               "src": "assets/img/bepflanzung-pflanzen-800.webp",
@@ -1124,7 +1184,7 @@
               "w": "800",
               "h": "1066",
               "loading": "lazy",
-              "natural": 800
+              "natural": 662
             },
             {
               "src": "assets/img/logo-galabau.webp",
@@ -1139,7 +1199,7 @@
           "imgsEmptyAlt": 3,
           "imgsNoDim": 0,
           "imgsBroken": [],
-          "scrollHeight": 5858,
+          "scrollHeight": 5866,
           "screens": 6.5,
           "overflowX": false,
           "scrollW": 1440,
@@ -1180,13 +1240,13 @@
           "canonical": "https://devries-galabau.de/ueber-uns.html",
           "robots": "index, follow, max-image-preview:large",
           "ogImage": "https://devries-galabau.de/assets/img/og-default.jpg",
-          "jsonld": 1,
+          "jsonld": 2,
           "lang": "de",
           "h1count": 1,
           "headings": [
             {
               "t": "H1",
-              "txt": "Wir gestalten Lebensräume im Grünen"
+              "txt": "Wir gestalten Lebensräume im GrünenWir gestalten Lebensräume im Grünen"
             },
             {
               "t": "H2",
@@ -1256,7 +1316,7 @@
               "w": "1920",
               "h": "1080",
               "loading": null,
-              "natural": 1920
+              "natural": 390
             },
             {
               "src": "assets/img/vorgarten-beet-natursteinmauer-800.webp",
@@ -1264,7 +1324,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 800
+              "natural": 358
             },
             {
               "src": "assets/img/bepflanzung-pflanzen-800.webp",
@@ -1272,7 +1332,7 @@
               "w": "800",
               "h": "1066",
               "loading": "lazy",
-              "natural": 0
+              "natural": 358
             },
             {
               "src": "assets/img/logo-galabau.webp",
@@ -1286,10 +1346,8 @@
           "imgsNoAlt": 0,
           "imgsEmptyAlt": 3,
           "imgsNoDim": 0,
-          "imgsBroken": [
-            "assets/img/bepflanzung-pflanzen-800.webp"
-          ],
-          "scrollHeight": 5960,
+          "imgsBroken": [],
+          "scrollHeight": 5965,
           "screens": 7.1,
           "overflowX": false,
           "scrollW": 390,
@@ -1335,13 +1393,13 @@
           "canonical": "https://devries-galabau.de/gartengestaltung.html",
           "robots": "index, follow, max-image-preview:large",
           "ogImage": "https://devries-galabau.de/assets/img/og-default.jpg",
-          "jsonld": 1,
+          "jsonld": 2,
           "lang": "de",
           "h1count": 1,
           "headings": [
             {
               "t": "H1",
-              "txt": "Gartengestaltung – individuell & mit Liebe zum Detail"
+              "txt": "Gartengestaltung – individuell & mit Liebe zum DetailGartengestaltung "
             },
             {
               "t": "H2",
@@ -1403,7 +1461,7 @@
               "w": "1600",
               "h": "904",
               "loading": null,
-              "natural": 1600
+              "natural": 1440
             },
             {
               "src": "assets/img/treppenbau-wasser-800.webp",
@@ -1411,7 +1469,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 800
+              "natural": 662
             },
             {
               "src": "assets/img/ref-gabionen-800.webp",
@@ -1419,7 +1477,7 @@
               "w": "800",
               "h": "560",
               "loading": "lazy",
-              "natural": 800
+              "natural": 662
             },
             {
               "src": "assets/img/logo-galabau.webp",
@@ -1434,7 +1492,7 @@
           "imgsEmptyAlt": 3,
           "imgsNoDim": 0,
           "imgsBroken": [],
-          "scrollHeight": 6290,
+          "scrollHeight": 6298,
           "screens": 7,
           "overflowX": false,
           "scrollW": 1440,
@@ -1475,13 +1533,13 @@
           "canonical": "https://devries-galabau.de/gartengestaltung.html",
           "robots": "index, follow, max-image-preview:large",
           "ogImage": "https://devries-galabau.de/assets/img/og-default.jpg",
-          "jsonld": 1,
+          "jsonld": 2,
           "lang": "de",
           "h1count": 1,
           "headings": [
             {
               "t": "H1",
-              "txt": "Gartengestaltung – individuell & mit Liebe zum Detail"
+              "txt": "Gartengestaltung – individuell & mit Liebe zum DetailGartengestaltung "
             },
             {
               "t": "H2",
@@ -1543,7 +1601,7 @@
               "w": "1600",
               "h": "904",
               "loading": null,
-              "natural": 1600
+              "natural": 390
             },
             {
               "src": "assets/img/treppenbau-wasser-800.webp",
@@ -1551,7 +1609,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 800
+              "natural": 358
             },
             {
               "src": "assets/img/ref-gabionen-800.webp",
@@ -1559,7 +1617,7 @@
               "w": "800",
               "h": "560",
               "loading": "lazy",
-              "natural": 800
+              "natural": 358
             },
             {
               "src": "assets/img/logo-galabau.webp",
@@ -1574,7 +1632,7 @@
           "imgsEmptyAlt": 3,
           "imgsNoDim": 0,
           "imgsBroken": [],
-          "scrollHeight": 6354,
+          "scrollHeight": 6359,
           "screens": 7.5,
           "overflowX": false,
           "scrollW": 390,
@@ -1620,13 +1678,13 @@
           "canonical": "https://devries-galabau.de/gartenplanung.html",
           "robots": "index, follow, max-image-preview:large",
           "ogImage": "https://devries-galabau.de/assets/img/og-default.jpg",
-          "jsonld": 1,
+          "jsonld": 2,
           "lang": "de",
           "h1count": 1,
           "headings": [
             {
               "t": "H1",
-              "txt": "Gartenplanung – Ihr individueller Garten, perfekt durchdacht"
+              "txt": "Gartenplanung – Ihr individueller Garten, perfekt durchdachtGartenplan"
             },
             {
               "t": "H2",
@@ -1637,19 +1695,19 @@
               "txt": "In vier Schritten zu Ihrem Garten"
             },
             {
-              "t": "H4",
+              "t": "H3",
               "txt": "Vor-Ort-Beratung"
             },
             {
-              "t": "H4",
+              "t": "H3",
               "txt": "Skizze & Entwurf"
             },
             {
-              "t": "H4",
+              "t": "H3",
               "txt": "Materialauswahl & Abstimmung"
             },
             {
-              "t": "H4",
+              "t": "H3",
               "txt": "Umsetzung"
             },
             {
@@ -1696,7 +1754,7 @@
               "w": "1600",
               "h": "1200",
               "loading": null,
-              "natural": 1600
+              "natural": 1440
             },
             {
               "src": "assets/img/gartenplan-zeichnung-800.webp",
@@ -1704,7 +1762,7 @@
               "w": "800",
               "h": "549",
               "loading": "lazy",
-              "natural": 800
+              "natural": 662
             },
             {
               "src": "assets/img/bepflanzung-natur-800.webp",
@@ -1729,7 +1787,7 @@
           "imgsBroken": [
             "assets/img/bepflanzung-natur-800.webp"
           ],
-          "scrollHeight": 6744,
+          "scrollHeight": 6752,
           "screens": 7.5,
           "overflowX": false,
           "scrollW": 1440,
@@ -1770,13 +1828,13 @@
           "canonical": "https://devries-galabau.de/gartenplanung.html",
           "robots": "index, follow, max-image-preview:large",
           "ogImage": "https://devries-galabau.de/assets/img/og-default.jpg",
-          "jsonld": 1,
+          "jsonld": 2,
           "lang": "de",
           "h1count": 1,
           "headings": [
             {
               "t": "H1",
-              "txt": "Gartenplanung – Ihr individueller Garten, perfekt durchdacht"
+              "txt": "Gartenplanung – Ihr individueller Garten, perfekt durchdachtGartenplan"
             },
             {
               "t": "H2",
@@ -1787,19 +1845,19 @@
               "txt": "In vier Schritten zu Ihrem Garten"
             },
             {
-              "t": "H4",
+              "t": "H3",
               "txt": "Vor-Ort-Beratung"
             },
             {
-              "t": "H4",
+              "t": "H3",
               "txt": "Skizze & Entwurf"
             },
             {
-              "t": "H4",
+              "t": "H3",
               "txt": "Materialauswahl & Abstimmung"
             },
             {
-              "t": "H4",
+              "t": "H3",
               "txt": "Umsetzung"
             },
             {
@@ -1846,7 +1904,7 @@
               "w": "1600",
               "h": "1200",
               "loading": null,
-              "natural": 1600
+              "natural": 390
             },
             {
               "src": "assets/img/gartenplan-zeichnung-800.webp",
@@ -1854,7 +1912,7 @@
               "w": "800",
               "h": "549",
               "loading": "lazy",
-              "natural": 800
+              "natural": 358
             },
             {
               "src": "assets/img/bepflanzung-natur-800.webp",
@@ -1879,8 +1937,8 @@
           "imgsBroken": [
             "assets/img/bepflanzung-natur-800.webp"
           ],
-          "scrollHeight": 6278,
-          "screens": 7.4,
+          "scrollHeight": 6352,
+          "screens": 7.5,
           "overflowX": false,
           "scrollW": 390,
           "clientW": 390,
@@ -1925,13 +1983,13 @@
           "canonical": "https://devries-galabau.de/gartenpflege.html",
           "robots": "index, follow, max-image-preview:large",
           "ogImage": "https://devries-galabau.de/assets/img/og-default.jpg",
-          "jsonld": 1,
+          "jsonld": 2,
           "lang": "de",
           "h1count": 1,
           "headings": [
             {
               "t": "H1",
-              "txt": "Gartenpflege – für dauerhaft schöne Gärten"
+              "txt": "Gartenpflege – für dauerhaft schöne GärtenGartenpflege – für dauerhaft"
             },
             {
               "t": "H2",
@@ -2005,7 +2063,7 @@
               "w": "1280",
               "h": "854",
               "loading": null,
-              "natural": 1280
+              "natural": 1152
             },
             {
               "src": "assets/img/teichbau-800.webp",
@@ -2013,7 +2071,7 @@
               "w": "780",
               "h": "406",
               "loading": "lazy",
-              "natural": 780
+              "natural": 645
             },
             {
               "src": "assets/img/bepflanzung-pflanzen-800.webp",
@@ -2021,7 +2079,7 @@
               "w": "800",
               "h": "1066",
               "loading": "lazy",
-              "natural": 800
+              "natural": 662
             },
             {
               "src": "assets/img/logo-galabau.webp",
@@ -2036,7 +2094,7 @@
           "imgsEmptyAlt": 3,
           "imgsNoDim": 0,
           "imgsBroken": [],
-          "scrollHeight": 7398,
+          "scrollHeight": 7406,
           "screens": 8.2,
           "overflowX": false,
           "scrollW": 1440,
@@ -2077,13 +2135,13 @@
           "canonical": "https://devries-galabau.de/gartenpflege.html",
           "robots": "index, follow, max-image-preview:large",
           "ogImage": "https://devries-galabau.de/assets/img/og-default.jpg",
-          "jsonld": 1,
+          "jsonld": 2,
           "lang": "de",
           "h1count": 1,
           "headings": [
             {
               "t": "H1",
-              "txt": "Gartenpflege – für dauerhaft schöne Gärten"
+              "txt": "Gartenpflege – für dauerhaft schöne GärtenGartenpflege – für dauerhaft"
             },
             {
               "t": "H2",
@@ -2157,7 +2215,7 @@
               "w": "1280",
               "h": "854",
               "loading": null,
-              "natural": 1280
+              "natural": 390
             },
             {
               "src": "assets/img/teichbau-800.webp",
@@ -2165,7 +2223,7 @@
               "w": "780",
               "h": "406",
               "loading": "lazy",
-              "natural": 780
+              "natural": 358
             },
             {
               "src": "assets/img/bepflanzung-pflanzen-800.webp",
@@ -2173,7 +2231,7 @@
               "w": "800",
               "h": "1066",
               "loading": "lazy",
-              "natural": 0
+              "natural": 358
             },
             {
               "src": "assets/img/logo-galabau.webp",
@@ -2187,10 +2245,8 @@
           "imgsNoAlt": 0,
           "imgsEmptyAlt": 3,
           "imgsNoDim": 0,
-          "imgsBroken": [
-            "assets/img/bepflanzung-pflanzen-800.webp"
-          ],
-          "scrollHeight": 7066,
+          "imgsBroken": [],
+          "scrollHeight": 7071,
           "screens": 8.4,
           "overflowX": false,
           "scrollW": 390,
@@ -2236,13 +2292,13 @@
           "canonical": "https://devries-galabau.de/bepflanzung.html",
           "robots": "index, follow, max-image-preview:large",
           "ogImage": "https://devries-galabau.de/assets/img/og-default.jpg",
-          "jsonld": 1,
+          "jsonld": 2,
           "lang": "de",
           "h1count": 1,
           "headings": [
             {
               "t": "H1",
-              "txt": "Vielfältige Bepflanzungen für Ihren Garten"
+              "txt": "Vielfältige Bepflanzungen für Ihren GartenVielfältige Bepflanzungen fü"
             },
             {
               "t": "H2",
@@ -2324,7 +2380,7 @@
               "w": "970",
               "h": "650",
               "loading": null,
-              "natural": 970
+              "natural": 873
             },
             {
               "src": "assets/img/bepflanzung-pflanzen-800.webp",
@@ -2332,7 +2388,7 @@
               "w": "800",
               "h": "1066",
               "loading": "lazy",
-              "natural": 800
+              "natural": 662
             },
             {
               "src": "assets/img/bepflanzung-natur-800.webp",
@@ -2340,7 +2396,7 @@
               "w": "780",
               "h": "406",
               "loading": "lazy",
-              "natural": 780
+              "natural": 645
             },
             {
               "src": "assets/img/ref-vorgarten2-800.webp",
@@ -2348,7 +2404,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 0
+              "natural": 662
             },
             {
               "src": "assets/img/logo-galabau.webp",
@@ -2362,10 +2418,8 @@
           "imgsNoAlt": 0,
           "imgsEmptyAlt": 3,
           "imgsNoDim": 0,
-          "imgsBroken": [
-            "assets/img/ref-vorgarten2-800.webp"
-          ],
-          "scrollHeight": 7335,
+          "imgsBroken": [],
+          "scrollHeight": 7343,
           "screens": 8.2,
           "overflowX": false,
           "scrollW": 1440,
@@ -2406,13 +2460,13 @@
           "canonical": "https://devries-galabau.de/bepflanzung.html",
           "robots": "index, follow, max-image-preview:large",
           "ogImage": "https://devries-galabau.de/assets/img/og-default.jpg",
-          "jsonld": 1,
+          "jsonld": 2,
           "lang": "de",
           "h1count": 1,
           "headings": [
             {
               "t": "H1",
-              "txt": "Vielfältige Bepflanzungen für Ihren Garten"
+              "txt": "Vielfältige Bepflanzungen für Ihren GartenVielfältige Bepflanzungen fü"
             },
             {
               "t": "H2",
@@ -2494,7 +2548,7 @@
               "w": "970",
               "h": "650",
               "loading": null,
-              "natural": 970
+              "natural": 390
             },
             {
               "src": "assets/img/bepflanzung-pflanzen-800.webp",
@@ -2502,7 +2556,7 @@
               "w": "800",
               "h": "1066",
               "loading": "lazy",
-              "natural": 800
+              "natural": 358
             },
             {
               "src": "assets/img/bepflanzung-natur-800.webp",
@@ -2510,7 +2564,7 @@
               "w": "780",
               "h": "406",
               "loading": "lazy",
-              "natural": 780
+              "natural": 358
             },
             {
               "src": "assets/img/ref-vorgarten2-800.webp",
@@ -2518,7 +2572,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 0
+              "natural": 358
             },
             {
               "src": "assets/img/logo-galabau.webp",
@@ -2532,10 +2586,8 @@
           "imgsNoAlt": 0,
           "imgsEmptyAlt": 3,
           "imgsNoDim": 0,
-          "imgsBroken": [
-            "assets/img/ref-vorgarten2-800.webp"
-          ],
-          "scrollHeight": 7400,
+          "imgsBroken": [],
+          "scrollHeight": 7404,
           "screens": 8.8,
           "overflowX": false,
           "scrollW": 390,
@@ -2581,7 +2633,7 @@
           "canonical": "https://devries-galabau.de/referenzen.html",
           "robots": "index, follow, max-image-preview:large",
           "ogImage": "https://devries-galabau.de/assets/img/og-default.jpg",
-          "jsonld": 0,
+          "jsonld": 1,
           "lang": "de",
           "h1count": 1,
           "headings": [
@@ -2591,7 +2643,7 @@
             },
             {
               "t": "H2",
-              "txt": "Aus der Werkstatt in den Garten"
+              "txt": "Aus der Werkstatt in den GartenAus der Werkstatt in den Garten"
             },
             {
               "t": "H3",
@@ -2661,7 +2713,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 800
+              "natural": 446
             },
             {
               "src": "assets/img/ref-mauergestaltung-800.webp",
@@ -2669,7 +2721,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 800
+              "natural": 446
             },
             {
               "src": "assets/img/ref-vorgarten-800.webp",
@@ -2677,7 +2729,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 800
+              "natural": 446
             },
             {
               "src": "assets/img/ref-pflasterflaeche-800.webp",
@@ -2685,7 +2737,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 800
+              "natural": 446
             },
             {
               "src": "assets/img/ref-holzterrasse-800.webp",
@@ -2693,7 +2745,7 @@
               "w": "800",
               "h": "597",
               "loading": "lazy",
-              "natural": 800
+              "natural": 446
             },
             {
               "src": "assets/img/ref-vorgartenmauer-800.webp",
@@ -2701,7 +2753,7 @@
               "w": "800",
               "h": "597",
               "loading": "lazy",
-              "natural": 800
+              "natural": 446
             },
             {
               "src": "assets/img/projekt-naturnahe-1-800.webp",
@@ -2709,7 +2761,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 800
+              "natural": 446
             },
             {
               "src": "assets/img/ref-formschnitte-800.webp",
@@ -2717,7 +2769,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 800
+              "natural": 446
             },
             {
               "src": "assets/img/ref-gabionen-800.webp",
@@ -2725,7 +2777,7 @@
               "w": "800",
               "h": "560",
               "loading": "lazy",
-              "natural": 800
+              "natural": 446
             },
             {
               "src": "assets/img/projekt-klinkermauer-800.webp",
@@ -2733,7 +2785,7 @@
               "w": "800",
               "h": "452",
               "loading": "lazy",
-              "natural": 800
+              "natural": 446
             },
             {
               "src": "assets/img/projekt-beeteinfassung-800.webp",
@@ -2741,7 +2793,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 800
+              "natural": 446
             },
             {
               "src": "assets/img/projekt-pflaster-einfahrt-800.webp",
@@ -2749,7 +2801,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 800
+              "natural": 446
             },
             {
               "src": "assets/img/ref-terrassenbau-800.webp",
@@ -2757,7 +2809,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 800
+              "natural": 446
             },
             {
               "src": "assets/img/projekt-insektenhotel-800.webp",
@@ -2765,7 +2817,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 800
+              "natural": 446
             },
             {
               "src": "assets/img/hofeinfahrt-pflaster-800.webp",
@@ -2773,7 +2825,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 800
+              "natural": 446
             },
             {
               "src": "assets/img/ref-vorgarten2-800.webp",
@@ -2781,7 +2833,7 @@
               "w": "800",
               "h": "597",
               "loading": "lazy",
-              "natural": 800
+              "natural": 446
             },
             {
               "src": "assets/img/teichbau-800.webp",
@@ -2789,7 +2841,7 @@
               "w": "780",
               "h": "406",
               "loading": "lazy",
-              "natural": 780
+              "natural": 435
             },
             {
               "src": "assets/img/projekt-beeteinfassung-800.webp",
@@ -2797,7 +2849,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 800
+              "natural": 662
             },
             {
               "src": "assets/img/projekt-naturnahe-1-800.webp",
@@ -2805,7 +2857,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 800
+              "natural": 662
             },
             {
               "src": "assets/img/projekt-naturnahe-2-800.webp",
@@ -2821,7 +2873,7 @@
               "w": "800",
               "h": "452",
               "loading": "lazy",
-              "natural": 800
+              "natural": 662
             },
             {
               "src": "assets/img/projekt-insektenhotel-800.webp",
@@ -2829,7 +2881,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 800
+              "natural": 662
             },
             {
               "src": "assets/img/projekt-pflaster-einfahrt-800.webp",
@@ -2837,7 +2889,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 800
+              "natural": 662
             },
             {
               "src": "",
@@ -2863,7 +2915,7 @@
             "assets/img/projekt-naturnahe-2-800.webp",
             ""
           ],
-          "scrollHeight": 9256,
+          "scrollHeight": 9295,
           "screens": 10.3,
           "overflowX": false,
           "scrollW": 1440,
@@ -2904,7 +2956,7 @@
           "canonical": "https://devries-galabau.de/referenzen.html",
           "robots": "index, follow, max-image-preview:large",
           "ogImage": "https://devries-galabau.de/assets/img/og-default.jpg",
-          "jsonld": 0,
+          "jsonld": 1,
           "lang": "de",
           "h1count": 1,
           "headings": [
@@ -2914,7 +2966,7 @@
             },
             {
               "t": "H2",
-              "txt": "Aus der Werkstatt in den Garten"
+              "txt": "Aus der Werkstatt in den GartenAus der Werkstatt in den Garten"
             },
             {
               "t": "H3",
@@ -2984,7 +3036,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 800
+              "natural": 358
             },
             {
               "src": "assets/img/ref-mauergestaltung-800.webp",
@@ -2992,7 +3044,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 800
+              "natural": 358
             },
             {
               "src": "assets/img/ref-vorgarten-800.webp",
@@ -3000,7 +3052,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 800
+              "natural": 358
             },
             {
               "src": "assets/img/ref-pflasterflaeche-800.webp",
@@ -3008,7 +3060,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 800
+              "natural": 358
             },
             {
               "src": "assets/img/ref-holzterrasse-800.webp",
@@ -3016,7 +3068,7 @@
               "w": "800",
               "h": "597",
               "loading": "lazy",
-              "natural": 800
+              "natural": 358
             },
             {
               "src": "assets/img/ref-vorgartenmauer-800.webp",
@@ -3024,7 +3076,7 @@
               "w": "800",
               "h": "597",
               "loading": "lazy",
-              "natural": 800
+              "natural": 358
             },
             {
               "src": "assets/img/projekt-naturnahe-1-800.webp",
@@ -3032,7 +3084,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 800
+              "natural": 358
             },
             {
               "src": "assets/img/ref-formschnitte-800.webp",
@@ -3040,7 +3092,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 800
+              "natural": 358
             },
             {
               "src": "assets/img/ref-gabionen-800.webp",
@@ -3048,7 +3100,7 @@
               "w": "800",
               "h": "560",
               "loading": "lazy",
-              "natural": 800
+              "natural": 358
             },
             {
               "src": "assets/img/projekt-klinkermauer-800.webp",
@@ -3056,7 +3108,7 @@
               "w": "800",
               "h": "452",
               "loading": "lazy",
-              "natural": 800
+              "natural": 358
             },
             {
               "src": "assets/img/projekt-beeteinfassung-800.webp",
@@ -3064,7 +3116,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 800
+              "natural": 358
             },
             {
               "src": "assets/img/projekt-pflaster-einfahrt-800.webp",
@@ -3072,7 +3124,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 800
+              "natural": 358
             },
             {
               "src": "assets/img/ref-terrassenbau-800.webp",
@@ -3096,7 +3148,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 0
+              "natural": 358
             },
             {
               "src": "assets/img/ref-vorgarten2-800.webp",
@@ -3104,7 +3156,7 @@
               "w": "800",
               "h": "597",
               "loading": "lazy",
-              "natural": 0
+              "natural": 358
             },
             {
               "src": "assets/img/teichbau-800.webp",
@@ -3112,7 +3164,7 @@
               "w": "780",
               "h": "406",
               "loading": "lazy",
-              "natural": 780
+              "natural": 358
             },
             {
               "src": "assets/img/projekt-beeteinfassung-800.webp",
@@ -3120,7 +3172,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 800
+              "natural": 358
             },
             {
               "src": "assets/img/projekt-naturnahe-1-800.webp",
@@ -3128,7 +3180,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 800
+              "natural": 358
             },
             {
               "src": "assets/img/projekt-naturnahe-2-800.webp",
@@ -3144,7 +3196,7 @@
               "w": "800",
               "h": "452",
               "loading": "lazy",
-              "natural": 800
+              "natural": 358
             },
             {
               "src": "assets/img/projekt-insektenhotel-800.webp",
@@ -3160,7 +3212,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 800
+              "natural": 358
             },
             {
               "src": "",
@@ -3185,14 +3237,12 @@
           "imgsBroken": [
             "assets/img/ref-terrassenbau-800.webp",
             "assets/img/projekt-insektenhotel-800.webp",
-            "assets/img/hofeinfahrt-pflaster-800.webp",
-            "assets/img/ref-vorgarten2-800.webp",
             "assets/img/projekt-naturnahe-2-800.webp",
             "assets/img/projekt-insektenhotel-800.webp",
             ""
           ],
-          "scrollHeight": 12012,
-          "screens": 14.2,
+          "scrollHeight": 12096,
+          "screens": 14.3,
           "overflowX": false,
           "scrollW": 390,
           "clientW": 390,
@@ -3237,7 +3287,7 @@
           "canonical": "https://devries-galabau.de/kontakt.html",
           "robots": "index, follow, max-image-preview:large",
           "ogImage": "https://devries-galabau.de/assets/img/og-default.jpg",
-          "jsonld": 1,
+          "jsonld": 2,
           "lang": "de",
           "h1count": 1,
           "headings": [
@@ -3304,7 +3354,7 @@
           "imgsEmptyAlt": 3,
           "imgsNoDim": 0,
           "imgsBroken": [],
-          "scrollHeight": 3834,
+          "scrollHeight": 3893,
           "screens": 4.3,
           "overflowX": false,
           "scrollW": 1440,
@@ -3345,7 +3395,7 @@
           "canonical": "https://devries-galabau.de/kontakt.html",
           "robots": "index, follow, max-image-preview:large",
           "ogImage": "https://devries-galabau.de/assets/img/og-default.jpg",
-          "jsonld": 1,
+          "jsonld": 2,
           "lang": "de",
           "h1count": 1,
           "headings": [
@@ -3412,8 +3462,8 @@
           "imgsEmptyAlt": 3,
           "imgsNoDim": 0,
           "imgsBroken": [],
-          "scrollHeight": 3929,
-          "screens": 4.7,
+          "scrollHeight": 4055,
+          "screens": 4.8,
           "overflowX": false,
           "scrollW": 390,
           "clientW": 390,
@@ -3458,7 +3508,7 @@
           "canonical": "https://devries-galabau.de/anfrage.html",
           "robots": "index, follow, max-image-preview:large",
           "ogImage": "https://devries-galabau.de/assets/img/og-default.jpg",
-          "jsonld": 0,
+          "jsonld": 1,
           "lang": "de",
           "h1count": 1,
           "headings": [
@@ -3467,23 +3517,23 @@
               "txt": "Erzählen Sie uns von Ihrem Garten"
             },
             {
-              "t": "H3",
+              "t": "H2",
               "txt": "Handelt es sich um ein privates oder gewerbliches Projekt?"
             },
             {
-              "t": "H3",
+              "t": "H2",
               "txt": "In welchem Bereich benötigen Sie Unterstützung?"
             },
             {
-              "t": "H3",
+              "t": "H2",
               "txt": "Was genau soll gemacht werden?"
             },
             {
-              "t": "H3",
+              "t": "H2",
               "txt": "In welchem Zeitraum soll es umgesetzt werden?"
             },
             {
-              "t": "H3",
+              "t": "H2",
               "txt": "Wie erreichen wir Sie?"
             },
             {
@@ -3529,8 +3579,8 @@
           "imgsEmptyAlt": 3,
           "imgsNoDim": 0,
           "imgsBroken": [],
-          "scrollHeight": 2185,
-          "screens": 2.4,
+          "scrollHeight": 2223,
+          "screens": 2.5,
           "overflowX": false,
           "scrollW": 1440,
           "clientW": 1440,
@@ -3571,7 +3621,7 @@
           "canonical": "https://devries-galabau.de/anfrage.html",
           "robots": "index, follow, max-image-preview:large",
           "ogImage": "https://devries-galabau.de/assets/img/og-default.jpg",
-          "jsonld": 0,
+          "jsonld": 1,
           "lang": "de",
           "h1count": 1,
           "headings": [
@@ -3580,23 +3630,23 @@
               "txt": "Erzählen Sie uns von Ihrem Garten"
             },
             {
-              "t": "H3",
+              "t": "H2",
               "txt": "Handelt es sich um ein privates oder gewerbliches Projekt?"
             },
             {
-              "t": "H3",
+              "t": "H2",
               "txt": "In welchem Bereich benötigen Sie Unterstützung?"
             },
             {
-              "t": "H3",
+              "t": "H2",
               "txt": "Was genau soll gemacht werden?"
             },
             {
-              "t": "H3",
+              "t": "H2",
               "txt": "In welchem Zeitraum soll es umgesetzt werden?"
             },
             {
-              "t": "H3",
+              "t": "H2",
               "txt": "Wie erreichen wir Sie?"
             },
             {
@@ -3642,8 +3692,8 @@
           "imgsEmptyAlt": 3,
           "imgsNoDim": 0,
           "imgsBroken": [],
-          "scrollHeight": 2931,
-          "screens": 3.5,
+          "scrollHeight": 3014,
+          "screens": 3.6,
           "overflowX": false,
           "scrollW": 390,
           "clientW": 390,
@@ -3695,7 +3745,7 @@
           "headings": [
             {
               "t": "H1",
-              "txt": "Vielen Dank für Ihre Anfrage!"
+              "txt": "Vielen Dank für Ihre Anfrage!Vielen Dank für Ihre Anfrage!"
             },
             {
               "t": "H2",
@@ -3740,7 +3790,7 @@
           "imgsEmptyAlt": 3,
           "imgsNoDim": 0,
           "imgsBroken": [],
-          "scrollHeight": 1681,
+          "scrollHeight": 1689,
           "screens": 1.9,
           "overflowX": false,
           "scrollW": 1440,
@@ -3787,7 +3837,7 @@
           "headings": [
             {
               "t": "H1",
-              "txt": "Vielen Dank für Ihre Anfrage!"
+              "txt": "Vielen Dank für Ihre Anfrage!Vielen Dank für Ihre Anfrage!"
             },
             {
               "t": "H2",
@@ -3832,7 +3882,7 @@
           "imgsEmptyAlt": 3,
           "imgsNoDim": 0,
           "imgsBroken": [],
-          "scrollHeight": 2232,
+          "scrollHeight": 2236,
           "screens": 2.6,
           "overflowX": false,
           "scrollW": 390,
@@ -3878,13 +3928,13 @@
           "canonical": "https://devries-galabau.de/stellenangebote.html",
           "robots": "index, follow, max-image-preview:large",
           "ogImage": "https://devries-galabau.de/assets/img/og-default.jpg",
-          "jsonld": 0,
+          "jsonld": 1,
           "lang": "de",
           "h1count": 1,
           "headings": [
             {
               "t": "H1",
-              "txt": "Karriere bei de Vries Galabau"
+              "txt": "Karriere bei de Vries GalabauKarriere bei de Vries Galabau"
             },
             {
               "t": "H2",
@@ -3950,7 +4000,7 @@
               "w": "1600",
               "h": "1200",
               "loading": null,
-              "natural": 1600
+              "natural": 1440
             },
             {
               "src": "assets/img/projekt-naturnahe-1-800.webp",
@@ -3958,7 +4008,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 800
+              "natural": 662
             },
             {
               "src": "assets/img/logo-galabau.webp",
@@ -3973,7 +4023,7 @@
           "imgsEmptyAlt": 3,
           "imgsNoDim": 0,
           "imgsBroken": [],
-          "scrollHeight": 4816,
+          "scrollHeight": 4824,
           "screens": 5.4,
           "overflowX": false,
           "scrollW": 1440,
@@ -4015,13 +4065,13 @@
           "canonical": "https://devries-galabau.de/stellenangebote.html",
           "robots": "index, follow, max-image-preview:large",
           "ogImage": "https://devries-galabau.de/assets/img/og-default.jpg",
-          "jsonld": 0,
+          "jsonld": 1,
           "lang": "de",
           "h1count": 1,
           "headings": [
             {
               "t": "H1",
-              "txt": "Karriere bei de Vries Galabau"
+              "txt": "Karriere bei de Vries GalabauKarriere bei de Vries Galabau"
             },
             {
               "t": "H2",
@@ -4087,7 +4137,7 @@
               "w": "1600",
               "h": "1200",
               "loading": null,
-              "natural": 1600
+              "natural": 390
             },
             {
               "src": "assets/img/projekt-naturnahe-1-800.webp",
@@ -4095,7 +4145,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 800
+              "natural": 358
             },
             {
               "src": "assets/img/logo-galabau.webp",
@@ -4110,7 +4160,7 @@
           "imgsEmptyAlt": 3,
           "imgsNoDim": 0,
           "imgsBroken": [],
-          "scrollHeight": 4732,
+          "scrollHeight": 4737,
           "screens": 5.6,
           "overflowX": false,
           "scrollW": 390,
@@ -4157,13 +4207,13 @@
           "canonical": "https://devries-galabau.de/impressum.html",
           "robots": "index, follow, max-image-preview:large",
           "ogImage": "https://devries-galabau.de/assets/img/og-default.jpg",
-          "jsonld": 0,
+          "jsonld": 1,
           "lang": "de",
           "h1count": 1,
           "headings": [
             {
               "t": "H1",
-              "txt": "Impressum"
+              "txt": "ImpressumImpressum"
             },
             {
               "t": "H2",
@@ -4248,7 +4298,7 @@
           "imgsEmptyAlt": 3,
           "imgsNoDim": 0,
           "imgsBroken": [],
-          "scrollHeight": 4035,
+          "scrollHeight": 4043,
           "screens": 4.5,
           "overflowX": false,
           "scrollW": 1440,
@@ -4291,13 +4341,13 @@
           "canonical": "https://devries-galabau.de/impressum.html",
           "robots": "index, follow, max-image-preview:large",
           "ogImage": "https://devries-galabau.de/assets/img/og-default.jpg",
-          "jsonld": 0,
+          "jsonld": 1,
           "lang": "de",
           "h1count": 1,
           "headings": [
             {
               "t": "H1",
-              "txt": "Impressum"
+              "txt": "ImpressumImpressum"
             },
             {
               "t": "H2",
@@ -4382,7 +4432,7 @@
           "imgsEmptyAlt": 3,
           "imgsNoDim": 0,
           "imgsBroken": [],
-          "scrollHeight": 4994,
+          "scrollHeight": 4999,
           "screens": 5.9,
           "overflowX": false,
           "scrollW": 390,
@@ -4430,13 +4480,13 @@
           "canonical": "https://devries-galabau.de/datenschutz.html",
           "robots": "index, follow, max-image-preview:large",
           "ogImage": "https://devries-galabau.de/assets/img/og-default.jpg",
-          "jsonld": 0,
+          "jsonld": 1,
           "lang": "de",
           "h1count": 1,
           "headings": [
             {
               "t": "H1",
-              "txt": "Datenschutzerklärung"
+              "txt": "DatenschutzerklärungDatenschutzerklärung"
             },
             {
               "t": "H2",
@@ -4609,8 +4659,8 @@
           "imgsEmptyAlt": 3,
           "imgsNoDim": 0,
           "imgsBroken": [],
-          "scrollHeight": 14622,
-          "screens": 16.2,
+          "scrollHeight": 14630,
+          "screens": 16.3,
           "overflowX": false,
           "scrollW": 1440,
           "clientW": 1440,
@@ -4663,13 +4713,13 @@
           "canonical": "https://devries-galabau.de/datenschutz.html",
           "robots": "index, follow, max-image-preview:large",
           "ogImage": "https://devries-galabau.de/assets/img/og-default.jpg",
-          "jsonld": 0,
+          "jsonld": 1,
           "lang": "de",
           "h1count": 1,
           "headings": [
             {
               "t": "H1",
-              "txt": "Datenschutzerklärung"
+              "txt": "DatenschutzerklärungDatenschutzerklärung"
             },
             {
               "t": "H2",
@@ -4842,12 +4892,18 @@
           "imgsEmptyAlt": 3,
           "imgsNoDim": 0,
           "imgsBroken": [],
-          "scrollHeight": 22356,
+          "scrollHeight": 22361,
           "screens": 26.5,
           "overflowX": false,
           "scrollW": 390,
           "clientW": 390,
           "overflowEls": [
+            {
+              "tag": "SPAN",
+              "cls": "",
+              "left": 19,
+              "right": 414
+            },
             {
               "tag": "SPAN",
               "cls": "word",

@@ -1,0 +1,95 @@
+# de Vries Galabau — Apache-Konfiguration (Strato & vergleichbare Hoster)
+#
+# Warum diese Datei existiert:
+# Ohne Kompression liefert der Server style.css mit 62 KB statt 17 KB und
+# main.js mit 35 KB statt 11 KB aus. Gemessen mit Lighthouse (Mobil, Slow 4G,
+# 4x CPU-Drosselung) macht das auf der Startseite den Unterschied zwischen
+# Performance 86 und 95 — bei identischem Code.
+#
+# Für Netlify/Cloudflare Pages ist nichts zu tun, dort ist Kompression
+# standardmäßig aktiv (die vorhandene Datei _redirects gilt dort weiter).
+
+# ── Kompression ──────────────────────────────────────────────────────
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/css text/xml
+  AddOutputFilterByType DEFLATE application/javascript application/x-javascript
+  AddOutputFilterByType DEFLATE application/json application/xml
+  AddOutputFilterByType DEFLATE image/svg+xml
+  # Bereits komprimierte Formate nicht erneut packen
+  SetEnvIfNoCase Request_URI \.(?:gif|jpe?g|png|webp|avif|woff2?|zip|gz)$ no-gzip dont-vary
+</IfModule>
+
+<IfModule mod_brotli.c>
+  AddOutputFilterByType BROTLI_COMPRESS text/html text/plain text/css text/xml
+  AddOutputFilterByType BROTLI_COMPRESS application/javascript application/json application/xml
+  AddOutputFilterByType BROTLI_COMPRESS image/svg+xml
+</IfModule>
+
+# ── Caching ──────────────────────────────────────────────────────────
+# CSS und JS tragen einen Versionsparameter (?v=7) und dürfen deshalb lange
+# im Cache bleiben. HTML bewusst kurz, damit Inhaltsänderungen sofort greifen.
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css                 "access plus 1 year"
+  ExpiresByType application/javascript   "access plus 1 year"
+  ExpiresByType image/webp               "access plus 1 year"
+  ExpiresByType image/jpeg               "access plus 1 year"
+  ExpiresByType image/png                "access plus 1 year"
+  ExpiresByType font/woff2               "access plus 1 year"
+  ExpiresByType image/svg+xml            "access plus 1 month"
+  ExpiresByType text/html                "access plus 10 minutes"
+</IfModule>
+
+<IfModule mod_headers.c>
+  <FilesMatch "\.(css|js|webp|jpg|jpeg|png|woff2)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  <FilesMatch "\.html$">
+    Header set Cache-Control "public, max-age=600, must-revalidate"
+  </FilesMatch>
+  # Schriften werden mit crossorigin geladen (Preload) und brauchen CORS
+  <FilesMatch "\.woff2$">
+    Header set Access-Control-Allow-Origin "*"
+  </FilesMatch>
+  Header set X-Content-Type-Options "nosniff"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+  Header set Permissions-Policy "geolocation=(), microphone=(), camera=(), interest-cohort=()"
+  # HSTS erst aktivieren, wenn HTTPS dauerhaft läuft:
+  # Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+</IfModule>
+
+# ── Saubere URLs ─────────────────────────────────────────────────────
+Options -Indexes
+DirectoryIndex index.html
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # HTTPS erzwingen
+  RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https
+  RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+
+  # www entfernen (Kanonische Domain ohne www, passend zu den canonical-Tags)
+  RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+  RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
+
+  # Alte WordPress-Slugs — inhaltlich identisch zu _redirects (Netlify).
+  # Bei Änderungen BEIDE Dateien nachziehen.
+  RewriteRule ^kostenlose-anfrage/?$   /anfrage.html            [R=301,L]
+  RewriteRule ^startseite/?$           /                        [R=301,L]
+  RewriteRule ^blogs/?$                /referenzen.html         [R=301,L]
+  RewriteRule ^dankeseite/?$           /danke.html              [R=301,L]
+  RewriteRule ^gartengestaltung(/.*)?$ /gartengestaltung.html   [R=301,L]
+  RewriteRule ^gartenplanung(/.*)?$    /gartenplanung.html      [R=301,L]
+  RewriteRule ^gartenpflege(/.*)?$     /gartenpflege.html       [R=301,L]
+  RewriteRule ^bepflanzung(/.*)?$      /bepflanzung.html        [R=301,L]
+  RewriteRule ^referenzen(/.*)?$       /referenzen.html         [R=301,L]
+  RewriteRule ^kontakt(/.*)?$          /kontakt.html            [R=301,L]
+  RewriteRule ^ueber-uns(/.*)?$        /ueber-uns.html          [R=301,L]
+  RewriteRule ^impressum(/.*)?$        /impressum.html          [R=301,L]
+  RewriteRule ^datenschutz(/.*)?$      /datenschutz.html        [R=301,L]
+  RewriteRule ^stellenangebote(/.*)?$  /stellenangebote.html    [R=301,L]
+</IfModule>
+
+ErrorDocument 404 /404.html
