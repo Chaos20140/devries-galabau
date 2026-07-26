@@ -13,9 +13,9 @@ Jede Sektion der Startseite entspricht einer Schicht des Entstehungsprozesses:
 
 | Schicht | Sektion | Was sie zeigt |
 |---|---|---|
-| Der Ort | Hero | Ein fertiger Garten, ruhig, ohne Versprechen |
+| Der Ort | Hero | Ein fertiger Garten, ruhig, ohne Versprechen. Beim Weiterscrollen wächst das Bild langsam und dunkelt ab — man sinkt in die Seite hinein |
 | Die Haltung | Statement + Materialschichtung | Weg · Stein · Pflanze · Wasser als vier Bänder |
-| Das Handwerk | Leistungsindex | Vier Disziplinen, Bild wechselt mit der Zeile |
+| Das Handwerk | Leistungen (Scrollytelling) | Das Bild bleibt stehen, der Text läuft vorbei — vier Disziplinen auf dunklem Waldgrün |
 | **Der Übergang** | **Signature Moment** | **Planlinien zeichnen sich und lösen sich in das Foto auf** |
 | Das Material | Makro-Raster | Nahaufnahmen von Stein, Holz, Pflaster, Wasser |
 | Das Ergebnis | Filmstreifen | Sechs echte Projekte, horizontal |
@@ -219,6 +219,34 @@ Staudengruppe, Blühgruppe, Maßlinie über die Beetbreite.
 ⚠ `clipPath` muss mit `gsap.fromTo()` und **vier expliziten Werten auf beiden Seiten**
 animiert werden. Die CSS-Kurzform `inset(45%)` wird sonst als ein Wert gelesen, und das
 Bild klappt nur nach unten auf statt sich aus der Mitte zu öffnen.
+
+### 6.4b Leistungen — Sticky-Scrollytelling
+
+Die Bühne (Bild, Zähler, Fortschrittsbalken) klebt vertikal zentriert, die vier
+Schritte laufen daran vorbei. Der Schritt, der das mittlere Viewportband schneidet
+(`rootMargin: -48% 0 -48%`), führt: er wird voll deckend, seine Rust-Marke fährt aus,
+sein Bild zieht per `clip-path` von unten auf und skaliert von 1,06 auf 1.
+
+Bewusst per IntersectionObserver und nicht per Hover — der Vorgänger reagierte
+ausschließlich auf den Zeiger und war auf Touch vollständig funktionslos. Tastaturfokus
+auf einem der Links zieht das Bild ebenfalls mit.
+
+**Kontrast statt Kontrastarmut:** Inaktive Schritte werden nur auf 0,72 abgedunkelt, nicht
+auf die optisch reizvolleren 0,34. Auf `--forest #26361f` ergibt der Fließtext dann noch
+4,7 : 1 — bei 0,34 wären es rund 1,9 : 1 gewesen. Die Führung übernimmt zusätzlich die
+Rust-Marke, also nicht die Helligkeit allein.
+
+### 6.4c Galerie — editorialer Raster-Rhythmus
+
+Sechs-Spalten-Raster mit `grid-auto-flow: dense` und einem Muster über je sieben Elemente:
+zwei breite 4:3-Panels, drei hochformatige bzw. quadratische Einschübe, ein 16:9-Vollbild.
+Jedes Bild zieht beim Hereinscrollen per `clip-path` von unten auf.
+
+**⚠ Die Maske liegt auf dem `<img>`, nicht auf `.gitem`.** `clip-path: inset(0 0 100% 0)` auf
+dem *beobachteten* Element klippt es auf Höhe 0 — und der IntersectionObserver rechnet
+Clipping mit ein. Das Element meldet dann dauerhaft `intersectionRatio: 0` und kann sich
+nie selbst einblenden. Gemessen und verifiziert. `.clip-reveal` hatte dieselbe latente
+Falle und wurde ebenfalls auf das Kind umgestellt.
 
 ### 6.5 Mikrointeraktionen
 

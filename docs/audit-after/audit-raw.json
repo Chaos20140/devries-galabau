@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-26T22:01:46.742Z",
+  "generatedAt": "2026-07-26T22:53:32.586Z",
   "pages": {
     "404": {
       "file": "404.html",
@@ -93,8 +93,8 @@
           "imgsEmptyAlt": 3,
           "imgsNoDim": 0,
           "imgsBroken": [],
-          "scrollHeight": 3245,
-          "screens": 3.6,
+          "scrollHeight": 3522,
+          "screens": 3.9,
           "overflowX": false,
           "scrollW": 1440,
           "clientW": 1440,
@@ -120,10 +120,10 @@
             "https://www.andreasdevries.de/"
           ],
           "skipLink": true,
-          "cssVersion": "assets/css/style.css?v=7",
+          "cssVersion": "assets/css/style.css?v=9",
           "jsVersion": [
-            "assets/js/lenis.min.js?v=7",
-            "assets/js/main.js?v=7"
+            "assets/js/lenis.min.js?v=9",
+            "assets/js/main.js?v=9"
           ],
           "console": [],
           "networkFailures": []
@@ -217,8 +217,8 @@
           "imgsEmptyAlt": 3,
           "imgsNoDim": 0,
           "imgsBroken": [],
-          "scrollHeight": 3992,
-          "screens": 4.7,
+          "scrollHeight": 3614,
+          "screens": 4.3,
           "overflowX": false,
           "scrollW": 390,
           "clientW": 390,
@@ -244,10 +244,10 @@
             "https://www.andreasdevries.de/"
           ],
           "skipLink": true,
-          "cssVersion": "assets/css/style.css?v=7",
+          "cssVersion": "assets/css/style.css?v=9",
           "jsVersion": [
-            "assets/js/lenis.min.js?v=7",
-            "assets/js/main.js?v=7"
+            "assets/js/lenis.min.js?v=9",
+            "assets/js/main.js?v=9"
           ],
           "console": [],
           "networkFailures": []
@@ -277,7 +277,23 @@
             },
             {
               "t": "H2",
-              "txt": "Vier Disziplinen, ein Handwerk"
+              "txt": "Vier Disziplinen,ein Handwerk"
+            },
+            {
+              "t": "H3",
+              "txt": "Gartengestaltung"
+            },
+            {
+              "t": "H3",
+              "txt": "Gartenplanung"
+            },
+            {
+              "t": "H3",
+              "txt": "Gartenpflege"
+            },
+            {
+              "t": "H3",
+              "txt": "Bepflanzung"
             },
             {
               "t": "H2",
@@ -394,36 +410,36 @@
               "natural": 180
             },
             {
-              "src": "assets/img/gartengestaltung-natursteine-bg-1400.webp",
-              "alt": "",
-              "w": "1400",
-              "h": "900",
+              "src": "assets/img/gartengestaltung-natursteine-800.webp",
+              "alt": "Natursteinarbeiten in einem neu gestalteten Garten",
+              "w": "800",
+              "h": "452",
               "loading": "lazy",
-              "natural": 1400
+              "natural": 662
             },
             {
-              "src": "assets/img/treppenbau-wasser-bg-1400.webp",
-              "alt": "",
-              "w": "1400",
-              "h": "900",
+              "src": "assets/img/gartenplan-zeichnung-800.webp",
+              "alt": "Gartenplan als Handzeichnung mit Beeten und Wegeführung",
+              "w": "800",
+              "h": "600",
               "loading": "lazy",
-              "natural": 1400
+              "natural": 0
             },
             {
-              "src": "assets/img/gartenpflege-bg-1400.webp",
-              "alt": "",
-              "w": "1400",
-              "h": "900",
+              "src": "assets/img/gartenpflege-800.webp",
+              "alt": "Gepflegter Garten mit Formschnitt und sauberen Beetkanten",
+              "w": "800",
+              "h": "534",
               "loading": "lazy",
-              "natural": 1400
+              "natural": 0
             },
             {
-              "src": "assets/img/bepflanzung-pflanzen-bg-1400.webp",
-              "alt": "",
-              "w": "1400",
-              "h": "900",
+              "src": "assets/img/bepflanzung-pflanzen-800.webp",
+              "alt": "Staudenbepflanzung mit Gräsern und blühenden Stauden",
+              "w": "800",
+              "h": "1067",
               "loading": "lazy",
-              "natural": 1400
+              "natural": 0
             },
             {
               "src": "assets/img/ref-vorgarten2-1600.webp",
@@ -431,7 +447,7 @@
               "w": "1600",
               "h": "1200",
               "loading": "lazy",
-              "natural": 1440
+              "natural": 0
             },
             {
               "src": "assets/img/ref-natursteinmauer-800.webp",
@@ -539,9 +555,13 @@
             }
           ],
           "imgsNoAlt": 0,
-          "imgsEmptyAlt": 7,
+          "imgsEmptyAlt": 3,
           "imgsNoDim": 0,
           "imgsBroken": [
+            "assets/img/gartenplan-zeichnung-800.webp",
+            "assets/img/gartenpflege-800.webp",
+            "assets/img/bepflanzung-pflanzen-800.webp",
+            "assets/img/ref-vorgarten2-1600.webp",
             "assets/img/ref-natursteinmauer-800.webp",
             "assets/img/bepflanzung-pflanzen-800.webp",
             "assets/img/ref-holzterrasse-800.webp",
@@ -555,8 +575,8 @@
             "assets/img/projekt-pflaster-einfahrt-800.webp",
             "assets/img/teichbau-1600.webp"
           ],
-          "scrollHeight": 17670,
-          "screens": 19.6,
+          "scrollHeight": 19206,
+          "screens": 21.3,
           "overflowX": false,
           "scrollW": 1440,
           "clientW": 1440,
@@ -564,74 +584,74 @@
             {
               "tag": "DIV",
               "cls": "marquee__track",
-              "left": -3,
-              "right": 5107
+              "left": 0,
+              "right": 5110
             },
             {
               "tag": "SPAN",
               "cls": "marquee__item",
-              "left": -3,
-              "right": 382
-            },
-            {
-              "tag": "SPAN",
-              "cls": "marquee__item",
-              "left": 1338,
-              "right": 1586
+              "left": 1341,
+              "right": 1590
             },
             {
               "tag": "SPAN",
               "cls": "marquee__item marquee__item--o",
-              "left": 1586,
-              "right": 1890
+              "left": 1590,
+              "right": 1893
             },
             {
               "tag": "SPAN",
               "cls": "marquee__item",
-              "left": 1890,
-              "right": 2196
+              "left": 1893,
+              "right": 2199
             },
             {
               "tag": "SPAN",
               "cls": "marquee__item marquee__item--o",
-              "left": 2196,
-              "right": 2552
+              "left": 2199,
+              "right": 2555
             },
             {
               "tag": "SPAN",
               "cls": "marquee__item",
-              "left": 2552,
-              "right": 2937
+              "left": 2555,
+              "right": 2940
             },
             {
               "tag": "SPAN",
               "cls": "marquee__item marquee__item--o",
-              "left": 2937,
-              "right": 3216
+              "left": 2940,
+              "right": 3219
             },
             {
               "tag": "SPAN",
               "cls": "marquee__item",
-              "left": 3216,
-              "right": 3577
+              "left": 3219,
+              "right": 3580
             },
             {
               "tag": "SPAN",
               "cls": "marquee__item marquee__item--o",
-              "left": 3577,
-              "right": 3893
+              "left": 3580,
+              "right": 3896
             },
             {
               "tag": "SPAN",
               "cls": "marquee__item",
-              "left": 3893,
-              "right": 4141
+              "left": 3896,
+              "right": 4145
             },
             {
               "tag": "SPAN",
               "cls": "marquee__item marquee__item--o",
-              "left": 4141,
-              "right": 4445
+              "left": 4145,
+              "right": 4448
+            },
+            {
+              "tag": "SPAN",
+              "cls": "marquee__item",
+              "left": 4448,
+              "right": 4754
             }
           ],
           "links": [
@@ -661,12 +681,12 @@
             "https://www.andreasdevries.de/"
           ],
           "skipLink": true,
-          "cssVersion": "assets/css/style.css?v=7",
+          "cssVersion": "assets/css/style.css?v=9",
           "jsVersion": [
-            "assets/js/gsap.min.js?v=7",
-            "assets/js/ScrollTrigger.min.js?v=7",
-            "assets/js/lenis.min.js?v=7",
-            "assets/js/main.js?v=7"
+            "assets/js/gsap.min.js?v=9",
+            "assets/js/ScrollTrigger.min.js?v=9",
+            "assets/js/lenis.min.js?v=9",
+            "assets/js/main.js?v=9"
           ],
           "console": [],
           "networkFailures": []
@@ -691,7 +711,23 @@
             },
             {
               "t": "H2",
-              "txt": "Vier Disziplinen, ein Handwerk"
+              "txt": "Vier Disziplinen,ein Handwerk"
+            },
+            {
+              "t": "H3",
+              "txt": "Gartengestaltung"
+            },
+            {
+              "t": "H3",
+              "txt": "Gartenplanung"
+            },
+            {
+              "t": "H3",
+              "txt": "Gartenpflege"
+            },
+            {
+              "t": "H3",
+              "txt": "Bepflanzung"
             },
             {
               "t": "H2",
@@ -808,36 +844,36 @@
               "natural": 180
             },
             {
-              "src": "assets/img/gartengestaltung-natursteine-bg-1400.webp",
-              "alt": "",
-              "w": "1400",
-              "h": "900",
+              "src": "assets/img/gartengestaltung-natursteine-800.webp",
+              "alt": "Natursteinarbeiten in einem neu gestalteten Garten",
+              "w": "800",
+              "h": "452",
               "loading": "lazy",
-              "natural": 340
+              "natural": 358
             },
             {
-              "src": "assets/img/treppenbau-wasser-bg-1400.webp",
-              "alt": "",
-              "w": "1400",
-              "h": "900",
+              "src": "assets/img/gartenplan-zeichnung-800.webp",
+              "alt": "Gartenplan als Handzeichnung mit Beeten und Wegeführung",
+              "w": "800",
+              "h": "600",
               "loading": "lazy",
-              "natural": 340
+              "natural": 0
             },
             {
-              "src": "assets/img/gartenpflege-bg-1400.webp",
-              "alt": "",
-              "w": "1400",
-              "h": "900",
+              "src": "assets/img/gartenpflege-800.webp",
+              "alt": "Gepflegter Garten mit Formschnitt und sauberen Beetkanten",
+              "w": "800",
+              "h": "534",
               "loading": "lazy",
-              "natural": 340
+              "natural": 0
             },
             {
-              "src": "assets/img/bepflanzung-pflanzen-bg-1400.webp",
-              "alt": "",
-              "w": "1400",
-              "h": "900",
+              "src": "assets/img/bepflanzung-pflanzen-800.webp",
+              "alt": "Staudenbepflanzung mit Gräsern und blühenden Stauden",
+              "w": "800",
+              "h": "1067",
               "loading": "lazy",
-              "natural": 340
+              "natural": 358
             },
             {
               "src": "assets/img/ref-vorgarten2-1600.webp",
@@ -845,7 +881,7 @@
               "w": "1600",
               "h": "1200",
               "loading": "lazy",
-              "natural": 390
+              "natural": 0
             },
             {
               "src": "assets/img/ref-natursteinmauer-800.webp",
@@ -953,9 +989,12 @@
             }
           ],
           "imgsNoAlt": 0,
-          "imgsEmptyAlt": 7,
+          "imgsEmptyAlt": 3,
           "imgsNoDim": 0,
           "imgsBroken": [
+            "assets/img/gartenplan-zeichnung-800.webp",
+            "assets/img/gartenpflege-800.webp",
+            "assets/img/ref-vorgarten2-1600.webp",
             "assets/img/ref-holzterrasse-800.webp",
             "assets/img/projekt-beeteinfassung-800.webp",
             "assets/img/projekt-naturnahe-1-800.webp",
@@ -965,8 +1004,8 @@
             "assets/img/projekt-pflaster-einfahrt-800.webp",
             "assets/img/teichbau-1600.webp"
           ],
-          "scrollHeight": 11935,
-          "screens": 14.1,
+          "scrollHeight": 13504,
+          "screens": 16,
           "overflowX": false,
           "scrollW": 390,
           "clientW": 390,
@@ -1071,12 +1110,12 @@
             "https://www.andreasdevries.de/"
           ],
           "skipLink": true,
-          "cssVersion": "assets/css/style.css?v=7",
+          "cssVersion": "assets/css/style.css?v=9",
           "jsVersion": [
-            "assets/js/gsap.min.js?v=7",
-            "assets/js/ScrollTrigger.min.js?v=7",
-            "assets/js/lenis.min.js?v=7",
-            "assets/js/main.js?v=7"
+            "assets/js/gsap.min.js?v=9",
+            "assets/js/ScrollTrigger.min.js?v=9",
+            "assets/js/lenis.min.js?v=9",
+            "assets/js/main.js?v=9"
           ],
           "console": [],
           "networkFailures": []
@@ -1226,10 +1265,10 @@
             "https://www.andreasdevries.de/"
           ],
           "skipLink": true,
-          "cssVersion": "assets/css/style.css?v=7",
+          "cssVersion": "assets/css/style.css?v=9",
           "jsVersion": [
-            "assets/js/lenis.min.js?v=7",
-            "assets/js/main.js?v=7"
+            "assets/js/lenis.min.js?v=9",
+            "assets/js/main.js?v=9"
           ],
           "console": [],
           "networkFailures": []
@@ -1374,10 +1413,10 @@
             "https://www.andreasdevries.de/"
           ],
           "skipLink": true,
-          "cssVersion": "assets/css/style.css?v=7",
+          "cssVersion": "assets/css/style.css?v=9",
           "jsVersion": [
-            "assets/js/lenis.min.js?v=7",
-            "assets/js/main.js?v=7"
+            "assets/js/lenis.min.js?v=9",
+            "assets/js/main.js?v=9"
           ],
           "console": [],
           "networkFailures": []
@@ -1492,8 +1531,8 @@
           "imgsEmptyAlt": 3,
           "imgsNoDim": 0,
           "imgsBroken": [],
-          "scrollHeight": 6298,
-          "screens": 7,
+          "scrollHeight": 6439,
+          "screens": 7.2,
           "overflowX": false,
           "scrollW": 1440,
           "clientW": 1440,
@@ -1519,10 +1558,10 @@
             "https://www.andreasdevries.de/"
           ],
           "skipLink": true,
-          "cssVersion": "assets/css/style.css?v=7",
+          "cssVersion": "assets/css/style.css?v=9",
           "jsVersion": [
-            "assets/js/lenis.min.js?v=7",
-            "assets/js/main.js?v=7"
+            "assets/js/lenis.min.js?v=9",
+            "assets/js/main.js?v=9"
           ],
           "console": [],
           "networkFailures": []
@@ -1632,8 +1671,8 @@
           "imgsEmptyAlt": 3,
           "imgsNoDim": 0,
           "imgsBroken": [],
-          "scrollHeight": 6359,
-          "screens": 7.5,
+          "scrollHeight": 6253,
+          "screens": 7.4,
           "overflowX": false,
           "scrollW": 390,
           "clientW": 390,
@@ -1659,10 +1698,10 @@
             "https://www.andreasdevries.de/"
           ],
           "skipLink": true,
-          "cssVersion": "assets/css/style.css?v=7",
+          "cssVersion": "assets/css/style.css?v=9",
           "jsVersion": [
-            "assets/js/lenis.min.js?v=7",
-            "assets/js/main.js?v=7"
+            "assets/js/lenis.min.js?v=9",
+            "assets/js/main.js?v=9"
           ],
           "console": [],
           "networkFailures": []
@@ -1814,10 +1853,10 @@
             "https://www.andreasdevries.de/"
           ],
           "skipLink": true,
-          "cssVersion": "assets/css/style.css?v=7",
+          "cssVersion": "assets/css/style.css?v=9",
           "jsVersion": [
-            "assets/js/lenis.min.js?v=7",
-            "assets/js/main.js?v=7"
+            "assets/js/lenis.min.js?v=9",
+            "assets/js/main.js?v=9"
           ],
           "console": [],
           "networkFailures": []
@@ -1964,10 +2003,10 @@
             "https://www.andreasdevries.de/"
           ],
           "skipLink": true,
-          "cssVersion": "assets/css/style.css?v=7",
+          "cssVersion": "assets/css/style.css?v=9",
           "jsVersion": [
-            "assets/js/lenis.min.js?v=7",
-            "assets/js/main.js?v=7"
+            "assets/js/lenis.min.js?v=9",
+            "assets/js/main.js?v=9"
           ],
           "console": [],
           "networkFailures": []
@@ -2121,10 +2160,10 @@
             "https://www.andreasdevries.de/"
           ],
           "skipLink": true,
-          "cssVersion": "assets/css/style.css?v=7",
+          "cssVersion": "assets/css/style.css?v=9",
           "jsVersion": [
-            "assets/js/lenis.min.js?v=7",
-            "assets/js/main.js?v=7"
+            "assets/js/lenis.min.js?v=9",
+            "assets/js/main.js?v=9"
           ],
           "console": [],
           "networkFailures": []
@@ -2273,10 +2312,10 @@
             "https://www.andreasdevries.de/"
           ],
           "skipLink": true,
-          "cssVersion": "assets/css/style.css?v=7",
+          "cssVersion": "assets/css/style.css?v=9",
           "jsVersion": [
-            "assets/js/lenis.min.js?v=7",
-            "assets/js/main.js?v=7"
+            "assets/js/lenis.min.js?v=9",
+            "assets/js/main.js?v=9"
           ],
           "console": [],
           "networkFailures": []
@@ -2404,7 +2443,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 662
+              "natural": 0
             },
             {
               "src": "assets/img/logo-galabau.webp",
@@ -2418,7 +2457,9 @@
           "imgsNoAlt": 0,
           "imgsEmptyAlt": 3,
           "imgsNoDim": 0,
-          "imgsBroken": [],
+          "imgsBroken": [
+            "assets/img/ref-vorgarten2-800.webp"
+          ],
           "scrollHeight": 7343,
           "screens": 8.2,
           "overflowX": false,
@@ -2446,10 +2487,10 @@
             "https://www.andreasdevries.de/"
           ],
           "skipLink": true,
-          "cssVersion": "assets/css/style.css?v=7",
+          "cssVersion": "assets/css/style.css?v=9",
           "jsVersion": [
-            "assets/js/lenis.min.js?v=7",
-            "assets/js/main.js?v=7"
+            "assets/js/lenis.min.js?v=9",
+            "assets/js/main.js?v=9"
           ],
           "console": [],
           "networkFailures": []
@@ -2572,7 +2613,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 358
+              "natural": 0
             },
             {
               "src": "assets/img/logo-galabau.webp",
@@ -2586,7 +2627,9 @@
           "imgsNoAlt": 0,
           "imgsEmptyAlt": 3,
           "imgsNoDim": 0,
-          "imgsBroken": [],
+          "imgsBroken": [
+            "assets/img/ref-vorgarten2-800.webp"
+          ],
           "scrollHeight": 7404,
           "screens": 8.8,
           "overflowX": false,
@@ -2614,10 +2657,10 @@
             "https://www.andreasdevries.de/"
           ],
           "skipLink": true,
-          "cssVersion": "assets/css/style.css?v=7",
+          "cssVersion": "assets/css/style.css?v=9",
           "jsVersion": [
-            "assets/js/lenis.min.js?v=7",
-            "assets/js/main.js?v=7"
+            "assets/js/lenis.min.js?v=9",
+            "assets/js/main.js?v=9"
           ],
           "console": [],
           "networkFailures": []
@@ -2721,7 +2764,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 446
+              "natural": 0
             },
             {
               "src": "assets/img/ref-vorgarten-800.webp",
@@ -2729,7 +2772,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 446
+              "natural": 0
             },
             {
               "src": "assets/img/ref-pflasterflaeche-800.webp",
@@ -2737,7 +2780,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 446
+              "natural": 0
             },
             {
               "src": "assets/img/ref-holzterrasse-800.webp",
@@ -2745,7 +2788,7 @@
               "w": "800",
               "h": "597",
               "loading": "lazy",
-              "natural": 446
+              "natural": 0
             },
             {
               "src": "assets/img/ref-vorgartenmauer-800.webp",
@@ -2753,7 +2796,7 @@
               "w": "800",
               "h": "597",
               "loading": "lazy",
-              "natural": 446
+              "natural": 0
             },
             {
               "src": "assets/img/projekt-naturnahe-1-800.webp",
@@ -2761,7 +2804,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 446
+              "natural": 0
             },
             {
               "src": "assets/img/ref-formschnitte-800.webp",
@@ -2769,7 +2812,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 446
+              "natural": 0
             },
             {
               "src": "assets/img/ref-gabionen-800.webp",
@@ -2785,7 +2828,7 @@
               "w": "800",
               "h": "452",
               "loading": "lazy",
-              "natural": 446
+              "natural": 0
             },
             {
               "src": "assets/img/projekt-beeteinfassung-800.webp",
@@ -2793,7 +2836,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 446
+              "natural": 0
             },
             {
               "src": "assets/img/projekt-pflaster-einfahrt-800.webp",
@@ -2801,7 +2844,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 446
+              "natural": 0
             },
             {
               "src": "assets/img/ref-terrassenbau-800.webp",
@@ -2809,7 +2852,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 446
+              "natural": 0
             },
             {
               "src": "assets/img/projekt-insektenhotel-800.webp",
@@ -2817,7 +2860,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 446
+              "natural": 0
             },
             {
               "src": "assets/img/hofeinfahrt-pflaster-800.webp",
@@ -2833,7 +2876,7 @@
               "w": "800",
               "h": "597",
               "loading": "lazy",
-              "natural": 446
+              "natural": 0
             },
             {
               "src": "assets/img/teichbau-800.webp",
@@ -2849,7 +2892,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 662
+              "natural": 0
             },
             {
               "src": "assets/img/projekt-naturnahe-1-800.webp",
@@ -2857,7 +2900,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 662
+              "natural": 0
             },
             {
               "src": "assets/img/projekt-naturnahe-2-800.webp",
@@ -2873,7 +2916,7 @@
               "w": "800",
               "h": "452",
               "loading": "lazy",
-              "natural": 662
+              "natural": 0
             },
             {
               "src": "assets/img/projekt-insektenhotel-800.webp",
@@ -2881,7 +2924,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 662
+              "natural": 0
             },
             {
               "src": "assets/img/projekt-pflaster-einfahrt-800.webp",
@@ -2889,7 +2932,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 662
+              "natural": 0
             },
             {
               "src": "",
@@ -2912,11 +2955,29 @@
           "imgsEmptyAlt": 4,
           "imgsNoDim": 1,
           "imgsBroken": [
+            "assets/img/ref-mauergestaltung-800.webp",
+            "assets/img/ref-vorgarten-800.webp",
+            "assets/img/ref-pflasterflaeche-800.webp",
+            "assets/img/ref-holzterrasse-800.webp",
+            "assets/img/ref-vorgartenmauer-800.webp",
+            "assets/img/projekt-naturnahe-1-800.webp",
+            "assets/img/ref-formschnitte-800.webp",
+            "assets/img/projekt-klinkermauer-800.webp",
+            "assets/img/projekt-beeteinfassung-800.webp",
+            "assets/img/projekt-pflaster-einfahrt-800.webp",
+            "assets/img/ref-terrassenbau-800.webp",
+            "assets/img/projekt-insektenhotel-800.webp",
+            "assets/img/ref-vorgarten2-800.webp",
+            "assets/img/projekt-beeteinfassung-800.webp",
+            "assets/img/projekt-naturnahe-1-800.webp",
             "assets/img/projekt-naturnahe-2-800.webp",
+            "assets/img/projekt-klinkermauer-800.webp",
+            "assets/img/projekt-insektenhotel-800.webp",
+            "assets/img/projekt-pflaster-einfahrt-800.webp",
             ""
           ],
-          "scrollHeight": 9295,
-          "screens": 10.3,
+          "scrollHeight": 11736,
+          "screens": 13,
           "overflowX": false,
           "scrollW": 1440,
           "clientW": 1440,
@@ -2942,10 +3003,10 @@
             "https://www.andreasdevries.de/"
           ],
           "skipLink": true,
-          "cssVersion": "assets/css/style.css?v=7",
+          "cssVersion": "assets/css/style.css?v=9",
           "jsVersion": [
-            "assets/js/lenis.min.js?v=7",
-            "assets/js/main.js?v=7"
+            "assets/js/lenis.min.js?v=9",
+            "assets/js/main.js?v=9"
           ],
           "console": [],
           "networkFailures": []
@@ -3044,7 +3105,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 358
+              "natural": 0
             },
             {
               "src": "assets/img/ref-vorgarten-800.webp",
@@ -3052,7 +3113,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 358
+              "natural": 0
             },
             {
               "src": "assets/img/ref-pflasterflaeche-800.webp",
@@ -3060,7 +3121,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 358
+              "natural": 0
             },
             {
               "src": "assets/img/ref-holzterrasse-800.webp",
@@ -3068,7 +3129,7 @@
               "w": "800",
               "h": "597",
               "loading": "lazy",
-              "natural": 358
+              "natural": 0
             },
             {
               "src": "assets/img/ref-vorgartenmauer-800.webp",
@@ -3076,7 +3137,7 @@
               "w": "800",
               "h": "597",
               "loading": "lazy",
-              "natural": 358
+              "natural": 0
             },
             {
               "src": "assets/img/projekt-naturnahe-1-800.webp",
@@ -3084,7 +3145,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 358
+              "natural": 0
             },
             {
               "src": "assets/img/ref-formschnitte-800.webp",
@@ -3092,7 +3153,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 358
+              "natural": 0
             },
             {
               "src": "assets/img/ref-gabionen-800.webp",
@@ -3108,7 +3169,7 @@
               "w": "800",
               "h": "452",
               "loading": "lazy",
-              "natural": 358
+              "natural": 0
             },
             {
               "src": "assets/img/projekt-beeteinfassung-800.webp",
@@ -3116,7 +3177,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 358
+              "natural": 0
             },
             {
               "src": "assets/img/projekt-pflaster-einfahrt-800.webp",
@@ -3124,7 +3185,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 358
+              "natural": 0
             },
             {
               "src": "assets/img/ref-terrassenbau-800.webp",
@@ -3156,7 +3217,7 @@
               "w": "800",
               "h": "597",
               "loading": "lazy",
-              "natural": 358
+              "natural": 0
             },
             {
               "src": "assets/img/teichbau-800.webp",
@@ -3172,7 +3233,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 358
+              "natural": 0
             },
             {
               "src": "assets/img/projekt-naturnahe-1-800.webp",
@@ -3180,7 +3241,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 358
+              "natural": 0
             },
             {
               "src": "assets/img/projekt-naturnahe-2-800.webp",
@@ -3196,7 +3257,7 @@
               "w": "800",
               "h": "452",
               "loading": "lazy",
-              "natural": 358
+              "natural": 0
             },
             {
               "src": "assets/img/projekt-insektenhotel-800.webp",
@@ -3212,7 +3273,7 @@
               "w": "800",
               "h": "600",
               "loading": "lazy",
-              "natural": 358
+              "natural": 0
             },
             {
               "src": "",
@@ -3235,14 +3296,29 @@
           "imgsEmptyAlt": 4,
           "imgsNoDim": 1,
           "imgsBroken": [
+            "assets/img/ref-mauergestaltung-800.webp",
+            "assets/img/ref-vorgarten-800.webp",
+            "assets/img/ref-pflasterflaeche-800.webp",
+            "assets/img/ref-holzterrasse-800.webp",
+            "assets/img/ref-vorgartenmauer-800.webp",
+            "assets/img/projekt-naturnahe-1-800.webp",
+            "assets/img/ref-formschnitte-800.webp",
+            "assets/img/projekt-klinkermauer-800.webp",
+            "assets/img/projekt-beeteinfassung-800.webp",
+            "assets/img/projekt-pflaster-einfahrt-800.webp",
             "assets/img/ref-terrassenbau-800.webp",
             "assets/img/projekt-insektenhotel-800.webp",
+            "assets/img/ref-vorgarten2-800.webp",
+            "assets/img/projekt-beeteinfassung-800.webp",
+            "assets/img/projekt-naturnahe-1-800.webp",
             "assets/img/projekt-naturnahe-2-800.webp",
+            "assets/img/projekt-klinkermauer-800.webp",
             "assets/img/projekt-insektenhotel-800.webp",
+            "assets/img/projekt-pflaster-einfahrt-800.webp",
             ""
           ],
-          "scrollHeight": 12096,
-          "screens": 14.3,
+          "scrollHeight": 12248,
+          "screens": 14.5,
           "overflowX": false,
           "scrollW": 390,
           "clientW": 390,
@@ -3268,10 +3344,10 @@
             "https://www.andreasdevries.de/"
           ],
           "skipLink": true,
-          "cssVersion": "assets/css/style.css?v=7",
+          "cssVersion": "assets/css/style.css?v=9",
           "jsVersion": [
-            "assets/js/lenis.min.js?v=7",
-            "assets/js/main.js?v=7"
+            "assets/js/lenis.min.js?v=9",
+            "assets/js/main.js?v=9"
           ],
           "console": [],
           "networkFailures": []
@@ -3381,10 +3457,10 @@
             "https://www.andreasdevries.de/"
           ],
           "skipLink": true,
-          "cssVersion": "assets/css/style.css?v=7",
+          "cssVersion": "assets/css/style.css?v=9",
           "jsVersion": [
-            "assets/js/lenis.min.js?v=7",
-            "assets/js/main.js?v=7"
+            "assets/js/lenis.min.js?v=9",
+            "assets/js/main.js?v=9"
           ],
           "console": [],
           "networkFailures": []
@@ -3489,10 +3565,10 @@
             "https://www.andreasdevries.de/"
           ],
           "skipLink": true,
-          "cssVersion": "assets/css/style.css?v=7",
+          "cssVersion": "assets/css/style.css?v=9",
           "jsVersion": [
-            "assets/js/lenis.min.js?v=7",
-            "assets/js/main.js?v=7"
+            "assets/js/lenis.min.js?v=9",
+            "assets/js/main.js?v=9"
           ],
           "console": [],
           "networkFailures": []
@@ -3607,10 +3683,10 @@
             "#anfrageForm"
           ],
           "skipLink": true,
-          "cssVersion": "assets/css/style.css?v=7",
+          "cssVersion": "assets/css/style.css?v=9",
           "jsVersion": [
-            "assets/js/lenis.min.js?v=7",
-            "assets/js/main.js?v=7"
+            "assets/js/lenis.min.js?v=9",
+            "assets/js/main.js?v=9"
           ],
           "console": [],
           "networkFailures": []
@@ -3720,10 +3796,10 @@
             "#anfrageForm"
           ],
           "skipLink": true,
-          "cssVersion": "assets/css/style.css?v=7",
+          "cssVersion": "assets/css/style.css?v=9",
           "jsVersion": [
-            "assets/js/lenis.min.js?v=7",
-            "assets/js/main.js?v=7"
+            "assets/js/lenis.min.js?v=9",
+            "assets/js/main.js?v=9"
           ],
           "console": [],
           "networkFailures": []
@@ -3817,10 +3893,10 @@
             "https://www.andreasdevries.de/"
           ],
           "skipLink": true,
-          "cssVersion": "assets/css/style.css?v=7",
+          "cssVersion": "assets/css/style.css?v=9",
           "jsVersion": [
-            "assets/js/lenis.min.js?v=7",
-            "assets/js/main.js?v=7"
+            "assets/js/lenis.min.js?v=9",
+            "assets/js/main.js?v=9"
           ],
           "console": [],
           "networkFailures": []
@@ -3909,10 +3985,10 @@
             "https://www.andreasdevries.de/"
           ],
           "skipLink": true,
-          "cssVersion": "assets/css/style.css?v=7",
+          "cssVersion": "assets/css/style.css?v=9",
           "jsVersion": [
-            "assets/js/lenis.min.js?v=7",
-            "assets/js/main.js?v=7"
+            "assets/js/lenis.min.js?v=9",
+            "assets/js/main.js?v=9"
           ],
           "console": [],
           "networkFailures": []
@@ -4051,10 +4127,10 @@
             "https://www.andreasdevries.de/"
           ],
           "skipLink": true,
-          "cssVersion": "assets/css/style.css?v=7",
+          "cssVersion": "assets/css/style.css?v=9",
           "jsVersion": [
-            "assets/js/lenis.min.js?v=7",
-            "assets/js/main.js?v=7"
+            "assets/js/lenis.min.js?v=9",
+            "assets/js/main.js?v=9"
           ],
           "console": [],
           "networkFailures": []
@@ -4188,10 +4264,10 @@
             "https://www.andreasdevries.de/"
           ],
           "skipLink": true,
-          "cssVersion": "assets/css/style.css?v=7",
+          "cssVersion": "assets/css/style.css?v=9",
           "jsVersion": [
-            "assets/js/lenis.min.js?v=7",
-            "assets/js/main.js?v=7"
+            "assets/js/lenis.min.js?v=9",
+            "assets/js/main.js?v=9"
           ],
           "console": [],
           "networkFailures": []
@@ -4327,10 +4403,10 @@
             "https://www.andreasdevries.de/"
           ],
           "skipLink": true,
-          "cssVersion": "assets/css/style.css?v=7",
+          "cssVersion": "assets/css/style.css?v=9",
           "jsVersion": [
-            "assets/js/lenis.min.js?v=7",
-            "assets/js/main.js?v=7"
+            "assets/js/lenis.min.js?v=9",
+            "assets/js/main.js?v=9"
           ],
           "console": [],
           "networkFailures": []
@@ -4461,10 +4537,10 @@
             "https://www.andreasdevries.de/"
           ],
           "skipLink": true,
-          "cssVersion": "assets/css/style.css?v=7",
+          "cssVersion": "assets/css/style.css?v=9",
           "jsVersion": [
-            "assets/js/lenis.min.js?v=7",
-            "assets/js/main.js?v=7"
+            "assets/js/lenis.min.js?v=9",
+            "assets/js/main.js?v=9"
           ],
           "console": [],
           "networkFailures": []
@@ -4699,10 +4775,10 @@
             "https://www.andreasdevries.de/"
           ],
           "skipLink": true,
-          "cssVersion": "assets/css/style.css?v=7",
+          "cssVersion": "assets/css/style.css?v=9",
           "jsVersion": [
-            "assets/js/lenis.min.js?v=7",
-            "assets/js/main.js?v=7"
+            "assets/js/lenis.min.js?v=9",
+            "assets/js/main.js?v=9"
           ],
           "console": [],
           "networkFailures": []
@@ -4951,10 +5027,10 @@
             "https://www.andreasdevries.de/"
           ],
           "skipLink": true,
-          "cssVersion": "assets/css/style.css?v=7",
+          "cssVersion": "assets/css/style.css?v=9",
           "jsVersion": [
-            "assets/js/lenis.min.js?v=7",
-            "assets/js/main.js?v=7"
+            "assets/js/lenis.min.js?v=9",
+            "assets/js/main.js?v=9"
           ],
           "console": [],
           "networkFailures": []

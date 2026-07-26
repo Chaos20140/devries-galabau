@@ -8,6 +8,41 @@
 
 ---
 
+## Nachtrag: Gestalterische Überarbeitung (v9)
+
+Die erste Runde hat repariert und poliert, aber die Sektionen strukturell so gelassen,
+wie sie waren. Auf den berechtigten Einwand hin nachgeholt:
+
+**Leistungen — vom Hover-Index zum Sticky-Scrollytelling.**
+Der bisherige Index reagierte ausschließlich auf den Zeiger; auf Touch passierte nichts,
+und die Beschreibungen waren dort sogar per `display:none` ausgeblendet. Jetzt: Bild bleibt
+stehen, Text läuft vorbei, jede Disziplin mit eigener Bühne, Materialschlagworten, Nummer,
+Zähler und Fortschrittsbalken. Gesteuert per IntersectionObserver — Maus, Touch und
+Tastatur verhalten sich identisch. Die Sektion steht auf dunklem Waldgrün (`--forest`)
+und ist die einzige Stelle, an der die Marke ins Grün geht.
+
+**Galerie — vom gleichförmigen Masonry zum editorialen Raster.**
+Vorher drei CSS-Spalten, alle Bilder gleich breit, Reihenfolge vom Umbruch bestimmt.
+Jetzt ein Sechs-Spalten-Raster mit bewusstem Rhythmus aus breiten Panels, hochformatigen
+Einschüben und einem Vollbild alle sieben Elemente; jedes Bild zieht per Maske auf.
+
+**Hero — Auftakt und Tiefe.**
+Gestaffelter Einlauf beim Laden (Kicker → Headline → Lead → Buttons → Scroll-Hinweis) als
+reine CSS-Animation, damit er nicht auf JavaScript wartet. Beim Weiterscrollen wächst das
+Bild auf 1,12, eine dunkle Ebene zieht auf 0,55 auf und der Text driftet mit — der Eindruck,
+in die Seite hineinzusinken. Dazu eine feine Vignette als Vordergrundebene.
+
+**Dabei gefunden:** `clip-path: inset(0 0 100% 0)` auf einem vom IntersectionObserver
+beobachteten Element klippt es auf Höhe 0; der Observer rechnet Clipping mit ein und meldet
+dauerhaft Ratio 0. Das Element kann sich nie selbst einblenden. Betraf die neue Galerie und
+latent auch die bestehende `.clip-reveal`-Klasse. Beide klippen jetzt ein Kindelement.
+
+**Ebenfalls nachgeholt:** `gsap.matchMedia()` statt einmaliger Breakpoint-Abfrage beim
+Filmstreifen (überlebt jetzt Größenänderungen und räumt Listener auf) — ein Hinweis aus dem
+`gsap-scrolltrigger`-Skill, den ich beim ersten Durchgang nicht gelesen hatte.
+
+---
+
 ## Behobene Fehler
 
 ### Kritisch
@@ -296,7 +331,7 @@ Prüfung des Fokusrings auf 30 Elementen.
    müssen als HTTP-Header kommen; GitHub Pages erlaubt keine eigenen Header. Die `.htaccess`
    setzt beides, sobald auf Strato/Apache umgezogen wird. Risiko gering — die Seite hat
    keine angemeldeten Aktionen.
-4. **Startseite bleibt mit 19,6 Bildschirmhöhen lang.** Der gepinnte Filmstreifen belegt
+4. **Startseite ist auf 21,3 Bildschirmhöhen gewachsen** (vorher 19,6). Das Sticky-Scrollytelling der Leistungen braucht Scrollstrecke, um zu erzählen — der Zugewinn an Inhalt rechtfertigt sie aus meiner Sicht, aber wer kürzen will, setzt hier und beim Filmstreifen an. Der gepinnte Filmstreifen belegt
    davon rund 3730 px. Das ist für eine horizontale Projektgalerie vertretbar, aber wer
    die Seite weiter straffen will, kürzt zuerst hier.
 5. **AVIF** wurde nicht ergänzt. WebP deckt alle Zielbrowser ab; nach der

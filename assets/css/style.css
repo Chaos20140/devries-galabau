@@ -247,6 +247,26 @@ main{display:block;}
 .chapter__scroll{position:absolute;left:var(--gut);bottom:2rem;z-index:2;font-family:var(--mono);font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.7);display:flex;align-items:center;gap:.8rem;}
 .chapter__scroll::after{content:"";width:34px;height:1px;background:rgba(255,255,255,.5);animation:scrollline 2.2s var(--ease) infinite;transform-origin:left;}
 @keyframes scrollline{0%,100%{transform:scaleX(.3);opacity:.4;}50%{transform:scaleX(1);opacity:1;}}
+
+/* §9b Hero-Auftakt und Tiefe ----------------------------------------
+   Gestaffelter Einlauf beim Laden — reine CSS-Animation, damit er nicht
+   auf JavaScript wartet und den LCP nicht verzoegert. Die Headline selbst
+   steigt ueber .reveal-words aus ihrer Maske auf. */
+.js .chapter__kicker,.js .chapter__lead,.js .chapter__actions,.js .chapter__scroll{
+  opacity:0;transform:translateY(16px);animation:heroIn .85s var(--ease-out) forwards;}
+.js .chapter__kicker{animation-delay:.06s;}
+.js .chapter__lead{animation-delay:.46s;}
+.js .chapter__actions{animation-delay:.60s;}
+.js .chapter__scroll{animation-delay:.82s;}
+@keyframes heroIn{to{opacity:1;transform:none;}}
+
+/* Zusaetzliche Abdunklungsebene: main.js blendet sie beim Verlassen des
+   Hero ein, waehrend das Bild langsam groesser wird. Das erzeugt die Tiefe,
+   ohne ein zweites Bild oder eine WebGL-Szene zu brauchen. */
+.chapter__fade{position:absolute;inset:0;z-index:-1;background:var(--pine);opacity:0;pointer-events:none;}
+/* Feine Vignette als Vordergrundebene — haelt den Blick in der Mitte. */
+.chapter__vig{position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 92% 78% at 50% 42%,transparent 45%,rgba(12,18,10,.42) 100%);}
 /* HUD-Koordinaten */
 .chapter__hud{position:absolute;inset:0;z-index:1;pointer-events:none;font-family:var(--mono);font-size:.64rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.6);}
 .chapter__hud span{position:absolute;} .chapter__hud .tr{top:7rem;right:var(--gut);} .chapter__hud .br{bottom:2rem;right:var(--gut);}
@@ -283,7 +303,94 @@ main{display:block;}
   .layerstack__band{height:34px;}
 }
 
-/* §11 Leistungen — Hover-Reveal-Index (statt Karten) ---------------- */
+/* §11 Leistungen — Sticky-Scrollytelling ============================
+   Das Bild bleibt stehen, der Text laeuft daran vorbei. Der aktive Schritt
+   wird von main.js per IntersectionObserver gesetzt — also von der
+   Scrollposition, nicht vom Zeiger. Dadurch funktioniert die Sektion mit
+   Maus, Touch und Tastatur identisch.                                  */
+.svcs{background:var(--forest);color:var(--paper);padding-block:var(--sp);position:relative;isolation:isolate;}
+.svcs h2,.svcs h3{color:var(--chalk);}
+.svcs .section__head{max-width:20ch;}
+.svcs__grid{display:grid;grid-template-columns:minmax(0,1.02fr) minmax(0,.98fr);
+  gap:clamp(2rem,1rem + 4vw,6rem);align-items:start;}
+
+/* --- Buehne (klebt) --- */
+.svcs__stage{position:sticky;top:calc((100svh - min(66svh,620px)) / 2);align-self:start;}
+.svcs__frame{position:relative;aspect-ratio:4/5;max-height:min(66svh,620px);
+  border-radius:var(--r-img);overflow:hidden;background:rgba(0,0,0,.25);}
+.svcs__shot{position:absolute;inset:0;margin:0;clip-path:inset(0 0 100% 0);
+  transition:clip-path var(--dur-l) var(--ease-out);}
+.svcs__shot img{width:100%;height:100%;object-fit:cover;transform:scale(1.06);
+  transition:transform var(--dur-xl) var(--ease-out);}
+.svcs__shot.is-active{clip-path:inset(0 0 0 0);}
+.svcs__shot.is-active img{transform:scale(1);}
+/* Feine Innenkante, damit das Bild nicht auf der Flaeche schwimmt */
+.svcs__frame::after{content:"";position:absolute;inset:0;pointer-events:none;
+  box-shadow:inset 0 0 0 1px rgba(241,238,228,.14);border-radius:inherit;}
+.svcs__meta{display:flex;align-items:center;gap:1.1rem;margin-top:1.1rem;}
+.svcs__count{font-family:var(--mono);font-size:.72rem;letter-spacing:.16em;
+  color:var(--rust-soft);font-variant-numeric:tabular-nums;flex:none;}
+.svcs__bar{flex:1;height:1px;background:rgba(241,238,228,.22);display:block;}
+.svcs__bar-fill{display:block;height:100%;background:var(--rust-soft);
+  transform:scaleX(0);transform-origin:left;transition:transform var(--dur-m) var(--ease-out);}
+
+/* --- Schritte (laufen vorbei) --- */
+.svcs__steps{list-style:none;margin:0;padding:0;}
+/* ⚠ Die Abdunklung inaktiver Schritte ist bewusst mild (0,72 statt der
+   optisch reizvolleren 0,34). Gerechnet auf --forest #26361f ergibt der
+   Fliesstext rgba(241,238,228,.88) bei 0,72 Deckkraft noch 4,7 : 1 und
+   bleibt damit ueber dem WCAG-AA-Minimum. Bei 0,34 waeren es rund 1,9 : 1
+   gewesen — der Text waere fuer viele schlicht nicht mehr lesbar, obwohl
+   er weiterhin Inhalt traegt. Die Fuehrung uebernimmt zusaetzlich die
+   Rust-Marke am aktiven Schritt, nicht die Helligkeit allein. */
+.svcs__step{position:relative;padding-block:clamp(3rem,2rem + 8vh,7rem);
+  border-top:1px solid rgba(241,238,228,.16);
+  opacity:.72;transition:opacity var(--dur-m) var(--ease-out);}
+.svcs__step:first-child{border-top:none;padding-top:0;}
+.svcs__step.is-current{opacity:1;}
+/* Marke am aktiven Schritt: Information nicht nur ueber Helligkeit. */
+.svcs__step::before{content:"";position:absolute;left:calc(-1 * clamp(.9rem,.5rem + 1vw,1.6rem));
+  top:clamp(3rem,2rem + 8vh,7rem);width:2px;height:0;background:var(--rust-soft);
+  transition:height var(--dur-m) var(--ease-out);}
+.svcs__step:first-child::before{top:0;}
+.svcs__step.is-current::before{height:2.2rem;}
+.svcs__no{font-family:var(--mono);font-size:.72rem;letter-spacing:.18em;color:var(--rust-soft);}
+.svcs__name{font-family:var(--display);font-size:clamp(2rem,1.2rem + 3.4vw,4rem);
+  line-height:.98;margin-top:.7rem;}
+.svcs__desc{color:rgba(241,238,228,.88);margin-top:1.1rem;max-width:46ch;line-height:1.6;}
+.svcs__tags{list-style:none;display:flex;flex-wrap:wrap;gap:.45rem;margin:1.5rem 0 0;padding:0;}
+.svcs__tags li{font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;
+  color:rgba(241,238,228,.8);border:1px solid rgba(241,238,228,.24);
+  padding:.5em .9em;border-radius:999px;}
+.svcs__step .link-arrow{margin-top:1.6rem;color:var(--rust-soft);}
+.svcs .eyebrow--light{color:var(--rust-soft);}
+
+@media (max-width:860px){
+  /* Einspaltig: die Buehne klebt unter der Navigation, der Text laeuft darunter durch. */
+  .svcs__grid{grid-template-columns:1fr;gap:1.6rem;}
+  .svcs__stage{position:sticky;top:84px;z-index:2;
+    background:var(--forest);padding-bottom:.9rem;margin-inline:calc(-1 * var(--gut));
+    padding-inline:var(--gut);}
+  .svcs__frame{aspect-ratio:16/10;max-height:34svh;}
+  .svcs__step{padding-block:clamp(2.2rem,1.5rem + 6vh,4rem);}
+  .svcs__step:first-child{padding-top:1.4rem;}
+}
+
+/* Reduced Motion: kein Kleben, keine Masken — alle vier Disziplinen
+   gleichzeitig sichtbar, Bilder als ruhiges Raster darueber. */
+@media (prefers-reduced-motion:reduce){
+  .svcs__stage{position:static;margin-inline:0;padding-inline:0;}
+  .svcs__frame{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;
+    aspect-ratio:auto;max-height:none;background:none;}
+  .svcs__frame::after{display:none;}
+  .svcs__shot{position:relative;inset:auto;clip-path:none !important;
+    aspect-ratio:4/3;border-radius:var(--r-img);overflow:hidden;}
+  .svcs__shot img{transform:none !important;}
+  .svcs__step{opacity:1 !important;}
+  .svcs__meta{display:none;}
+}
+
+/* §11b Alt: Hover-Reveal-Index --------------------------------------- */
 .svc-index{position:relative;overflow:hidden;background:var(--paper);}
 .svc-index__bg{position:absolute;inset:0;z-index:0;opacity:0;transition:opacity .7s var(--ease);}
 .svc-index__bg img{width:100%;height:100%;object-fit:cover;}
@@ -460,9 +567,42 @@ main{display:block;}
 .chip{font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;padding:.55em 1em;border:1px solid var(--line);color:var(--ink-2);background:transparent;transition:.3s var(--ease);border-radius:var(--r);}
 .chip:hover{border-color:var(--ink);color:var(--ink);}
 .chip[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink);}
-.gallery{columns:3;column-gap:clamp(.8rem,.4rem + 1vw,1.4rem);}
-.gitem{break-inside:avoid;margin-bottom:clamp(.8rem,.4rem + 1vw,1.4rem);overflow:hidden;position:relative;display:block;background:var(--paper-2);cursor:zoom-in;border-radius:var(--r-img);}
-.gitem img{width:100%;transition:transform 1s var(--ease);}
+/* Editoriale Galerie statt gleichfoermiger Masonry.
+   Vorher: drei CSS-Spalten, alle Bilder gleich breit, Reihenfolge vom
+   Umbruch bestimmt. Jetzt ein 6-Spalten-Raster mit bewusstem Rhythmus —
+   breite Panoramen, hochformatige Einschuebe, ein Vollbild alle sieben
+   Elemente. Die Formate wechseln, der Blick bleibt in Bewegung. */
+.gallery{display:grid;grid-template-columns:repeat(6,1fr);
+  gap:clamp(.8rem,.4rem + 1vw,1.4rem);grid-auto-flow:dense;}
+.gitem{grid-column:span 2;aspect-ratio:3/4;overflow:hidden;position:relative;display:block;
+  background:var(--paper-2);cursor:zoom-in;border-radius:var(--r-img);}
+/* Rhythmus über je sieben Elemente */
+.gitem:nth-child(7n+1){grid-column:span 3;aspect-ratio:4/3;}
+.gitem:nth-child(7n+2){grid-column:span 3;aspect-ratio:4/3;}
+.gitem:nth-child(7n+4){aspect-ratio:1;}
+.gitem:nth-child(7n+6){grid-column:span 4;aspect-ratio:16/9;}
+.gitem:nth-child(7n+7){aspect-ratio:1;}
+/* ⚠ Die Maske liegt auf dem BILD, nicht auf .gitem selbst.
+   clip-path:inset(0 0 100% 0) auf dem beobachteten Element klippt es auf
+   Hoehe 0 — und der IntersectionObserver rechnet Clipping mit ein. Das
+   Element meldet dann dauerhaft intersectionRatio 0 und kann sich nie
+   selbst einblenden. Gemessen und verifiziert: Ratio 0 trotz voller
+   Sichtbarkeit im Viewport. */
+.gitem img{width:100%;height:100%;object-fit:cover;
+  transition:transform 1s var(--ease-out),clip-path var(--dur-l) var(--ease-out);}
+.js .gitem img{clip-path:inset(0 0 100% 0);}
+.js .gitem.is-in img{clip-path:inset(0 0 0 0);}
+@media (max-width:1080px){
+  .gallery{grid-template-columns:repeat(4,1fr);}
+  .gitem{grid-column:span 2;}
+  .gitem:nth-child(7n+1),.gitem:nth-child(7n+2){grid-column:span 2;}
+  .gitem:nth-child(7n+6){grid-column:span 4;}
+}
+@media (max-width:560px){
+  .gallery{grid-template-columns:1fr;}
+  .gitem,.gitem:nth-child(7n+1),.gitem:nth-child(7n+2),.gitem:nth-child(7n+6){grid-column:span 1;aspect-ratio:4/3;}
+  .gitem:nth-child(7n+4),.gitem:nth-child(7n+7){aspect-ratio:4/3;}
+}
 .gitem::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,rgba(20,26,18,.7));opacity:0;transition:opacity .4s var(--ease);}
 .gitem__cap{position:absolute;left:1rem;bottom:.9rem;z-index:2;color:#fff;font-family:var(--mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;opacity:0;transform:translateY(8px);transition:.4s var(--ease);}
 .gitem:hover img{transform:scale(1.05);} .gitem:hover::after{opacity:1;} .gitem:hover .gitem__cap{opacity:1;transform:none;}
@@ -712,8 +852,12 @@ body::after{content:"";position:fixed;inset:0;z-index:997;pointer-events:none;op
 .reveal-words .word{display:inline-block;overflow:hidden;padding:.14em .04em;margin:-.14em -.04em;vertical-align:top;}
 .reveal-words .word > span{display:inline-block;transform:translateY(105%);transition:transform var(--dur-m) var(--ease-out);transition-delay:calc(var(--wi,0)*var(--stag));}
 .reveal-words.is-in .word > span{transform:none;}
-.js .clip-reveal{clip-path:inset(0 0 100% 0);transition:clip-path var(--dur-l) var(--ease-out);}
-.js .clip-reveal.is-in{clip-path:inset(0 0 0 0);}
+/* ⚠ Gleiche Falle wie bei .gitem: Die Maske MUSS auf einem Kind liegen.
+   Auf dem beobachteten Element selbst meldet der IntersectionObserver
+   dauerhaft Ratio 0, weil er Clipping einrechnet — das Element bliebe
+   fuer immer verborgen. */
+.js .clip-reveal > *{clip-path:inset(0 0 100% 0);transition:clip-path var(--dur-l) var(--ease-out);}
+.js .clip-reveal.is-in > *{clip-path:inset(0 0 0 0);}
 .js .img-reveal{overflow:hidden;} .js .img-reveal img{transform:scale(1.12);transition:transform var(--dur-xl) var(--ease-out);}
 .js .img-reveal.is-in img{transform:scale(1);}
 
@@ -808,8 +952,11 @@ html.js.motion-failed .img-reveal img{transform:none !important;}
   .js [data-reveal],
   .js [data-stagger] > *{transform:none !important;transition:opacity .2s linear !important;transition-delay:0s !important;}
   .reveal-words .word > span{transform:none !important;transition:none !important;}
-  .js .clip-reveal{clip-path:none !important;transition:none !important;}
+  .js .clip-reveal > *{clip-path:none !important;transition:none !important;}
   .js .img-reveal img{transform:none !important;transition:none !important;}
+  .js .gitem img{clip-path:none !important;transition:none !important;}
+  .chapter__inner > *{opacity:1 !important;transform:none !important;animation:none !important;}
+  .chapter__fade{opacity:0 !important;}
   .js .layer{transform:none !important;}
 
   /* 2) Dauerbewegung im Hintergrund: aus. */

@@ -33,7 +33,7 @@ window.__dvgFailsafe=setTimeout(function(){r.classList.add('motion-failed');},25
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/manrope-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/jetbrains-mono-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/instrument-serif-italic-latin.woff2" crossorigin>
-<link rel="stylesheet" href="assets/css/style.css?v=7">
+<link rel="stylesheet" href="assets/css/style.css?v=9">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"LandscapingBusiness","name":"de Vries Galabau","alternateName":"de Vries Garten- und Landschaftsbau","image":"https://devries-galabau.de/assets/img/og-default.jpg","logo":"https://devries-galabau.de/assets/img/icon-512.png","@id":"https://devries-galabau.de/","url":"https://devries-galabau.de/","telephone":"+4951531552","email":"info@devries-galabau.de","founder":"Andreas de Vries","foundingDate":"1998","priceRange":"€€","address":{"@type":"PostalAddress","streetAddress":"An den Flachsrotten 2","postalCode":"31020","addressLocality":"Salzhemmendorf","addressCountry":"DE"},"areaServed":["Salzhemmendorf","Hameln","Hildesheim","Weserbergland"],"knowsAbout":["Gartengestaltung","Gartenplanung","Gartenpflege","Bepflanzung","Pflasterarbeiten","Natursteinmauern"],"openingHoursSpecification":[{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday"],"opens":"08:00","closes":"16:00"}],"sameAs":["https://www.facebook.com/devriesdienstleistungen","https://www.instagram.com/dv_devries/"]}
 </script>
@@ -119,6 +119,8 @@ window.__dvgFailsafe=setTimeout(function(){r.classList.add('motion-failed');},25
        LCP-Element und darf durch nichts verzoegert werden. -->
   <div class="chapter__media plx-frame"><img data-layer="far" src="assets/img/hero-header-1600.webp" srcset="assets/img/hero-header-800.webp 800w, assets/img/hero-header-1600.webp 1920w" sizes="100vw" width="1920" height="1080" alt="Gartenteich mit Holzsteg und Sitzplatz in einem naturnah gestalteten Garten in Salzhemmendorf" fetchpriority="high"></div>
   <div class="chapter__scrim"></div>
+  <div class="chapter__fade" aria-hidden="true"></div>
+  <div class="chapter__vig" aria-hidden="true"></div>
   <div class="chapter__hud"><span class="tr">N 52.06° · E 9.60°</span><span class="br">Salzhemmendorf · Weserbergland</span></div>
   <div class="wrap chapter__inner">
     <span class="chapter__kicker">Garten- &amp; Landschaftsbau · seit 1998</span>
@@ -182,37 +184,75 @@ window.__dvgFailsafe=setTimeout(function(){r.classList.add('motion-failed');},25
   </div>
 </div>
 
-<!-- ===== LEISTUNGEN · Hover-Reveal-Index ===== -->
-<section class="section svc-index" id="leistungen">
-  <div class="svc-index__bg" data-bg="0"><img src="assets/img/gartengestaltung-natursteine-bg-1400.webp" srcset="assets/img/gartengestaltung-natursteine-bg-700.webp 700w, assets/img/gartengestaltung-natursteine-bg-1400.webp 1400w" sizes="(max-width: 900px) 340px, 1400px" alt="" width="1400" height="900" loading="lazy"></div>
-  <div class="svc-index__bg" data-bg="1"><img src="assets/img/treppenbau-wasser-bg-1400.webp" srcset="assets/img/treppenbau-wasser-bg-700.webp 700w, assets/img/treppenbau-wasser-bg-1400.webp 1400w" sizes="(max-width: 900px) 340px, 1400px" alt="" width="1400" height="900" loading="lazy"></div>
-  <div class="svc-index__bg" data-bg="2"><img src="assets/img/gartenpflege-bg-1400.webp" srcset="assets/img/gartenpflege-bg-700.webp 700w, assets/img/gartenpflege-bg-1400.webp 1400w" sizes="(max-width: 900px) 340px, 1400px" alt="" width="1400" height="900" loading="lazy"></div>
-  <div class="svc-index__bg" data-bg="3"><img src="assets/img/bepflanzung-pflanzen-bg-1400.webp" srcset="assets/img/bepflanzung-pflanzen-bg-700.webp 700w, assets/img/bepflanzung-pflanzen-bg-1400.webp 1400w" sizes="(max-width: 900px) 340px, 1400px" alt="" width="1400" height="900" loading="lazy"></div>
+<!-- ===== LEISTUNGEN · Sticky-Scrollytelling ============================
+     Ersetzt den Hover-Reveal-Index aus v4. Der Index funktionierte nur mit
+     Maus — auf Touch passierte gar nichts, und die Beschreibungen waren dort
+     sogar ausgeblendet. Jetzt: das Bild bleibt stehen, der Text läuft daran
+     vorbei, und jede Disziplin bekommt eine eigene Bühne mit Materialien,
+     Nummer und Fortschritt. Funktioniert mit Maus, Touch und Tastatur gleich.
+     Die dunkelgrüne Fläche ist die einzige Stelle, an der die Marke ins
+     Waldgrün geht — bewusst hier, weil es um das Handwerk selbst geht. -->
+<section class="svcs" id="leistungen">
   <div class="wrap">
     <div class="section__head">
-      <span class="eyebrow">Was wir können</span>
-      <h2 class="mt-s">Vier Disziplinen, ein Handwerk</h2>
+      <span class="eyebrow eyebrow--light">Was wir können</span>
+      <h2 class="mt-s">Vier Disziplinen,<br>ein Handwerk</h2>
     </div>
-    <!-- Fortschrittsanzeige der Sektion: rein visuelle Ergänzung, deshalb
-         aria-hidden. Die inhaltliche Orientierung liefert die Nummerierung. -->
-    <div class="svc-prog" aria-hidden="true"><span class="svc-prog__fill"></span></div>
-    <div class="svc-list" id="svcList">
-      <a class="svc-row" href="gartengestaltung.html" data-bg="0">
-        <span class="svc-row__no">01</span><span class="svc-row__name">Gartengestaltung</span>
-        <span class="svc-row__desc">Neuanlage &amp; Umgestaltung · Naturstein · Pflaster · Treppen · Gabionen</span>
-      </a>
-      <a class="svc-row" href="gartenplanung.html" data-bg="1">
-        <span class="svc-row__no">02</span><span class="svc-row__name">Gartenplanung</span>
-        <span class="svc-row__desc">Konzept &amp; Zeichnung · Vor-Ort-Beratung · von der Skizze zur Umsetzung</span>
-      </a>
-      <a class="svc-row" href="gartenpflege.html" data-bg="2">
-        <span class="svc-row__no">03</span><span class="svc-row__name">Gartenpflege</span>
-        <span class="svc-row__desc">Pflegekonzepte · Form- &amp; Rückschnitt · Rasen · Pflanzpläne</span>
-      </a>
-      <a class="svc-row" href="bepflanzung.html" data-bg="3">
-        <span class="svc-row__no">04</span><span class="svc-row__name">Bepflanzung</span>
-        <span class="svc-row__desc">Farbkonzepte · Stauden · Gräser · Bäume · Themengärten</span>
-      </a>
+
+    <div class="svcs__grid">
+      <!-- Bühne: bleibt beim Scrollen stehen -->
+      <div class="svcs__stage">
+        <div class="svcs__frame">
+          <figure class="svcs__shot is-active" data-shot="0">
+            <img src="assets/img/gartengestaltung-natursteine-800.webp" srcset="assets/img/gartengestaltung-natursteine-400.webp 400w, assets/img/gartengestaltung-natursteine-800.webp 800w, assets/img/gartengestaltung-natursteine-1600.webp 1600w" sizes="(max-width: 860px) 92vw, 46vw" width="800" height="452" alt="Natursteinarbeiten in einem neu gestalteten Garten" loading="lazy">
+          </figure>
+          <figure class="svcs__shot" data-shot="1">
+            <img src="assets/img/gartenplan-zeichnung-800.webp" srcset="assets/img/gartenplan-zeichnung-400.webp 400w, assets/img/gartenplan-zeichnung-800.webp 800w, assets/img/gartenplan-zeichnung-1600.webp 1600w" sizes="(max-width: 860px) 92vw, 46vw" width="800" height="600" alt="Gartenplan als Handzeichnung mit Beeten und Wegeführung" loading="lazy">
+          </figure>
+          <figure class="svcs__shot" data-shot="2">
+            <img src="assets/img/gartenpflege-800.webp" srcset="assets/img/gartenpflege-400.webp 400w, assets/img/gartenpflege-800.webp 800w, assets/img/gartenpflege-1600.webp 1600w" sizes="(max-width: 860px) 92vw, 46vw" width="800" height="534" alt="Gepflegter Garten mit Formschnitt und sauberen Beetkanten" loading="lazy">
+          </figure>
+          <figure class="svcs__shot" data-shot="3">
+            <img src="assets/img/bepflanzung-pflanzen-800.webp" srcset="assets/img/bepflanzung-pflanzen-400.webp 400w, assets/img/bepflanzung-pflanzen-800.webp 800w, assets/img/bepflanzung-pflanzen-1600.webp 1600w" sizes="(max-width: 860px) 92vw, 46vw" width="800" height="1067" alt="Staudenbepflanzung mit Gräsern und blühenden Stauden" loading="lazy">
+          </figure>
+        </div>
+        <div class="svcs__meta" aria-hidden="true">
+          <span class="svcs__count">01 / 04</span>
+          <span class="svcs__bar"><span class="svcs__bar-fill"></span></span>
+        </div>
+      </div>
+
+      <!-- Text: läuft an der Bühne vorbei -->
+      <ol class="svcs__steps">
+        <li class="svcs__step is-current" data-step="0">
+          <span class="svcs__no">01</span>
+          <h3 class="svcs__name">Gartengestaltung</h3>
+          <p class="svcs__desc">Neuanlage und Umgestaltung — vom ersten Spatenstich bis zum letzten Pflasterstein. Wir arbeiten mit ehrlichen, langlebigen Materialien und bauen Außenanlagen, die funktionieren und Bestand haben.</p>
+          <ul class="svcs__tags"><li>Naturstein</li><li>Pflaster</li><li>Treppen</li><li>Gabionen</li></ul>
+          <a class="link-arrow" href="gartengestaltung.html">Zur Gartengestaltung <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </li>
+        <li class="svcs__step" data-step="1">
+          <span class="svcs__no">02</span>
+          <h3 class="svcs__name">Gartenplanung</h3>
+          <p class="svcs__desc">Aus Ihren Ideen entsteht ein maßgeschneidertes Konzept mit detaillierten Zeichnungen — ästhetisch und funktional. Wir nehmen uns Zeit für die Gegebenheiten vor Ort, bevor die erste Linie fällt.</p>
+          <ul class="svcs__tags"><li>Konzept</li><li>Zeichnung</li><li>Vor-Ort-Beratung</li></ul>
+          <a class="link-arrow" href="gartenplanung.html">Zur Gartenplanung <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </li>
+        <li class="svcs__step" data-step="2">
+          <span class="svcs__no">03</span>
+          <h3 class="svcs__name">Gartenpflege</h3>
+          <p class="svcs__desc">Auch nach der Fertigstellung sind wir da. Mit individuellen Pflegekonzepten bleibt Ihr Garten dauerhaft in Bestform — Form- und Rückschnitt, Rasen, Beete, das ganze Jahr über.</p>
+          <ul class="svcs__tags"><li>Pflegekonzepte</li><li>Formschnitt</li><li>Rasen</li></ul>
+          <a class="link-arrow" href="gartenpflege.html">Zur Gartenpflege <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </li>
+        <li class="svcs__step" data-step="3">
+          <span class="svcs__no">04</span>
+          <h3 class="svcs__name">Bepflanzung</h3>
+          <p class="svcs__desc">Die Ebene, die den Garten lebendig macht. Wir wählen Stauden, Gräser und Bäume nach Standort und Farbkonzept — damit sich das Bild über die Jahre entwickelt, statt nur im ersten Sommer zu funktionieren.</p>
+          <ul class="svcs__tags"><li>Farbkonzepte</li><li>Stauden</li><li>Gräser</li><li>Bäume</li></ul>
+          <a class="link-arrow" href="bepflanzung.html">Zur Bepflanzung <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </li>
+      </ol>
     </div>
   </div>
 </section>
@@ -443,9 +483,9 @@ window.__dvgFailsafe=setTimeout(function(){r.classList.add('motion-failed');},25
   </div>
 </div>
 
-<script src="assets/js/gsap.min.js?v=7"></script>
-<script src="assets/js/ScrollTrigger.min.js?v=7"></script>
-<script src="assets/js/lenis.min.js?v=7"></script>
-<script src="assets/js/main.js?v=7"></script>
+<script src="assets/js/gsap.min.js?v=9"></script>
+<script src="assets/js/ScrollTrigger.min.js?v=9"></script>
+<script src="assets/js/lenis.min.js?v=9"></script>
+<script src="assets/js/main.js?v=9"></script>
 </body>
 </html>

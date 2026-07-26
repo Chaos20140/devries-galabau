@@ -115,7 +115,7 @@
     el.appendChild(vis);
   });
 
-  var REVEAL_SEL = "[data-reveal],[data-stagger],.reveal-words,.tnode,.clip-reveal,.img-reveal";
+  var REVEAL_SEL = "[data-reveal],[data-stagger],.reveal-words,.tnode,.clip-reveal,.img-reveal,.gitem";
   var revealTargets = $$(REVEAL_SEL);
 
   if ("IntersectionObserver" in window && !reduce) {
@@ -514,69 +514,55 @@
   /* ── 10 · Leistungen: Sticky-Scrollytelling ──────────────────────────
      Ersetzt den reinen Hover-Index (auf Touch unbedienbar). Der Text
      bleibt stehen, das Bild wechselt mit dem Scroll — auf jedem Gerät. */
-  var svcIndex = $(".svc-index");
-  if (svcIndex) {
-    var svcBgs = $$(".svc-index__bg", svcIndex);
-    var svcRows = $$(".svc-row", svcIndex);
-    var svcProg = $(".svc-prog__fill", svcIndex);
-    var svcHovering = false;
+  var svcs = $(".svcs");
+  if (svcs && !reduce) {
+    var svcSteps = $$(".svcs__step", svcs);
+    var svcShots = $$(".svcs__shot", svcs);
+    var svcCount = $(".svcs__count", svcs);
+    var svcBar = $(".svcs__bar-fill", svcs);
+    var svcActive = -1;
 
-    var svcShow = function (idx) {
-      svcIndex.classList.add("is-lit");
-      svcBgs.forEach(function (b) { b.classList.toggle("is-active", b.getAttribute("data-bg") === String(idx)); });
-      svcRows.forEach(function (r) { r.classList.toggle("is-current", r.getAttribute("data-bg") === String(idx)); });
+    var svcSet = function (i) {
+      if (i === svcActive) return;
+      svcActive = i;
+      svcSteps.forEach(function (s, k) { s.classList.toggle("is-current", k === i); });
+      svcShots.forEach(function (s, k) { s.classList.toggle("is-active", k === i); });
+      if (svcCount) svcCount.textContent = String(i + 1).padStart(2, "0") + " / " + String(svcSteps.length).padStart(2, "0");
+      if (svcBar) svcBar.style.transform = "scaleX(" + ((i + 1) / svcSteps.length).toFixed(3) + ")";
     };
-    var svcClear = function () {
-      svcIndex.classList.remove("is-lit");
-      svcBgs.forEach(function (b) { b.classList.remove("is-active"); });
-      svcRows.forEach(function (r) { r.classList.remove("is-current"); });
-    };
+    svcSet(0);
 
-    /* Scrollgesteuert — auf JEDEM Gerät, nicht nur auf Touch.
-       Die Zeile, die durch die Bildschirmmitte läuft, bestimmt das Bild.
-       Dadurch erzählt die Sektion auch ohne Maus, und der Hover ist eine
-       Verfeinerung obendrauf statt die einzige Bedienart. */
-    if ("IntersectionObserver" in window && !reduce) {
-      var sio = new IntersectionObserver(function (entries) {
+    if ("IntersectionObserver" in window && svcSteps.length) {
+      /* Der Schritt, der das mittlere Viewportband schneidet, führt.
+         Kein Hover, keine Maus — auf Touch und mit Tastatur identisch. */
+      var svcIo = new IntersectionObserver(function (entries) {
         entries.forEach(function (en) {
-          if (en.isIntersecting && !svcHovering) svcShow(en.target.getAttribute("data-bg"));
+          if (en.isIntersecting) svcSet(svcSteps.indexOf(en.target));
         });
-      }, { rootMargin: "-45% 0px -45% 0px", threshold: 0 });
-      svcRows.forEach(function (r) { sio.observe(r); });
+      }, { rootMargin: "-48% 0px -48% 0px", threshold: 0 });
+      svcSteps.forEach(function (s) { svcIo.observe(s); });
 
-      /* Verlässt die Sektion den Viewport, wird abgedunkelt zurückgesetzt. */
-      var secIo = new IntersectionObserver(function (entries) {
-        entries.forEach(function (en) { if (!en.isIntersecting) svcClear(); });
-      }, { threshold: 0 });
-      secIo.observe(svcIndex);
-    }
-
-    /* Fortschrittsanzeige der Sektion (rein visuell, daher aria-hidden). */
-    if (svcProg && !reduce) {
-      var svcTick = false;
-      var svcUpdate = function () {
-        svcTick = false;
-        var r = svcIndex.getBoundingClientRect();
-        var p = (window.innerHeight * 0.55 - r.top) / r.height;
-        svcProg.style.transform = "scaleY(" + Math.max(0, Math.min(1, p)).toFixed(3) + ")";
-      };
-      window.addEventListener("scroll", function () {
-        if (!svcTick) { svcTick = true; requestAnimationFrame(svcUpdate); }
-      }, { passive: true });
-      svcUpdate();
-    }
-
-    /* Zeigegerät: Hover und Tastaturfokus übersteuern die Scrollposition. */
-    if (!isTouch && isFinePointer) {
-      var svcList = $("#svcList");
-      svcRows.forEach(function (r) {
-        var lit = function () { svcHovering = true; svcShow(r.getAttribute("data-bg")); };
-        r.addEventListener("mouseenter", lit);
-        r.addEventListener("focus", lit);
-        r.addEventListener("blur", function () { svcHovering = false; });
+      /* Tastaturnutzer springen per Tab durch die Links — das Bild zieht mit. */
+      svcSteps.forEach(function (s, i) {
+        var a = $("a", s);
+        if (a) a.addEventListener("focus", function () { svcSet(i); });
       });
-      if (svcList) svcList.addEventListener("mouseleave", function () { svcHovering = false; });
     }
+  }
+
+  /* ── 10b · Hero-Tiefe beim Verlassen ─────────────────────────────────
+     Das Bild wird langsam groesser, eine dunkle Ebene zieht auf, der Text
+     driftet mit. Zusammen ergibt das den Eindruck, in die Seite hinein-
+     zusinken, statt einfach weiterzuscrollen. Reines transform/opacity. */
+  var heroSec = $(".chapter");
+  if (heroSec && hasGsap && !reduce) {
+    var heroTl = gsap.timeline({
+      scrollTrigger: { trigger: heroSec, start: "top top", end: "bottom top", scrub: 0.4 }
+    });
+    heroTl.to(".chapter__media", { scale: 1.12, ease: "none" }, 0)
+          .to(".chapter__fade", { opacity: 0.55, ease: "none" }, 0)
+          .to(".chapter__inner", { y: 70, opacity: 0.35, ease: "none" }, 0)
+          .to(".chapter__scroll", { opacity: 0, duration: 0.25, ease: "none" }, 0);
   }
 
   /* ── 11 · Signatur „Plan wird Garten" ────────────────────────────────
