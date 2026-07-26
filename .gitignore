@@ -1,0 +1,9 @@
+# Arbeits-/Analyse-Dateien (NICHT deployen)
+.planning/
+assets/img/raw/
+.playwright-mcp/
+*.jpeg
+!assets/img/**/*.jpeg
+node_modules/
+.DS_Store
+Thumbs.db
