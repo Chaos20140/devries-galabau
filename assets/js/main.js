@@ -115,7 +115,48 @@
     el.appendChild(vis);
   });
 
-  var REVEAL_SEL = "[data-reveal],[data-stagger],.reveal-words,.tnode,.clip-reveal,.img-reveal,.gitem";
+  /* Zeichenweiser Aufstieg für Sektionsüberschriften.
+     Feiner als der wortweise Reveal: die Buchstaben steigen mit sehr kurzem
+     Versatz aus ihrer Maske. Technik aus der Referenzanalyse übernommen —
+     dort tragen rund 370 Einzelzeichen die Typo-Bewegung der ganzen Seite.
+     Zugänglichkeit wie beim Wort-Splitter: der Originaltext bleibt als
+     .sr-only-Knoten stehen, die Zeichen sind aria-hidden. Umbrüche
+     passieren weiterhin nur zwischen Wörtern, nicht mitten im Wort. */
+  $$(".section__head h2, .reveal-chars").forEach(function (el) {
+    if (el.dataset.split || el.children.length > 0) return;
+    var full = el.textContent.trim();
+    if (!full || full.length > 90) return;   // sehr lange Zeilen bleiben unzerlegt
+    el.dataset.split = "chars";
+    el.classList.add("reveal-chars");
+    el.textContent = "";
+
+    var sr = document.createElement("span");
+    sr.className = "sr-only";
+    sr.textContent = full;
+    el.appendChild(sr);
+
+    var vis = document.createElement("span");
+    vis.setAttribute("aria-hidden", "true");
+    var ci = 0;
+    full.split(/\s+/).forEach(function (word, wi) {
+      var wrap = document.createElement("span");
+      wrap.className = "cword";
+      word.split("").forEach(function (ch) {
+        var outer = document.createElement("span");
+        outer.className = "char";
+        var inner = document.createElement("span");
+        inner.style.setProperty("--ci", ci++);
+        inner.textContent = ch;
+        outer.appendChild(inner);
+        wrap.appendChild(outer);
+      });
+      vis.appendChild(wrap);
+      vis.appendChild(document.createTextNode(" "));
+    });
+    el.appendChild(vis);
+  });
+
+  var REVEAL_SEL = "[data-reveal],[data-stagger],.reveal-words,.reveal-chars,.tnode,.clip-reveal,.img-reveal,.gitem";
   var revealTargets = $$(REVEAL_SEL);
 
   if ("IntersectionObserver" in window && !reduce) {
@@ -760,19 +801,26 @@
           }
         }
       });
-      tl.to(".plan-draw__grid", { opacity: 1, duration: 0.6 }, 0)
-        .to(planLines, { strokeDashoffset: 0, duration: 2.4, stagger: 0.25, ease: "none" }, 0.3)
-        .to(".plan-draw__tag", { opacity: 1, y: 0, duration: 0.5, stagger: 0.12 }, 1.8)
-        /* fromTo mit vier expliziten Werten auf BEIDEN Seiten: die CSS-Kurzform
-           inset(45%) wird sonst als EIN Wert gelesen und nur die obere Kante
-           animiert — das Bild klappte dann nur nach unten auf. */
-        .fromTo(planPhoto,
-          { clipPath: "inset(45% 45% 45% 45%)" },
-          { clipPath: "inset(0% 0% 0% 0%)", duration: 2.2, ease: "power2.inOut" }, 2.6)
-        .to(".plan-draw", { opacity: 0, duration: 1.1 }, 3.4)
-        .to(".reveal-pin__cap", { opacity: 1, y: 0, duration: 0.9 }, 3.8);
+      /* Dramaturgie: Das Foto liegt von Anfang an da — abgedunkelt und
+         leicht verkleinert, wie ein Grundstueck vor dem ersten Spatenstich.
+         Darauf wird vermessen. Erst danach hebt sich der Schleier und der
+         fertige Garten waechst auf. So sitzen die Linien nie im Leeren. */
+      tl.to(".plan-draw__grid", { opacity: 1, duration: 0.5 }, 0)
+        .to(planPhoto, { scale: 0.95, duration: 2.6, ease: "none" }, 0)
+        .to(planLines, { strokeDashoffset: 0, duration: 2.2, stagger: 0.22, ease: "none" }, 0.25)
+        .to(".plan-draw__tag", { opacity: 1, y: 0, duration: 0.5, stagger: 0.12 }, 1.7)
+        /* Der Schleier hebt sich, das Bild waechst ueber die volle Flaeche —
+           das ist der Moment, den der Nutzer als „Bild wird groesser" sieht. */
+        .to("#pinVeil", { opacity: 0.12, duration: 1.8, ease: "power2.inOut" }, 2.6)
+        .to(planPhoto, { scale: 1.06, duration: 2.2, ease: "power2.inOut" }, 2.6)
+        .to(".plan-draw", { opacity: 0, duration: 1.0 }, 3.2)
+        .to(".reveal-pin__cap", { opacity: 1, y: 0, duration: 0.9 }, 3.6);
     } else if (planPhoto) {
-      planPhoto.style.clipPath = "none";
+      /* Ohne GSAP bzw. bei reduzierter Bewegung: Foto ungedimmt und
+         unskaliert, Planebene bleibt als ruhige Vermessung darueber. */
+      planPhoto.style.transform = "none";
+      var v0 = $("#pinVeil");
+      if (v0) v0.style.opacity = "0.18";
     }
   }
 
@@ -801,6 +849,9 @@
       var mm = gsap.matchMedia();
 
       mm.add("(min-width: 861px) and (prefers-reduced-motion: no-preference)", function () {
+        /* .is-pinned zwingt Kopf, Bilderreihe und Fuss in eine Bildschirmhoehe —
+           ohne die Klasse lief die Reihe unten aus dem Bild. */
+        film.classList.add("is-pinned");
         var filmDist = function () { return Math.max(0, filmTrack.scrollWidth - filmVp.clientWidth); };
         filmVp.style.overflow = "hidden";
         var filmTween = gsap.to(filmTrack, {
@@ -835,6 +886,7 @@
         return function () {
           filmItems.forEach(function (it, i) { it.removeEventListener("focus", onFocus[i]); });
           filmVp.style.overflow = "";
+          film.classList.remove("is-pinned");
         };
       });
 

@@ -484,12 +484,20 @@ main{display:block;}
 .reveal-pin{position:relative;height:250vh;background:var(--pine);}
 @media (max-width:860px){.reveal-pin{height:190vh;}}
 .reveal-pin__stage{position:sticky;top:0;height:100svh;overflow:hidden;display:grid;place-items:center;}
-/* will-change wird von main.js nur waehrend der aktiven ScrollTrigger-Phase
-   gesetzt (Klasse .is-live) — ein dauerhafter Compositor-Layer waere Verschwendung. */
-.reveal-pin__photo{position:absolute;inset:0;z-index:1;clip-path:inset(45% 45% 45% 45%);}
-.reveal-pin__photo.is-live{will-change:clip-path;}
+/* ⚠ KEIN clip-path mehr auf dem Foto.
+   Vorher startete es als kleines Rechteck in der Mitte (inset 45%), waehrend
+   die Vermessungslinien schon ueber der leeren dunklen Flaeche gezeichnet
+   wurden. Die Linien zeigen aber genau die Kanten DIESES Fotos — ohne das
+   Foto darunter ergaben sie kein Bild, sondern schwebten im Nichts.
+   Jetzt liegt das Foto von Anfang an da, nur abgedunkelt und leicht
+   verkleinert: erst das Grundstueck, dann die Vermessung darauf, dann
+   waechst und erhellt sich der fertige Garten. */
+.reveal-pin__photo{position:absolute;inset:0;z-index:1;transform:scale(.9);}
+.reveal-pin__photo.is-live{will-change:transform;}
 .reveal-pin__photo img{width:100%;height:100%;object-fit:cover;}
-.reveal-pin__photo::after{content:"";position:absolute;inset:0;background:rgba(20,26,18,.32);}
+/* Der Schleier liegt UEBER dem Foto, aber UNTER der Planebene — dadurch
+   bleiben die Linien immer gut lesbar, egal wie hell das Bild gerade ist. */
+.reveal-pin__veil{position:absolute;inset:0;z-index:2;background:var(--pine);opacity:.74;pointer-events:none;}
 .reveal-pin__cap{position:relative;z-index:4;text-align:center;color:#fff;padding:var(--gut);}
 .reveal-pin__cap .eyebrow{color:var(--rust-soft);justify-content:center;}
 .reveal-pin__cap h2{color:#fff;margin-top:1rem;max-width:16ch;margin-inline:auto;text-shadow:0 2px 40px rgba(0,0,0,.5);}
@@ -527,6 +535,25 @@ main{display:block;}
    Aufhellung des Eyebrows nicht: --rust auf --ink ergibt nur 3,14 : 1. */
 .filmstrip .eyebrow{color:var(--rust-soft);}
 .filmstrip__head{padding:var(--sp) var(--gut) 0;max-width:var(--wrap);margin-inline:auto;}
+/* ⚠ Im gepinnten Zustand muss die gesamte Sektion in EINE Bildschirmhoehe
+   passen — Kopf, Bilderreihe und Fuss. Vorher war der Kopf mit var(--sp)
+   (bis 12rem) so hoch, dass die Bilder unten aus dem Bild liefen und nur
+   ihr oberer Rand sichtbar war. main.js setzt .is-pinned. */
+.filmstrip.is-pinned{height:100svh;display:grid;grid-template-rows:auto 1fr auto;align-content:center;}
+/* Die Navigation ist klebend (76px) — ohne diesen Zuschlag verschwindet der
+   Sektionskopf im gepinnten Zustand dahinter. */
+.filmstrip.is-pinned .filmstrip__head{padding-top:calc(96px + clamp(.5rem,.3rem + 1vh,1.6rem));padding-bottom:0;}
+/* Name und Kategorie untereinander statt nebeneinander: bei schmalen
+   Karten stiessen sonst der Name der einen und die Kategorie der
+   naechsten Karte optisch zusammen. */
+.filmstrip.is-pinned .film-item__meta{flex-direction:column;align-items:flex-start;gap:.25rem;margin-top:.9rem;}
+.filmstrip.is-pinned .filmstrip__head h2{font-size:clamp(1.7rem,1.1rem + 1.9vw,2.8rem);margin-top:.5rem;}
+.filmstrip.is-pinned .filmstrip__head br{display:none;}
+.filmstrip.is-pinned .filmstrip__viewport{min-height:0;display:flex;align-items:center;}
+.filmstrip.is-pinned .filmstrip__track{padding-block:clamp(1rem,.6rem + 1.6vh,2.2rem);}
+.filmstrip.is-pinned .film-item{width:clamp(240px,30vw,400px);}
+.filmstrip.is-pinned .film-item__media{aspect-ratio:4/5;max-height:min(52svh,440px);}
+.filmstrip.is-pinned .filmstrip__foot{padding-bottom:clamp(1.2rem,.8rem + 1.6vh,2.6rem);}
 .filmstrip__viewport{overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
 .filmstrip__viewport::-webkit-scrollbar{height:0;width:0;}
 .film-item{scroll-snap-align:start;}
@@ -922,6 +949,15 @@ body::after{content:"";position:fixed;inset:0;z-index:997;pointer-events:none;op
 .js [data-reveal="scale"]:not(.is-in){transform:scale(.96);}
 .js [data-stagger] > *{opacity:0;transform:translateY(22px);transition:opacity var(--dur-m) var(--ease-soft),transform var(--dur-m) var(--ease-soft);transition-delay:calc(var(--i,0)*var(--stag));}
 .js [data-stagger].is-in > *{opacity:1;transform:none;}
+/* Zeichenweiser Aufstieg. .cword haelt die Buchstaben eines Wortes
+   zusammen, damit der Umbruch nur zwischen Woertern passiert. */
+.reveal-chars .cword{display:inline-block;white-space:nowrap;}
+.reveal-chars .char{display:inline-block;overflow:hidden;padding:.12em .01em;margin:-.12em -.01em;vertical-align:top;}
+.reveal-chars .char > span{display:inline-block;transform:translateY(110%);
+  transition:transform var(--dur-m) var(--ease-out);
+  transition-delay:calc(var(--ci,0) * 22ms);}
+.reveal-chars.is-in .char > span{transform:none;}
+
 .reveal-words .word{display:inline-block;overflow:hidden;padding:.14em .04em;margin:-.14em -.04em;vertical-align:top;}
 .reveal-words .word > span{display:inline-block;transform:translateY(105%);transition:transform var(--dur-m) var(--ease-out);transition-delay:calc(var(--wi,0)*var(--stag));}
 .reveal-words.is-in .word > span{transform:none;}
@@ -1030,6 +1066,7 @@ html.js.motion-failed .img-reveal img{transform:none !important;}
   .js [data-reveal],
   .js [data-stagger] > *{transform:none !important;transition:opacity .2s linear !important;transition-delay:0s !important;}
   .reveal-words .word > span{transform:none !important;transition:none !important;}
+  .reveal-chars .char > span{transform:none !important;transition:none !important;}
   .js .clip-reveal > *{clip-path:none !important;transition:none !important;}
   .js .img-reveal img{transform:none !important;transition:none !important;}
   .js .gitem img{clip-path:none !important;transition:none !important;}
@@ -1048,7 +1085,8 @@ html.js.motion-failed .img-reveal img{transform:none !important;}
   /* 3) Gepinnte Signatur wird zu einem ruhigen Standbild. */
   .reveal-pin{height:auto;}
   .reveal-pin__stage{position:static;height:auto;min-height:min(70vh,560px);}
-  .reveal-pin__photo{clip-path:none !important;position:relative;height:min(70vh,560px);}
+  .reveal-pin__photo{position:relative;height:min(70vh,560px);transform:none !important;}
+  .reveal-pin__veil{opacity:.18 !important;}
   .plan-draw__line{stroke-dashoffset:0 !important;}
 
   /* 4) Filmstreifen: kein horizontales Scrollen, sondern ein normales Raster. */

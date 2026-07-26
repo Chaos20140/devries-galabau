@@ -6,81 +6,39 @@
     "a11y": 100,
     "bp": 100,
     "seo": 100,
-    "lcp": "0.8 s",
+    "lcp": "1.0 s",
     "cls": "0",
-    "tbt": "0 ms",
-    "fcp": "0.3 s",
-    "si": "0.5 s",
+    "tbt": "50 ms",
+    "fcp": "0.4 s",
+    "si": "0.6 s",
     "failedA11y": [],
     "failedBp": [],
     "failedSeo": [],
     "opps": [
-      "Minify CSS: Est savings of 5 KiB",
-      "Minify JavaScript: Est savings of 4 KiB",
-      "Reduce unused CSS: Est savings of 12 KiB"
+      "Minify CSS: Est savings of 6 KiB",
+      "Minify JavaScript: Est savings of 5 KiB",
+      "Reduce unused CSS: Est savings of 13 KiB"
     ]
   },
   {
     "page": "index.html",
     "ff": "mobile",
-    "perf": 95,
+    "perf": 93,
     "a11y": 100,
     "bp": 100,
     "seo": 100,
-    "lcp": "2.9 s",
+    "lcp": "3.2 s",
     "cls": "0",
-    "tbt": "0 ms",
-    "fcp": "1.1 s",
-    "si": "1.4 s",
+    "tbt": "50 ms",
+    "fcp": "1.4 s",
+    "si": "1.7 s",
     "failedA11y": [],
     "failedBp": [],
     "failedSeo": [],
     "opps": [
-      "Minify CSS: Est savings of 5 KiB",
-      "Minify JavaScript: Est savings of 4 KiB",
-      "Reduce unused CSS: Est savings of 11 KiB"
-    ]
-  },
-  {
-    "page": "referenzen.html",
-    "ff": "desktop",
-    "perf": 100,
-    "a11y": 100,
-    "bp": 100,
-    "seo": 100,
-    "lcp": "0.4 s",
-    "cls": "0",
-    "tbt": "0 ms",
-    "fcp": "0.2 s",
-    "si": "0.3 s",
-    "failedA11y": [],
-    "failedBp": [],
-    "failedSeo": [],
-    "opps": [
-      "Minify CSS: Est savings of 5 KiB",
-      "Minify JavaScript: Est savings of 4 KiB",
-      "Reduce unused CSS: Est savings of 14 KiB"
-    ]
-  },
-  {
-    "page": "referenzen.html",
-    "ff": "mobile",
-    "perf": 100,
-    "a11y": 100,
-    "bp": 100,
-    "seo": 100,
-    "lcp": "1.9 s",
-    "cls": "0",
-    "tbt": "0 ms",
-    "fcp": "0.9 s",
-    "si": "1.0 s",
-    "failedA11y": [],
-    "failedBp": [],
-    "failedSeo": [],
-    "opps": [
-      "Minify CSS: Est savings of 5 KiB",
-      "Minify JavaScript: Est savings of 4 KiB",
-      "Reduce unused CSS: Est savings of 14 KiB"
+      "Minify CSS: Est savings of 6 KiB",
+      "Minify JavaScript: Est savings of 5 KiB",
+      "Reduce unused CSS: Est savings of 13 KiB"
     ]
   }
 ]
