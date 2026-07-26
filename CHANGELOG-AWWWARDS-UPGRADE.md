@@ -176,11 +176,30 @@ CPU-Drosselung.
 `label-content-name-mismatch`.
 **Nachher:** keine.
 
+### Nachgemessen auf der ausgelieferten Seite
+
+Nach dem Deployment auf GitHub Pages
+(<https://chaos20140.github.io/devries-galabau/>) noch einmal gemessen — dieselbe
+Lighthouse-Konfiguration, aber echte Auslieferung über das CDN statt lokalem Server:
+
+| Seite | Gerät | Performance | Accessibility | Best Practices | SEO | LCP | CLS |
+|---|---|---|---|---|---|---|---|
+| index | Desktop | **99** | 100 | 100 | 100 | **0,8 s** | 0 |
+| index | Mobil | **93** | 100 | 100 | 100 | **2,3 s** | 0 |
+| referenzen | Desktop | **100** | 100 | 100 | 100 | 0,6 s | 0 |
+| referenzen | Mobil | **100** | 100 | 100 | 100 | **1,7 s** | 0 |
+| kontakt | Desktop | **100** | 100 | 100 | 100 | 0,4 s | 0 |
+| kontakt | Mobil | **100** | 100 | 100 | 100 | **1,7 s** | 0 |
+
+**Damit ist das LCP-Ziel von 2,5 s auch auf der Startseite erreicht** (2,3 s statt der
+lokal gemessenen 2,9 s). Der lokale Wert war durch die Latenz des Testservers verzerrt,
+nicht durch die Seite. Der weiter unten unter „Offene Punkte" notierte Vorbehalt zum LCP
+ist damit erledigt.
+
+GitHub Pages komprimiert selbst: `style.css` wird mit 17,9 statt 64 KB ausgeliefert,
+`main.js` mit 11,7 statt 35 KB — die oben genannten gzip-Messwerte gelten also real.
+
 **Ehrlich benannte Abstriche**
-- `index.html` mobil hält LCP bei 2,9 s und liegt damit weiterhin über dem 2,5-s-Ziel.
-  Ursache ist der bildschirmfüllende Hero unter 4-facher CPU-Drosselung; die Startseite
-  ist die einzige Seite mit dieser Konstruktion. Alle anderen gemessenen Seiten liegen
-  bei 1,9–2,6 s.
 - `kontakt` und `anfrage` verlieren mobil 0,3–0,4 s LCP. Ursache ist der zusätzlich
   vorgeladene Mono-Zeichensatz. Er ist Voraussetzung dafür, dass CLS von 0,12 auf 0 fällt —
   ein bewusster Tausch zugunsten der visuellen Stabilität.
@@ -270,17 +289,23 @@ Prüfung des Fokusrings auf 30 Elementen.
    nicht eigenmächtig eingebaut. Der Umschaltpunkt ist vorbereitet: `SUBMIT_ENDPOINT` in
    `assets/js/main.js`. Bis dahin erklärt die Seite den Sendeweg vorab und bietet eine
    Kopier-Rückfalllösung.
-2. **`index.html` mobil: LCP 2,9 s** statt der angestrebten 2,5 s (siehe oben).
-3. **Startseite bleibt mit 19,6 Bildschirmhöhen lang.** Der gepinnte Filmstreifen belegt
+2. **Custom Domain steht noch aus.** Die Seite läuft unter
+   `chaos20140.github.io/devries-galabau`, weil `devries-galabau.de` weiterhin auf die alte
+   WordPress-Seite zeigt. Die drei Schritte für den Live-Gang stehen in `README.md`.
+3. **Clickjacking-Schutz fehlt auf GitHub Pages.** `frame-ancestors` und `X-Frame-Options`
+   müssen als HTTP-Header kommen; GitHub Pages erlaubt keine eigenen Header. Die `.htaccess`
+   setzt beides, sobald auf Strato/Apache umgezogen wird. Risiko gering — die Seite hat
+   keine angemeldeten Aktionen.
+4. **Startseite bleibt mit 19,6 Bildschirmhöhen lang.** Der gepinnte Filmstreifen belegt
    davon rund 3730 px. Das ist für eine horizontale Projektgalerie vertretbar, aber wer
    die Seite weiter straffen will, kürzt zuerst hier.
-4. **`.plots` (Kachelraster) steht noch auf `gartengestaltung.html` und `404.html`** mit je
-   zwei Elementen. Das Ausgangsaudit hat den Umfang dieses Legacy-Rasters überschätzt —
-   es sind nur diese beiden Stellen. Eine Angleichung an die editoriale Sprache der
-   Startseite ist möglich, aber kein Mangel.
 5. **AVIF** wurde nicht ergänzt. WebP deckt alle Zielbrowser ab; nach der
    `sizes`-Korrektur ist der Zusatznutzen gering.
 6. **Kein automatischer Abgleich der Shared Blocks.** Navigation, Footer und
    Kontaktdaten sind weiterhin auf 14 Seiten kopiert (bewusste Entscheidung gegen einen
    Build-Step). Ein Prüfskript, das alle Seiten gegen `index.html` vergleicht, wäre die
    nächste sinnvolle Absicherung.
+
+**Erledigt gegenüber der ersten Fassung dieses Dokuments:** Das LCP-Ziel (Punkt 2 alt) ist
+in Produktion erreicht. Das Legacy-Kachelraster `.plots` (Punkt 4 alt) wurde auf die
+editoriale Zeilensprache der Startseite gehoben und betrifft damit keine Seite mehr.

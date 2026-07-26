@@ -42,17 +42,72 @@ docs/                 Audit-Screenshots und Messdaten
 *.md                  interne Dokumentation
 ```
 
-### Ziel-Hosting
+### Aktuelles Deployment: GitHub Pages
+
+**Live:** <https://chaos20140.github.io/devries-galabau/>
+Repository: `Chaos20140/devries-galabau`, Branch `main`, Quellordner `/` (Repository-Wurzel).
+
+Veröffentlichen heißt hier schlicht: auf `main` committen und pushen.
+GitHub Pages baut automatisch neu, das dauert etwa eine Minute.
+
+```bash
+git add -A && git commit -m "..." && git push
+```
+
+Zwei Dinge sind auf GitHub Pages zu beachten:
+
+- **`.nojekyll` darf nicht gelöscht werden.** Ohne diese Datei behandelt GitHub Pages das
+  Repository als Jekyll-Projekt und ignoriert alle Dateien, deren Name mit einem Unterstrich
+  beginnt — hier `_redirects`.
+- **Eigene HTTP-Header sind nicht möglich.** Die CSP im `<meta>`-Tag greift weiterhin
+  (`script-src`, `style-src`, `img-src`, `form-action`, `object-src`, `base-uri`), aber
+  `frame-ancestors` und `X-Frame-Options` lassen sich dort nicht setzen. Beim späteren
+  Wechsel auf Strato/Apache übernimmt das die beiliegende `.htaccess`.
+
+Kompression stellt GitHub Pages selbst bereit — gemessen: `style.css` 17,9 statt 64 KB,
+`main.js` 11,7 statt 35 KB.
+
+### Umstellung auf die eigene Domain
+
+Die Seite läuft bewusst noch **ohne** Custom Domain, weil `devries-galabau.de` derzeit auf
+die alte WordPress-Seite zeigt. Für den Live-Gang:
+
+1. Beim Registrar die DNS-Einträge setzen —
+   `A` auf `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`
+   und `CNAME` für `www` auf `chaos20140.github.io`.
+2. Im Repository eine Datei `CNAME` (ohne Endung) anlegen, Inhalt eine Zeile:
+   ```
+   devries-galabau.de
+   ```
+3. In den Repository-Einstellungen unter *Pages* die Domain eintragen und
+   *Enforce HTTPS* aktivieren, sobald das Zertifikat ausgestellt ist.
+
+Erst danach stimmen die bereits gesetzten `canonical`- und Open-Graph-URLs mit der
+tatsächlichen Adresse überein. Vorher schaden sie nicht — sie verhindern sogar, dass die
+Vorschau-URL indexiert wird.
+
+### Andere Hoster
 
 | Hoster | Was zu tun ist |
 |---|---|
-| **Strato / Apache** | Ordner hochladen. `.htaccess` liegt bei und aktiviert Kompression, Caching, HTTPS- und www-Weiterleitung sowie die Weiterleitungen der alten WordPress-URLs. |
-| **Netlify / Cloudflare Pages** | Ordner hochladen. `_redirects` wird automatisch ausgewertet, Kompression ist dort Standard. |
-| **GitHub Pages** | Funktioniert, aber ohne `.htaccess`. Die Weiterleitungen der alten URLs übernehmen dann die Meta-Refresh-Stubs in den Unterordnern. |
+| **Strato / Apache** | Ordner hochladen. `.htaccess` aktiviert Kompression, Caching, Sicherheitsheader, HTTPS- und www-Weiterleitung sowie die Weiterleitungen der alten WordPress-URLs. |
+| **Netlify / Cloudflare Pages** | Ordner hochladen. `_redirects` wird automatisch ausgewertet, Kompression ist Standard. |
 
-**Kompression ist nicht optional.** Ohne sie wird `style.css` mit 62 statt 17 KB
+**Kompression ist nicht optional.** Ohne sie wird `style.css` mit 64 statt 18 KB
 ausgeliefert. Gemessen entspricht das auf der Startseite mobil dem Unterschied zwischen
 Lighthouse-Performance 86 und 95 — bei identischem Code.
+
+### Gemessen auf der Live-Seite
+
+Lighthouse gegen <https://chaos20140.github.io/devries-galabau/>,
+Mobil mit Slow-4G und 4-facher CPU-Drosselung:
+
+| Seite | Gerät | Performance | Accessibility | Best Practices | SEO | LCP | CLS |
+|---|---|---|---|---|---|---|---|
+| Startseite | Desktop | 99 | 100 | 100 | 100 | 0,8 s | 0 |
+| Startseite | Mobil | 93 | 100 | 100 | 100 | 2,3 s | 0 |
+| Referenzen | Mobil | 100 | 100 | 100 | 100 | 1,7 s | 0 |
+| Kontakt | Mobil | 100 | 100 | 100 | 100 | 1,7 s | 0 |
 
 ---
 
