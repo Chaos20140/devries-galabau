@@ -532,21 +532,58 @@
     };
     svcSet(0);
 
-    if ("IntersectionObserver" in window && svcSteps.length) {
-      /* Der Schritt, der das mittlere Viewportband schneidet, führt.
-         Kein Hover, keine Maus — auf Touch und mit Tastatur identisch. */
-      var svcIo = new IntersectionObserver(function (entries) {
-        entries.forEach(function (en) {
-          if (en.isIntersecting) svcSet(svcSteps.indexOf(en.target));
+    if (hasGsap && typeof gsap.matchMedia === "function") {
+      var svcMM = gsap.matchMedia();
+
+      /* Gepinnte Fassung: Die Sektion bleibt stehen, der Scroll blättert
+         Schritt für Schritt durch die vier Disziplinen — immer genau ein
+         Text rechts, ein Bild links. Die Scrollstrecke ist bewusst knapp
+         bemessen (0,85 Bildschirmhöhen je Schritt), damit sich das Blättern
+         zügig anfühlt und die Seite nicht ausufert. */
+      svcMM.add("(min-width: 861px) and (prefers-reduced-motion: no-preference)", function () {
+        svcs.classList.add("is-pinned");
+        var st = ScrollTrigger.create({
+          trigger: svcs,
+          start: "top top",
+          end: function () { return "+=" + Math.round(window.innerHeight * 0.85 * (svcSteps.length - 1) + window.innerHeight * 0.35); },
+          pin: true,
+          scrub: false,
+          anticipatePin: 1,
+          invalidateOnRefresh: true,
+          onUpdate: function (self) {
+            /* Gleichmäßige Aufteilung über die Strecke, letzter Schritt
+               bekommt etwas Nachlauf, damit er nicht sofort weggescrollt wird. */
+            var i = Math.min(svcSteps.length - 1, Math.floor(self.progress * svcSteps.length * 0.99));
+            svcSet(i);
+          }
         });
+        return function () { svcs.classList.remove("is-pinned"); st.kill(); };
+      });
+
+      /* Schmale Viewports: kein Pinning. Die Bühne klebt unter der Navigation,
+         der jeweils mittige Schritt führt — vertikales Scrollen bleibt normal. */
+      svcMM.add("(max-width: 860px) and (prefers-reduced-motion: no-preference)", function () {
+        if (!("IntersectionObserver" in window)) return;
+        var io2 = new IntersectionObserver(function (entries) {
+          entries.forEach(function (en) { if (en.isIntersecting) svcSet(svcSteps.indexOf(en.target)); });
+        }, { rootMargin: "-48% 0px -48% 0px", threshold: 0 });
+        svcSteps.forEach(function (s) { io2.observe(s); });
+        var onFoc = svcSteps.map(function (s, i) {
+          var a = $("a", s), h = function () { svcSet(i); };
+          if (a) a.addEventListener("focus", h);
+          return h;
+        });
+        return function () {
+          io2.disconnect();
+          svcSteps.forEach(function (s, i) { var a = $("a", s); if (a) a.removeEventListener("focus", onFoc[i]); });
+        };
+      });
+    } else if ("IntersectionObserver" in window && svcSteps.length) {
+      /* Ohne GSAP: einfache Scrollsteuerung, nichts wird gepinnt. */
+      var svcIo = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) { if (en.isIntersecting) svcSet(svcSteps.indexOf(en.target)); });
       }, { rootMargin: "-48% 0px -48% 0px", threshold: 0 });
       svcSteps.forEach(function (s) { svcIo.observe(s); });
-
-      /* Tastaturnutzer springen per Tab durch die Links — das Bild zieht mit. */
-      svcSteps.forEach(function (s, i) {
-        var a = $("a", s);
-        if (a) a.addEventListener("focus", function () { svcSet(i); });
-      });
     }
   }
 
@@ -563,6 +600,127 @@
           .to(".chapter__fade", { opacity: 0.55, ease: "none" }, 0)
           .to(".chapter__inner", { y: 70, opacity: 0.35, ease: "none" }, 0)
           .to(".chapter__scroll", { opacity: 0, duration: 0.25, ease: "none" }, 0);
+  }
+
+  /* ── 10c · Kapitelspur ───────────────────────────────────────────────
+     Zeigt, in welchem Kapitel man steht, und faerbt sich um, sobald das
+     Kapitel auf dunklem Grund liegt. Reine Navigation — die Links sind
+     echte Anker und funktionieren auch ohne diesen Code. */
+  var chapters = $("#chapters");
+  if (chapters) {
+    var chItems = $$(".chapters__item", chapters);
+    var chTargets = chItems.map(function (a) { return $(a.getAttribute("href")); });
+    var DARK = /(^|\s)(bg-ink|bg-pine|svcs|filmstrip|chapter|reveal-pin)(\s|$)/;
+    var chTick = false, chCurrent = -1;
+
+    var chUpdate = function () {
+      chTick = false;
+      var mid = window.innerHeight * 0.4;
+      var best = 0;
+      for (var i = 0; i < chTargets.length; i++) {
+        var el = chTargets[i];
+        if (!el) continue;
+        if (el.getBoundingClientRect().top <= mid) best = i;
+      }
+      if (best !== chCurrent) {
+        chCurrent = best;
+        chItems.forEach(function (a, k) {
+          a.classList.toggle("is-current", k === best);
+          if (k === best) a.setAttribute("aria-current", "true"); else a.removeAttribute("aria-current");
+        });
+      }
+      /* Helligkeit des Untergrunds bestimmen: welches Element liegt gerade
+         hinter der Spur? So bleibt sie auf hellen wie dunklen Flaechen lesbar. */
+      var probe = document.elementFromPoint(window.innerWidth - 6, window.innerHeight / 2);
+      var dark = false;
+      while (probe && probe !== document.body) {
+        if (DARK.test(probe.className || "")) { dark = true; break; }
+        probe = probe.parentElement;
+      }
+      chapters.classList.toggle("is-dark", dark);
+    };
+    window.addEventListener("scroll", function () {
+      if (!chTick) { chTick = true; requestAnimationFrame(chUpdate); }
+    }, { passive: true });
+    window.addEventListener("resize", chUpdate, { passive: true });
+    chUpdate();
+  }
+
+  /* ── 10d · Prozess als mitlaufende Geschichte ────────────────────────
+     Die Schiene zeichnet sich mit dem Scroll, die Schritte hellen der
+     Reihe nach auf. Fuenf Schritte zum Garten — man geht sie mit. */
+  var tl5 = $("#processTl");
+  if (tl5) {
+    var tNodes = $$(".tnode", tl5);
+    var tFill = $(".timeline__rail-fill", tl5);
+    if (reduce) {
+      tNodes.forEach(function (n) { n.classList.add("is-lit"); });
+      if (tFill) tFill.style.transform = "scaleY(1)";
+    } else if (hasGsap) {
+      ScrollTrigger.create({
+        trigger: tl5,
+        start: "top 72%",
+        end: "bottom 62%",
+        scrub: 0.5,
+        invalidateOnRefresh: true,
+        onUpdate: function (self) {
+          if (tFill) tFill.style.transform = "scaleY(" + self.progress.toFixed(3) + ")";
+          var lit = Math.round(self.progress * tNodes.length);
+          tNodes.forEach(function (n, i) { n.classList.toggle("is-lit", i < lit || (i === 0 && self.progress > 0.02)); });
+        }
+      });
+    } else {
+      tNodes.forEach(function (n) { n.classList.add("is-lit"); });
+      if (tFill) tFill.style.transform = "scaleY(1)";
+    }
+  }
+
+  /* ── 10e · Grosse Aussagen scrollgebunden ────────────────────────────
+     Die beiden Statement-Headlines und die Zahlen steigen nicht mehr auf
+     einen Schlag auf, sondern folgen dem Scroll. Das macht aus einem
+     Effekt eine Bewegung, die der Nutzer selbst steuert. */
+  if (hasGsap && !reduce) {
+    /* Wichtig: Was GSAP uebernimmt, muss vorher aus der CSS-Steuerung
+       entlassen werden. Sonst schreiben Transition und Scrub gleichzeitig
+       auf dieselbe transform-Eigenschaft und die Bewegung stockt. */
+    var handOver = function (el) {
+      el.removeAttribute("data-reveal");
+      el.removeAttribute("data-stagger");
+      el.classList.add("is-in", "is-scrubbed");
+    };
+
+    $$(".statement__big").forEach(function (h) {
+      var words = $$(".word > span", h);
+      if (!words.length) return;
+      handOver(h);
+      gsap.fromTo(words, { yPercent: 105 }, {
+        yPercent: 0, ease: "none", stagger: 0.06,
+        scrollTrigger: { trigger: h, start: "top 90%", end: "bottom 64%", scrub: 0.6, invalidateOnRefresh: true }
+      });
+    });
+
+    $$(".figure-line").forEach(function (f) {
+      handOver(f);
+      gsap.fromTo(f, { y: 44, autoAlpha: 0 }, {
+        y: 0, autoAlpha: 1, ease: "none",
+        scrollTrigger: { trigger: f, start: "top 94%", end: "top 60%", scrub: 0.5 }
+      });
+    });
+
+    /* Makro-Material: die Kacheln laufen mit leicht versetzter Tiefe durch,
+       damit das Raster beim Vorbeiscrollen atmet statt starr zu stehen. */
+    var matsWrap = $(".materials");
+    if (matsWrap) {
+      handOver(matsWrap);
+      $$(".mat", matsWrap).forEach(function (m, i) {
+        m.style.opacity = "";
+        m.style.transform = "";
+        gsap.fromTo(m, { y: 34 + (i % 3) * 20 }, {
+          y: 0, ease: "none",
+          scrollTrigger: { trigger: matsWrap, start: "top bottom", end: "bottom 62%", scrub: 0.7 }
+        });
+      });
+    }
   }
 
   /* ── 11 · Signatur „Plan wird Garten" ────────────────────────────────

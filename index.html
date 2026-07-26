@@ -33,7 +33,7 @@ window.__dvgFailsafe=setTimeout(function(){r.classList.add('motion-failed');},25
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/manrope-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/jetbrains-mono-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/instrument-serif-italic-latin.woff2" crossorigin>
-<link rel="stylesheet" href="assets/css/style.css?v=9">
+<link rel="stylesheet" href="assets/css/style.css?v=13">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"LandscapingBusiness","name":"de Vries Galabau","alternateName":"de Vries Garten- und Landschaftsbau","image":"https://devries-galabau.de/assets/img/og-default.jpg","logo":"https://devries-galabau.de/assets/img/icon-512.png","@id":"https://devries-galabau.de/","url":"https://devries-galabau.de/","telephone":"+4951531552","email":"info@devries-galabau.de","founder":"Andreas de Vries","foundingDate":"1998","priceRange":"€€","address":{"@type":"PostalAddress","streetAddress":"An den Flachsrotten 2","postalCode":"31020","addressLocality":"Salzhemmendorf","addressCountry":"DE"},"areaServed":["Salzhemmendorf","Hameln","Hildesheim","Weserbergland"],"knowsAbout":["Gartengestaltung","Gartenplanung","Gartenpflege","Bepflanzung","Pflasterarbeiten","Natursteinmauern"],"openingHoursSpecification":[{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday"],"opens":"08:00","closes":"16:00"}],"sameAs":["https://www.facebook.com/devriesdienstleistungen","https://www.instagram.com/dv_devries/"]}
 </script>
@@ -44,6 +44,21 @@ window.__dvgFailsafe=setTimeout(function(){r.classList.add('motion-failed');},25
      jetzt ueber den Hero selbst ein, nicht ueber eine Wartezeit. -->
 <a class="skip" href="#main">Zum Inhalt springen</a>
 <div class="scroll-prog" id="scrollProg"></div>
+
+<!-- ===== KAPITELSPUR ==================================================
+     Gibt der Startseite eine erzählerische Klammer: Der Nutzer sieht
+     jederzeit, in welchem Kapitel des „digitalen Gartenspaziergangs" er
+     steht — und kann direkt springen. Bewusst als echte Navigation mit
+     Ankerlinks umgesetzt, nicht als reine Deko: so ist sie auch mit
+     Tastatur und Screenreader nutzbar. Ab 1180px sichtbar. -->
+<nav class="chapters" id="chapters" aria-label="Kapitel dieser Seite">
+  <a class="chapters__item" href="#hero"><span class="chapters__label">Start</span><span class="chapters__dot"></span></a>
+  <a class="chapters__item" href="#leistungen"><span class="chapters__label">Handwerk</span><span class="chapters__dot"></span></a>
+  <a class="chapters__item" href="#signatur"><span class="chapters__label">Schicht für Schicht</span><span class="chapters__dot"></span></a>
+  <a class="chapters__item" href="#referenzen"><span class="chapters__label">Projekte</span><span class="chapters__dot"></span></a>
+  <a class="chapters__item" href="#prozess"><span class="chapters__label">Ablauf</span><span class="chapters__dot"></span></a>
+  <a class="chapters__item" href="#kontakt-cta"><span class="chapters__label">Ihr Projekt</span><span class="chapters__dot"></span></a>
+</nav>
 
 <!-- ===== TOPBAR ===== -->
 <div class="topbar">
@@ -196,7 +211,7 @@ window.__dvgFailsafe=setTimeout(function(){r.classList.add('motion-failed');},25
   <div class="wrap">
     <div class="section__head">
       <span class="eyebrow eyebrow--light">Was wir können</span>
-      <h2 class="mt-s">Vier Disziplinen,<br>ein Handwerk</h2>
+      <h2 class="mt-s">Vier Disziplinen,<br> ein Handwerk</h2>
     </div>
 
     <div class="svcs__grid">
@@ -363,7 +378,11 @@ window.__dvgFailsafe=setTimeout(function(){r.classList.add('motion-failed');},25
       <span class="eyebrow">So arbeiten wir</span>
       <h2 class="mt-s">In fünf Schritten zum Garten</h2>
     </div>
-    <div class="timeline" data-stagger>
+    <!-- Der Prozess ist die eigentliche Geschichte: fünf Schritte zum Garten.
+         Die Linie zeichnet sich beim Scrollen mit, jeder Schritt hellt auf,
+         sobald er erreicht ist — man geht den Ablauf mit, statt ihn zu lesen. -->
+    <div class="timeline" id="processTl">
+      <span class="timeline__rail" aria-hidden="true"><span class="timeline__rail-fill"></span></span>
       <div class="tnode"><span class="tnode__no">01</span><div><h3>Beratung &amp; Vor-Ort-Termin</h3><p>Wir nehmen uns Zeit für Ihre Wünsche – direkt bei Ihnen im Garten. Wir hören zu, prüfen die Gegebenheiten und finden die Richtung.</p></div></div>
       <div class="tnode"><span class="tnode__no">02</span><div><h3>Planung &amp; Skizze</h3><p>Aus Ihren Ideen entsteht ein maßgeschneidertes Konzept mit detaillierten Zeichnungen – ästhetisch und funktional.</p></div></div>
       <div class="tnode"><span class="tnode__no">03</span><div><h3>Material- &amp; Pflanzenauswahl</h3><p>Naturstein, Holz, Pflaster, Stauden oder Bäume – wir wählen mit Ihnen die passenden Materialien und Pflanzen.</p></div></div>
@@ -483,9 +502,9 @@ window.__dvgFailsafe=setTimeout(function(){r.classList.add('motion-failed');},25
   </div>
 </div>
 
-<script src="assets/js/gsap.min.js?v=9"></script>
-<script src="assets/js/ScrollTrigger.min.js?v=9"></script>
-<script src="assets/js/lenis.min.js?v=9"></script>
-<script src="assets/js/main.js?v=9"></script>
+<script src="assets/js/gsap.min.js?v=13"></script>
+<script src="assets/js/ScrollTrigger.min.js?v=13"></script>
+<script src="assets/js/lenis.min.js?v=13"></script>
+<script src="assets/js/main.js?v=13"></script>
 </body>
 </html>
