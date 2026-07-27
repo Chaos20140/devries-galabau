@@ -926,7 +926,26 @@ body::after{content:"";position:fixed;inset:0;z-index:997;pointer-events:none;op
 ::view-transition-old(site-topbar),::view-transition-new(site-topbar),
 ::view-transition-old(site-nav),::view-transition-new(site-nav){animation:none;mix-blend-mode:normal;}
 
-/* §31 Marquee -------------------------------------------------------- */
+/* §30b Materialband — Kapitelwechsel mit Textur ----------------------
+   Vollbreites Band zwischen zwei Kapiteln. Die Textur laeuft mit der
+   langsamsten Parallaxstufe, darueber liegt ein dunkler Verlauf und EIN
+   Satz. Ersetzt das fruehere Endlos-Laufband, das aria-hidden trug und
+   damit gar keine Information transportierte. */
+.band{position:relative;isolation:isolate;overflow:hidden;color:var(--paper);
+  min-height:clamp(280px,42svh,460px);display:grid;align-items:center;
+  padding-block:clamp(3rem,2rem + 4vw,6rem);}
+.band__media{position:absolute;inset:0;z-index:-2;}
+.band__media img{width:100%;height:100%;object-fit:cover;}
+.band::after{content:"";position:absolute;inset:0;z-index:-1;
+  background:linear-gradient(180deg,rgba(20,26,18,.82) 0%,rgba(20,26,18,.66) 50%,rgba(20,26,18,.86) 100%);}
+.band__line{font-family:var(--display);font-size:clamp(1.8rem,1.1rem + 3.2vw,4rem);
+  line-height:1.04;letter-spacing:-.015em;color:var(--chalk);max-width:20ch;
+  text-shadow:0 2px 40px rgba(8,14,8,.5);}
+.band__sub{font-family:var(--mono);font-size:var(--fs-micro);letter-spacing:.22em;
+  text-transform:uppercase;color:var(--rust-soft);margin-top:1.6rem;}
+@media (max-width:860px){.band{min-height:clamp(240px,38svh,360px);}}
+
+/* §31 Marquee (nicht mehr verwendet, für Unterseiten erhalten) ------- */
 .marquee{overflow:hidden;border-block:1px solid var(--line);padding-block:1.3rem;
   -webkit-mask:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);mask:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);}
 .bg-ink .marquee,.bg-pine .marquee{border-color:var(--line-light);}
@@ -1072,7 +1091,11 @@ html.js.motion-failed .img-reveal img{transform:none !important;}
   .js .gitem img{clip-path:none !important;transition:none !important;}
   .chapter__inner > *{opacity:1 !important;transform:none !important;animation:none !important;}
   .chapter__fade{opacity:0 !important;}
-  .js .layer{transform:none !important;}
+  /* ⚠ Der Selektor hiess frueher .layer und traf damit nichts — das Attribut
+     heisst [data-layer]. Praktisch war Parallax trotzdem aus, weil main.js
+     die Variable --py bei reduzierter Bewegung gar nicht erst schreibt;
+     die Regel ist die zweite Absicherung, falls das JS je anders laeuft. */
+  .js [data-layer]{transform:none !important;}
 
   /* 2) Dauerbewegung im Hintergrund: aus. */
   .marquee__track{animation:none !important;transform:none !important;}
