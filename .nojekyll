@@ -1,0 +1,9 @@
+Diese Datei schaltet die Jekyll-Verarbeitung auf GitHub Pages ab.
+
+Ohne sie behandelt GitHub Pages das Repository als Jekyll-Projekt und
+ignoriert beim Deployment alle Dateien und Ordner, deren Name mit einem
+Unterstrich beginnt — hier betrifft das `_redirects`. Zusätzlich kann Jekyll
+an Inhalten mit geschweiften Klammern scheitern.
+
+Die Seite ist statisches HTML und braucht keinerlei Verarbeitung.
+Bitte nicht löschen.

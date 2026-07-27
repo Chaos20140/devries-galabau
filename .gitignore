@@ -1,0 +1,18 @@
+# Arbeits-/Analyse-Dateien (NICHT deployen)
+.planning/
+assets/img/raw/
+.playwright-mcp/
+*.jpeg
+!assets/img/**/*.jpeg
+node_modules/
+.DS_Store
+Thumbs.db
+
+# --- nur auf dem Deployment-Branch "main" ---
+# Interne Arbeitsdokumente werden nicht im oeffentlichen Repository veroeffentlicht.
+# Sie bleiben lokal und auf dem Arbeitsbranch improvement/awwwards-motion-upgrade.
+docs/
+AUDIT-BEFORE-UPGRADE.md
+CHANGELOG-AWWWARDS-UPGRADE.md
+TOOLING-DECISIONS.md
+.claude/
