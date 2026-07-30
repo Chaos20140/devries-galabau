@@ -250,5 +250,9 @@
   "og-default.jpg": {
     "w": 1200,
     "h": 630
+  },
+  "rg-insektenhotel": {
+    "w": 1024,
+    "h": 768
   }
 }
