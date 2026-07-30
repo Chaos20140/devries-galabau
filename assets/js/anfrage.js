@@ -68,6 +68,21 @@
           .catch(fallback);
         return;
       }
+      /* Zentrale Stelle: speichert, falls eingerichtet — sonst mailto. */
+      if (window.dvFormular) {
+        window.dvFormular.senden({
+          form: form,
+          quelle: 'anfrage',
+          betreff: betreff.trim(),
+          felder: {
+            name: d.get('name'), email: d.get('email'), telefon: d.get('tel'),
+            ort: d.get('ort'), art: d.get('art'), bereich: d.get('bereich'),
+            zeitraum: d.get('zeitraum'), nachricht: d.get('text')
+          },
+          mailto: fallback
+        });
+        return;
+      }
       fallback();
 
       function fallback() {

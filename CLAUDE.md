@@ -75,7 +75,7 @@ gewerblich; Menschen mit Interesse an Qualität, individueller & naturnaher Gest
 >   Aktiver Punkt über `active="…"`, CTA-Ziel über `cta="…"`.
 > - Je Seite **eine** Logikdatei `assets/js/<seite>.js` (Reveals, ggf. Formular).
 > - `assets/js/three.min.js` **nur** auf `index.html` (3D-Gartenrundgang).
-> - Cache-Busting weiterhin `?v=N` auf allen Seiten gleichzeitig hochzählen (aktuell `v=9`).
+> - Cache-Busting weiterhin `?v=N` auf allen Seiten gleichzeitig hochzählen (aktuell `v=10`).
 >
 > Die folgenden Absätze 3, 6.1–6.5 und 7 beschreiben den v1–v7-Stand und bleiben nur als
 > Entwicklungsgeschichte stehen — **nicht** als Vorgabe.
@@ -108,10 +108,13 @@ gewerblich; Menschen mit Interesse an Qualität, individueller & naturnaher Gest
 ├── assets/
 │   ├── css/base.css        # NUR Schriften, Sprungmarke, Fokusring, .sr-only
 │   ├── js/garden-header.js · garden-footer.js   # Web Components (Shadow DOM)
+│   ├── js/formular.js      # EINE Stelle fuer den Formularversand (mailto / Supabase)
 │   ├── js/<seite>.js       # Seitenlogik, eine Datei je Seite
 │   ├── js/three.min.js     # nur index.html
 │   ├── fonts/              # outfit-300/400/500/600/700, instrument-serif (+italic), woff2
 │   └── img/                # optimierte WebP (‑1600/‑800), logo, favicons, og; raw/ = Originale (nicht deployen)
+├── supabase/schema.sql     # Tabelle + RLS, NICHT deployen (nur Arbeits-Branch)
+├── SUPABASE.md             # Anleitung + offene Entscheidungen, NICHT deployen
 ├── CLAUDE.md · CONTENT_INVENTORY.md · DESIGN-AND-MOTION-SYSTEM.md · IMAGE_SOURCES.md
 ├── README.md · robots.txt · sitemap.xml · _redirects · .htaccess · .nojekyll
 └── .planning/              # Analyse/Arbeitsstände, Recherche, altes Design (NICHT deployen)
@@ -549,3 +552,23 @@ erweitern statt parallele bauen → 4. Desktop+Mobile im selben Schritt → 5. B
   Einbindung außer den Verweisen im Rechtstext.
   **QA:** 13 Unterseiten × 2 Viewports ohne Befund; Startseite Desktop und Mobil je 0
   Konsolenfehler, 0 HTTP-Fehler, 0 Überlauf; Alt + A und `#admin` bewirken nichts mehr.
+
+- **2026-07-30 · v10 — Deployment und Formular-Anbindung.**
+  **Veröffentlicht:** `main` trägt jetzt den Gartenrundgang; live geprüft, alle 15 Routen im
+  neuen Design, Kompression aktiv (`index.js` 145 → 37 KB, `three.min.js` 589 → 147 KB),
+  0 Konsolenfehler auf Startseite, Kontakt und Impressum. Beim Deployment aus dem
+  öffentlichen Baum genommen: die 19 Recherche-Screenshots fremder Studioseiten sowie
+  `CLAUDE.md`, `CONTENT_INVENTORY.md`, `DESIGN-AND-MOTION-SYSTEM.md`, `IMAGE_SOURCES.md`.
+  `main` ist ein Orphan-Branch ohne gemeinsamen Vorfahren — gesetzt wird er per
+  `git read-tree --reset -u redesign/gartenrundgang`, dann die internen Unterlagen aus dem
+  Index nehmen und committen.
+  **Supabase vorbereitet, nicht aktiv:** neue Datei `assets/js/formular.js` als **einzige**
+  Stelle für den Versand; alle sieben Formulare laufen darüber. Zugangsdaten leer →
+  Verhalten unverändert `mailto`, kein Aufruf nach außen. `supabase/schema.sql` legt die
+  Tabelle mit Row Level Security an: `anon` darf **nur** einfügen, es gibt bewusst keine
+  `select`-Regel — sonst könnte jeder Besucher alle Kundenanfragen lesen, denn der
+  Schlüssel steht im Quelltext. Offen und in `SUPABASE.md` festgehalten: Projekt anlegen
+  (Region Frankfurt), AVV, Absatz in der Datenschutzerklärung, `connect-src` in der CSP.
+  Geprüft gegen einen lokalen Nachbau der REST-Schnittstelle: normaler Fall speichert und
+  leitet auf `danke.html`, Fehler 500 fällt auf `mailto` zurück, Honigtopf und Zeitschwelle
+  greifen — beide **ohne** stilles Verwerfen, die Nachricht geht per `mailto` trotzdem raus.
