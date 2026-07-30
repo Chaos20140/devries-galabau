@@ -75,7 +75,7 @@ gewerblich; Menschen mit Interesse an Qualität, individueller & naturnaher Gest
 >   Aktiver Punkt über `active="…"`, CTA-Ziel über `cta="…"`.
 > - Je Seite **eine** Logikdatei `assets/js/<seite>.js` (Reveals, ggf. Formular).
 > - `assets/js/three.min.js` **nur** auf `index.html` (3D-Gartenrundgang).
-> - Cache-Busting weiterhin `?v=N` auf allen Seiten gleichzeitig hochzählen (aktuell `v=8`).
+> - Cache-Busting weiterhin `?v=N` auf allen Seiten gleichzeitig hochzählen (aktuell `v=9`).
 >
 > Die folgenden Absätze 3, 6.1–6.5 und 7 beschreiben den v1–v7-Stand und bleiben nur als
 > Entwicklungsgeschichte stehen — **nicht** als Vorgabe.
@@ -479,7 +479,7 @@ erweitern statt parallele bauen → 4. Desktop+Mobile im selben Schritt → 5. B
   Merke: **Erst messen, dann urteilen.** Zwei der drei größten Funde (undefinierte
   Button-Klassen, Flex-Kontext der `.wrap`) waren durch reine Codelektüre nicht sichtbar.
 
-- **2026-07-30 · v8 „Gartenrundgang" (`?v=8`, Branch `redesign/gartenrundgang`).** Auf Wunsch
+- **2026-07-30 · v8 „Gartenrundgang" (`?v=9`, Branch `redesign/gartenrundgang`).** Auf Wunsch
   **das komplette v4–v7-Design entfernt** und durch das Claude-Design-Projekt *Gartenrundgang*
   ersetzt (1:1, Abweichungen einzeln begründet in `DESIGN-AND-MOTION-SYSTEM.md` §9).
   **Weg:** `assets/css/style.css`, `assets/js/main.js`, `gsap.min.js`, `ScrollTrigger.min.js`,
