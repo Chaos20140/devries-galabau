@@ -323,7 +323,7 @@ class Component extends DCLogic {
       const n = document.getElementById('rg-form-note');
       const betreff = 'Anfrage: ' + (d.get('leistung') || 'Garten');
       const mailto = () => {
-        window.location.href = 'mailto:info@devries-galabau.de?subject=' + encodeURIComponent(betreff) + '&body=' + encodeURIComponent(body);
+        window.location.href = 'mailto:' + ((window.dvFormular && window.dvFormular.empfaenger) || 'info@devries-galabau.de') + '?subject=' + encodeURIComponent(betreff) + '&body=' + encodeURIComponent(body);
         /* Feste Vorlage, kein eingesetzter Wert — deshalb innerHTML fuer den Link. */
         if (n) n.innerHTML = 'Ihr E-Mail-Programm öffnet sich mit der fertigen Anfrage. Alternativ: <a href="tel:051531552">05153 1552</a>';
       };
@@ -533,7 +533,51 @@ class Component extends DCLogic {
       if (tx && m) { tx.style.opacity = '1'; tx.style.transform = 'none'; }
     });
 
-    if (this.flow) this.flow.style.height = m ? '300vh' : '520vh';
+    /* ⚠ Auf dem Handy wird der Ablauf komplett aufgeloest, nicht nur
+       umgestellt. Der Entwurf laesst die Karten auch dort in einer Box
+       mit sticky/height:100vh/overflow:hidden stehen — vier gestapelte
+       Karten sind aber 1108 px hoch und wurden bei 844 px abgeschnitten.
+       Dazu lief der 300vh hohe Container weiter: man scrollte durch
+       rund 1400 px Leere, waehrend die Laufleiste 01 → 02 → 03
+       durchzaehlte, obwohl dieselbe Karte im Bild stand.
+       Auf Mobil daher: normaler Textfluss, Ueberschrift im Fluss,
+       Laufleiste weg — die Karten tragen ihre Nummer ohnehin selbst. */
+    const stage = document.querySelector('[data-flow-stage]');
+    const fhead = document.querySelector('[data-flow-head]');
+    const fprog = document.querySelector('[data-flow-progress]');
+    [stage, fhead, fprog].forEach(el => {
+      if (el && el.dataset.dPos == null) {
+        el.dataset.dPos = el.style.position || '';
+        el.dataset.dTop = el.style.top || '';
+        el.dataset.dLeft = el.style.left || '';
+        el.dataset.dRight = el.style.right || '';
+        el.dataset.dHeight = el.style.height || '';
+        el.dataset.dOverflow = el.style.overflow || '';
+      }
+    });
+    const zurueck = (el) => {
+      if (!el) return;
+      el.style.position = el.dataset.dPos; el.style.top = el.dataset.dTop;
+      el.style.left = el.dataset.dLeft; el.style.right = el.dataset.dRight;
+      el.style.height = el.dataset.dHeight; el.style.overflow = el.dataset.dOverflow;
+      el.style.display = ''; el.style.margin = ''; el.style.padding = '';
+    };
+    if (m) {
+      if (stage) { stage.style.position = 'static'; stage.style.height = 'auto'; stage.style.overflow = 'visible'; }
+      /* left/right wirken im normalen Fluss nicht mehr — sonst klebt die
+         Ueberschrift am Rand, waehrend die Karten eingerueckt sind. */
+      if (fhead) { fhead.style.position = 'static'; fhead.style.margin = '0 0 18px'; fhead.style.padding = '0 5vw'; }
+      if (fprog) fprog.style.display = 'none';
+    } else {
+      zurueck(stage); zurueck(fhead); zurueck(fprog);
+    }
+
+    if (this.flow) {
+      this.flow.style.height = m ? 'auto' : '520vh';
+      /* Platz fuer die feste Kopfzeile — ohne das schiebt sich die
+         Ueberschrift darunter, sobald der Abschnitt oben ankommt. */
+      this.flow.style.padding = m ? 'clamp(88px,12vh,116px) 0 26px' : '';
+    }
     const svgs = Array.from(document.querySelectorAll('#rg-flow svg'));
     svgs.forEach(s => { s.style.display = m ? 'none' : 'block'; });
     if (this.flowDot) this.flowDot.style.display = m ? 'none' : 'block';
@@ -546,7 +590,9 @@ class Component extends DCLogic {
         this.flowTrack.style.display = 'flex';
         this.flowTrack.style.flexDirection = 'column';
         this.flowTrack.style.gap = '18px';
-        this.flowTrack.style.padding = '120px 5vw 40px';
+        /* 120px oben stammten vom waagerechten Filmstreifen des Entwurfs.
+           Im normalen Fluss ist das eine Luecke unter der Ueberschrift. */
+        this.flowTrack.style.padding = '0 5vw 8px';
         this.flowTrack.style.borderLeft = 'none';
       } else {
         this.flowTrack.style.position = 'absolute';

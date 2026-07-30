@@ -83,12 +83,31 @@
         '.gh-cta em{position:absolute;inset:0;background:linear-gradient(115deg,transparent 36%,rgba(255,255,255,.34) 50%,transparent 64%);transform:translateX(-120%);transition:transform .9s ease}' +
         '.gh-cta:hover em{transform:translateX(120%)}' +
         '.gh-cta i{position:relative;width:8px;height:8px;border-radius:50%;background:#8ECF4F;box-shadow:0 0 12px rgba(142,207,79,.9);display:block;animation:ghBreathe 2.2s ease-in-out infinite}' +
-        '.gh-menu{position:fixed;inset:0;z-index:45;display:none;flex-direction:column;justify-content:flex-start;gap:0;padding:96px clamp(20px,7vw,40px) 40px;background:linear-gradient(160deg,rgba(246,249,244,.98),rgba(226,238,222,.98));opacity:0;transition:opacity .4s ease;overflow-y:auto}' +
-        '.gh-inner{width:100%;margin:auto 0;display:flex;flex-direction:column;gap:2px}' +
-        '.gh-big{font-size:clamp(21px,6vw,30px);font-weight:600;letter-spacing:-.035em;color:#0F2418;padding:11px 0;border-bottom:1px solid rgba(16,35,26,.1)}' +
+        /* Menue: eigene Kopfleiste mit Logo und Schliessen-Knopf, weil das
+           Overlay die Kopfzeile der Seite verdeckt. Ohne die kam man nicht
+           zurueck und sah das Logo nicht.
+           Aufbau in drei Zonen (Kopf · scrollbare Mitte · fester Fuss),
+           damit Anfrage-Knopf und Telefonnummer IMMER sichtbar bleiben —
+           vorher rutschten sie bei 844 px Hoehe unten aus dem Bild. */
+        '.gh-menu{position:fixed;inset:0;z-index:45;display:none;flex-direction:column;background:linear-gradient(160deg,#F6F9F4,#E2EEDE);opacity:0;transition:opacity .4s ease}' +
+        '.gh-mtop{flex:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px clamp(16px,5vw,28px);border-bottom:1px solid rgba(16,35,26,.09)}' +
+        '.gh-mbrand{display:flex;align-items:center;gap:11px;min-width:0}' +
+        '.gh-mbrand img{width:38px;height:38px;border-radius:50%;object-fit:cover;flex:none;box-shadow:0 0 0 2px rgba(255,255,255,.95)}' +
+        '.gh-mbrand b{display:block;font-size:16px;font-weight:700;letter-spacing:-.02em;color:#0F2418;line-height:1.1}' +
+        '.gh-mbrand s{display:block;text-decoration:none;font-size:10px;font-weight:700;letter-spacing:.22em;color:#2C6E49}' +
+        '.gh-close{flex:none;display:inline-flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:999px;border:1px solid rgba(16,35,26,.14);background:rgba(255,255,255,.9);cursor:pointer;padding:0}' +
+        '.gh-close svg{width:18px;height:18px;stroke:#0F2418;stroke-width:2.2;fill:none;stroke-linecap:round}' +
+        '.gh-inner{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:18px clamp(16px,5vw,28px) 8px}' +
+        '.gh-grp{margin:0 0 6px;font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#4F7B33}' +
+        '.gh-grp+.gh-grp,.gh-glist+.gh-grp{margin-top:20px}' +
+        '.gh-big{display:flex;align-items:center;min-height:46px;font-size:19px;font-weight:600;letter-spacing:-.025em;color:#0F2418;border-bottom:1px solid rgba(16,35,26,.08)}' +
         '.gh-onBig{color:#2C6E49}' +
-        '.gh-mcta{display:flex;flex-direction:column;gap:10px;margin-top:22px}' +
-        '.gh-mcta a{display:inline-flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;padding:16px 26px;border-radius:999px}' +
+        /* Zweitrangige Seiten zweispaltig — spart die halbe Hoehe, ohne
+           dass etwas wegfaellt. */
+        '.gh-glist{display:grid;grid-template-columns:1fr 1fr;column-gap:14px}' +
+        '.gh-glist .gh-big{font-size:16px;min-height:44px}' +
+        '.gh-mcta{flex:none;display:flex;flex-direction:column;gap:9px;padding:12px clamp(16px,5vw,28px) calc(14px + env(safe-area-inset-bottom));border-top:1px solid rgba(16,35,26,.09);background:rgba(255,255,255,.5)}' +
+        '.gh-mcta a{display:inline-flex;align-items:center;justify-content:center;min-height:50px;font-size:16px;font-weight:700;padding:0 24px;border-radius:999px}' +
         /* Sichtbarer Fokusring — im Design nicht vorhanden, fuer die
            Tastaturbedienung aber notwendig. */
         '.gh-link:focus-visible,.gh-item:focus-visible,.gh-big:focus-visible,.gh-tog:focus-visible,.gh-burger:focus-visible,.gh-cta:focus-visible,.gh-brand:focus-visible{outline:3px solid #1F5637;outline-offset:3px}' +
@@ -111,14 +130,27 @@
           '<button class="gh-burger" type="button" aria-label="Menü öffnen" aria-expanded="false"><i><b></b><b></b><b></b></i></button>' +
           '<a class="gh-cta" href="' + cta + '"><em></em><i></i><span class="gh-ctalabel"><span class="gh-ctaword">Kostenlos </span>anfragen</span></a>' +
         '</header>' +
-        '<div class="gh-menu" role="dialog" aria-modal="true" aria-label="Menü"><div class="gh-inner">' +
-          MAIN.map(m => big(m[0], m[1])).join('') +
-          MORE.map(m => big(m[0], m[1])).join('') +
+        '<div class="gh-menu" role="dialog" aria-modal="true" aria-label="Menü">' +
+          '<div class="gh-mtop">' +
+            '<a class="gh-mbrand" href="index.html">' +
+              '<img src="' + LOGO + '" alt="" width="38" height="38">' +
+              '<span><b>de Vries</b><s>GALABAU</s></span>' +
+            '</a>' +
+            '<button class="gh-close" type="button" aria-label="Menü schließen">' +
+              '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>' +
+            '</button>' +
+          '</div>' +
+          '<div class="gh-inner">' +
+            '<p class="gh-grp">Leistungen</p>' +
+            MAIN.map(m => big(m[0], m[1])).join('') +
+            '<p class="gh-grp">Unternehmen</p>' +
+            '<div class="gh-glist">' + MORE.map(m => big(m[0], m[1])).join('') + '</div>' +
+          '</div>' +
           '<div class="gh-mcta">' +
             '<a href="' + cta + '" style="background:linear-gradient(140deg,#2A6E42,#123324);color:#F4F9F0">Kostenlos anfragen</a>' +
             '<a href="tel:051531552" style="border:1px solid rgba(16,35,26,.18);color:#0F2418">05153 1552</a>' +
           '</div>' +
-        '</div></div>';
+        '</div>';
 
       this.head = root.querySelector('.gh-head');
       this.menu = root.querySelector('.gh-menu');
@@ -150,8 +182,12 @@
       };
 
       this.burger.addEventListener('click', () => setOpen(!this.open));
+      /* Schliessen-Knopf in der Menue-Kopfleiste: das Overlay verdeckt den
+         Burger der Seite, ohne ihn gibt es keinen Weg zurueck. */
+      const closeBtn = root.querySelector('.gh-close');
+      if (closeBtn) closeBtn.addEventListener('click', () => { setOpen(false); this.burger.focus(); });
       this.menu.addEventListener('click', e => {
-        if (e.target.tagName === 'A' && this.open) setOpen(false);
+        if (e.target.closest('a') && this.open) setOpen(false);
       });
       this.tog.addEventListener('click', e => {
         e.preventDefault();

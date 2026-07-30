@@ -86,7 +86,7 @@
       fallback();
 
       function fallback() {
-        window.location.href = 'mailto:info@devries-galabau.de?subject='
+        window.location.href = 'mailto:' + ((window.dvFormular && window.dvFormular.empfaenger) || 'info@devries-galabau.de') + '?subject='
           + encodeURIComponent(betreff.trim()) + '&body=' + encodeURIComponent(lines.join('\n'));
       }
     });
