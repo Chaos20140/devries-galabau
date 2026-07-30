@@ -47,7 +47,19 @@ class Component extends DCLogic {
       e.preventDefault();
       const d = new FormData(form);
       const body = ['Name: ' + (d.get('name') || ''), 'E-Mail: ' + (d.get('email') || ''), 'Telefon: ' + (d.get('tel') || ''), '', d.get('text') || ''].join('\n');
-      window.location.href = 'mailto:info@devries-galabau.de?subject=' + encodeURIComponent('Anfrage Gartengestaltung') + '&body=' + encodeURIComponent(body);
+      const mailto = () => {
+        window.location.href = 'mailto:info@devries-galabau.de?subject=' + encodeURIComponent('Anfrage Gartengestaltung') + '&body=' + encodeURIComponent(body);
+      };
+      /* Zentrale Stelle: speichert, falls eingerichtet — sonst mailto. */
+      if (window.dvFormular) window.dvFormular.senden({
+        form: form, quelle: 'gartengestaltung', betreff: 'Anfrage Gartengestaltung',
+        felder: {
+          name: d.get('name'), email: d.get('email'),
+          telefon: d.get('tel'), nachricht: d.get('text')
+        },
+        mailto: mailto
+      });
+      else mailto();
     });
   }
   componentWillUnmount() { if (this.io) this.io.disconnect(); }

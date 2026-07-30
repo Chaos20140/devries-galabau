@@ -320,9 +320,24 @@ class Component extends DCLogic {
       e.preventDefault();
       const d = new FormData(form);
       const body = ['Name: ' + (d.get('name') || ''), 'E-Mail: ' + (d.get('mail') || ''), 'Telefon: ' + (d.get('tel') || ''), 'Leistung: ' + (d.get('leistung') || ''), '', d.get('text') || ''].join('\n');
-      window.location.href = 'mailto:info@devries-galabau.de?subject=' + encodeURIComponent('Anfrage: ' + (d.get('leistung') || 'Garten')) + '&body=' + encodeURIComponent(body);
       const n = document.getElementById('rg-form-note');
-      if (n) n.innerHTML = 'Ihr E-Mail-Programm öffnet sich mit der fertigen Anfrage. Alternativ: <a href="tel:051531552">05153 1552</a>';
+      const betreff = 'Anfrage: ' + (d.get('leistung') || 'Garten');
+      const mailto = () => {
+        window.location.href = 'mailto:info@devries-galabau.de?subject=' + encodeURIComponent(betreff) + '&body=' + encodeURIComponent(body);
+        /* Feste Vorlage, kein eingesetzter Wert — deshalb innerHTML fuer den Link. */
+        if (n) n.innerHTML = 'Ihr E-Mail-Programm öffnet sich mit der fertigen Anfrage. Alternativ: <a href="tel:051531552">05153 1552</a>';
+      };
+      /* Zentrale Stelle: speichert, falls eingerichtet — sonst mailto. */
+      if (window.dvFormular) window.dvFormular.senden({
+        form: form, quelle: 'startseite', betreff: betreff,
+        felder: {
+          name: d.get('name'), email: d.get('mail'),
+          telefon: d.get('tel'), bereich: d.get('leistung'), nachricht: d.get('text')
+        },
+        mailto: mailto,
+        danach: () => { if (n) n.textContent = 'Vielen Dank, Ihre Anfrage ist bei uns eingegangen.'; }
+      });
+      else mailto();
     });
   }
 
