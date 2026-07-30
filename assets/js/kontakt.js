@@ -48,7 +48,7 @@ class Component extends DCLogic {
       const d = new FormData(form);
       const body = ['Name: ' + (d.get('name') || ''), 'E-Mail: ' + (d.get('email') || ''), 'Telefon: ' + (d.get('tel') || ''), '', d.get('text') || ''].join('\n');
       const mailto = () => {
-        window.location.href = 'mailto:info@devries-galabau.de?subject=' + encodeURIComponent('Anfrage über Kontaktformular') + '&body=' + encodeURIComponent(body);
+        window.location.href = 'mailto:' + ((window.dvFormular && window.dvFormular.empfaenger) || 'info@devries-galabau.de') + '?subject=' + encodeURIComponent('Anfrage über Kontaktformular') + '&body=' + encodeURIComponent(body);
       };
       /* Zentrale Stelle: speichert, falls eingerichtet — sonst mailto. */
       if (window.dvFormular) window.dvFormular.senden({

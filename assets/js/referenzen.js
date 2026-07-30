@@ -47,7 +47,7 @@ class Component extends DCLogic {
       e.preventDefault();
       const d = new FormData(form);
       const body = ['Name: ' + (d.get('name') || ''), 'E-Mail: ' + (d.get('email') || ''), 'Telefon: ' + (d.get('tel') || ''), '', d.get('text') || ''].join('\n');
-      window.location.href = 'mailto:info@devries-galabau.de?subject=' + encodeURIComponent('Anfrage zu einem Projekt') + '&body=' + encodeURIComponent(body);
+      window.location.href = 'mailto:' + ((window.dvFormular && window.dvFormular.empfaenger) || 'info@devries-galabau.de') + '?subject=' + encodeURIComponent('Anfrage zu einem Projekt') + '&body=' + encodeURIComponent(body);
     });
   }
   componentWillUnmount() { if (this.io) this.io.disconnect(); }

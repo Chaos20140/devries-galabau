@@ -32,7 +32,9 @@ class Component extends DCLogic {
     this.onResize = () => { this.resizeGL(); this.applyMobile(); this.measureFlowLen(); };
     window.addEventListener('mousemove', this.onMouse, { passive: true });
     window.addEventListener('resize', this.onResize);
-    this.waitTHREE().then(() => { if (this.alive) this.initScene(); })
+    /* Am Desktop sofort, auf dem Handy erst auf Tippen. */
+    if (window.innerWidth < 820) this.zeigeStandbild();
+    else this.ladeTHREE().then(() => { if (this.alive) this.initScene(); })
       .catch(e => console.error('Rundgang:', e));
     this.raf = requestAnimationFrame(this.tick);
   }
@@ -91,14 +93,112 @@ class Component extends DCLogic {
     if (this.io) this.io.disconnect();
   }
 
-  waitTHREE() {
-    return new Promise((res, rej) => {
-      let n = 0;
-      const t = setInterval(() => {
-        if (window.THREE) { clearInterval(t); res(); }
-        else if (++n > 150) { clearInterval(t); rej(new Error('three fehlt')); }
-      }, 60);
+  /* three.js wird nachgeladen statt fest eingebunden. Gepackt sind das
+     146 KB — 85 Prozent des Ladegewichts der Startseite. Am Desktop passiert
+     das sofort, auf dem Handy erst, wenn jemand den Rundgang wirklich
+     startet. Wer nur die Leistungen sucht, zahlt es nie. */
+  ladeTHREE() {
+    if (this.threeLaedt) return this.threeLaedt;
+    this.threeLaedt = new Promise((res, rej) => {
+      if (window.THREE) return res();
+      const s = document.createElement('script');
+      s.src = 'assets/js/three.min.js?v=18';
+      s.async = true;
+      s.onload = () => (window.THREE ? res() : rej(new Error('three geladen, aber nicht da')));
+      s.onerror = () => rej(new Error('three konnte nicht geladen werden'));
+      document.head.appendChild(s);
     });
+    return this.threeLaedt;
+  }
+
+  /* Standbild statt Szene: zeigt, was einen erwartet, und startet den
+     Rundgang erst auf Tippen. Wer nicht tippt, scrollt eine Bildschirmhoehe
+     weiter und ist bei den Leistungen — ohne 146 KB geladen zu haben. */
+  zeigeStandbild() {
+    if (this.standbild || !this.walk) return;
+
+    /* Nur Hintergrund und Knopf — den Begruessungstext liefert die erste
+       Station des Entwurfs. Ein zweiter eigener Text lag frueher darunter
+       und war unleserlich, weil die Tafel (z-index 20) darueber liegt. */
+    const bg = document.createElement('div');
+    bg.id = 'rg-standbild';
+    bg.style.cssText = 'position:fixed;inset:0;z-index:2;pointer-events:none;' +
+      "background-image:linear-gradient(180deg,rgba(246,249,244,.28),rgba(246,249,244,.72))," +
+      "url('assets/img/rg-header-800.webp');background-size:cover;background-position:center";
+
+    const leiste = document.createElement('div');
+    leiste.id = 'rg-startknopf';
+    /* An body angehaengt — die Schriftfamilie sitzt am inneren Container,
+       ohne diese Zeile faellt der Knopf auf die Serifenschrift zurueck. */
+    leiste.style.cssText = 'position:fixed;left:0;right:0;bottom:calc(20px + env(safe-area-inset-bottom));' +
+      'z-index:30;display:flex;flex-direction:column;align-items:center;gap:8px;padding:0 24px;' +
+      'font-family:Outfit,Helvetica,Arial,sans-serif';
+    leiste.innerHTML =
+      '<button type="button" data-start style="min-height:54px;padding:0 30px;border:none;' +
+      'border-radius:999px;background:linear-gradient(140deg,#2A6E42,#123324);color:#F4F9F0;' +
+      'font:inherit;font-size:16px;font-weight:700;cursor:pointer;' +
+      'box-shadow:0 18px 40px -16px rgba(18,51,36,.8)">Rundgang starten</button>' +
+      '<p data-hinweis style="margin:0;font-size:12.5px;color:#3C5145;text-align:center">' +
+      'Lädt einmalig die 3D-Szene · oder einfach weiterscrollen</p>';
+
+    document.body.appendChild(bg);
+    document.body.appendChild(leiste);
+    this.standbild = bg;
+    this.startLeiste = leiste;
+
+    /* Nur die Begruessung zeigen, die uebrigen Tafeln gehoeren zur Fahrt. */
+    if (this.panels) this.panels.forEach((el, i) => {
+      el.style.opacity = i === 0 ? '1' : '0';
+      el.style.visibility = i === 0 ? 'visible' : 'hidden';
+    });
+    /* "Scrollen, um loszugehen" stimmt hier nicht mehr — das tut der Knopf. */
+    const hinweis = document.querySelector('[data-scrollhinweis]');
+    if (hinweis) hinweis.style.display = 'none';
+
+    this.walk.style.height = this.bahnHoehe();
+    leiste.querySelector('[data-start]').addEventListener('click', () => this.starteRundgang());
+  }
+
+  entferneStandbild() {
+    if (this.standbild) { this.standbild.remove(); this.standbild = null; }
+    if (this.startLeiste) { this.startLeiste.remove(); this.startLeiste = null; }
+    const hinweis = document.querySelector('[data-scrollhinweis]');
+    if (hinweis) hinweis.style.display = '';
+    /* Sichtbarkeit wieder der Bildschleife ueberlassen. */
+    if (this.panels) this.panels.forEach(el => { el.style.visibility = ''; });
+  }
+
+  starteRundgang() {
+    if (this.rundgangAn) return;
+    const knopf = this.startLeiste && this.startLeiste.querySelector('[data-start]');
+    const hinweis = this.startLeiste && this.startLeiste.querySelector('[data-hinweis]');
+    if (knopf) { knopf.disabled = true; knopf.textContent = 'Wird geladen …'; }
+    this.ladeTHREE().then(() => {
+      if (!this.alive) return;
+      this.rundgangAn = true;
+      this.initScene();
+      if (this.renderer) this.resizeGL();
+      if (this.walk) this.walk.style.height = this.bahnHoehe();
+      this.entferneStandbild();
+      /* An den Anfang der Bahn, damit die erste Station auch kommt. */
+      const y = this.walk.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }).catch((e) => {
+      console.error('Rundgang:', e);
+      /* Fehlschlag darf die Seite nicht blockieren — Standbild bleibt stehen. */
+      this.threeLaedt = null;
+      if (knopf) { knopf.disabled = false; knopf.textContent = 'Nochmal versuchen'; }
+      if (hinweis) hinweis.textContent = 'Der Rundgang lässt sich gerade nicht laden.';
+    });
+  }
+
+  /* Wie hoch die Scrollbahn ist. Am Desktop wie gehabt. Auf dem Handy
+     nur gut eine Bildschirmhoehe, solange das Standbild steht — sonst
+     scrollte man an einer leeren Leinwand vorbei. Nach dem Start vier
+     Bildschirmhoehen statt der frueheren zehn. */
+  bahnHoehe() {
+    if (!this.isMobile) return '1800vh';
+    return this.rundgangAn ? '400vh' : '112vh';
   }
 
   setupExtras() {
@@ -323,7 +423,7 @@ class Component extends DCLogic {
       const n = document.getElementById('rg-form-note');
       const betreff = 'Anfrage: ' + (d.get('leistung') || 'Garten');
       const mailto = () => {
-        window.location.href = 'mailto:info@devries-galabau.de?subject=' + encodeURIComponent(betreff) + '&body=' + encodeURIComponent(body);
+        window.location.href = 'mailto:' + ((window.dvFormular && window.dvFormular.empfaenger) || 'info@devries-galabau.de') + '?subject=' + encodeURIComponent(betreff) + '&body=' + encodeURIComponent(body);
         /* Feste Vorlage, kein eingesetzter Wert — deshalb innerHTML fuer den Link. */
         if (n) n.innerHTML = 'Ihr E-Mail-Programm öffnet sich mit der fertigen Anfrage. Alternativ: <a href="tel:051531552">05153 1552</a>';
       };
@@ -495,7 +595,13 @@ class Component extends DCLogic {
     if (this.headCta) this.headCta.style.display = m ? 'none' : 'inline-flex';
     if (!m && this.menu) { this.menu.style.display = 'none'; this.menu.style.opacity = '0'; this.menuOpen = false; document.documentElement.style.overflow = ''; }
     if (this.rail) this.rail.style.display = m ? 'none' : 'flex';
-    if (this.walk) this.walk.style.height = m ? '1000vh' : '1800vh';
+    if (this.walk) this.walk.style.height = this.bahnHoehe();
+    /* Beim Wechsel aufs Breitbild ohne geladene Szene nachziehen. */
+    if (!m && !this.threeLaedt) {
+      this.ladeTHREE().then(() => { if (this.alive) this.initScene(); })
+        .catch(e => console.error('Rundgang:', e));
+      this.entferneStandbild();
+    }
 
 
     if (this.panels) this.panels.forEach(p => {
@@ -533,7 +639,51 @@ class Component extends DCLogic {
       if (tx && m) { tx.style.opacity = '1'; tx.style.transform = 'none'; }
     });
 
-    if (this.flow) this.flow.style.height = m ? '300vh' : '520vh';
+    /* ⚠ Auf dem Handy wird der Ablauf komplett aufgeloest, nicht nur
+       umgestellt. Der Entwurf laesst die Karten auch dort in einer Box
+       mit sticky/height:100vh/overflow:hidden stehen — vier gestapelte
+       Karten sind aber 1108 px hoch und wurden bei 844 px abgeschnitten.
+       Dazu lief der 300vh hohe Container weiter: man scrollte durch
+       rund 1400 px Leere, waehrend die Laufleiste 01 → 02 → 03
+       durchzaehlte, obwohl dieselbe Karte im Bild stand.
+       Auf Mobil daher: normaler Textfluss, Ueberschrift im Fluss,
+       Laufleiste weg — die Karten tragen ihre Nummer ohnehin selbst. */
+    const stage = document.querySelector('[data-flow-stage]');
+    const fhead = document.querySelector('[data-flow-head]');
+    const fprog = document.querySelector('[data-flow-progress]');
+    [stage, fhead, fprog].forEach(el => {
+      if (el && el.dataset.dPos == null) {
+        el.dataset.dPos = el.style.position || '';
+        el.dataset.dTop = el.style.top || '';
+        el.dataset.dLeft = el.style.left || '';
+        el.dataset.dRight = el.style.right || '';
+        el.dataset.dHeight = el.style.height || '';
+        el.dataset.dOverflow = el.style.overflow || '';
+      }
+    });
+    const zurueck = (el) => {
+      if (!el) return;
+      el.style.position = el.dataset.dPos; el.style.top = el.dataset.dTop;
+      el.style.left = el.dataset.dLeft; el.style.right = el.dataset.dRight;
+      el.style.height = el.dataset.dHeight; el.style.overflow = el.dataset.dOverflow;
+      el.style.display = ''; el.style.margin = ''; el.style.padding = '';
+    };
+    if (m) {
+      if (stage) { stage.style.position = 'static'; stage.style.height = 'auto'; stage.style.overflow = 'visible'; }
+      /* left/right wirken im normalen Fluss nicht mehr — sonst klebt die
+         Ueberschrift am Rand, waehrend die Karten eingerueckt sind. */
+      if (fhead) { fhead.style.position = 'static'; fhead.style.margin = '0 0 18px'; fhead.style.padding = '0 5vw'; }
+      if (fprog) fprog.style.display = 'none';
+    } else {
+      zurueck(stage); zurueck(fhead); zurueck(fprog);
+    }
+
+    if (this.flow) {
+      this.flow.style.height = m ? 'auto' : '520vh';
+      /* Platz fuer die feste Kopfzeile — ohne das schiebt sich die
+         Ueberschrift darunter, sobald der Abschnitt oben ankommt. */
+      this.flow.style.padding = m ? 'clamp(88px,12vh,116px) 0 26px' : '';
+    }
     const svgs = Array.from(document.querySelectorAll('#rg-flow svg'));
     svgs.forEach(s => { s.style.display = m ? 'none' : 'block'; });
     if (this.flowDot) this.flowDot.style.display = m ? 'none' : 'block';
@@ -546,7 +696,9 @@ class Component extends DCLogic {
         this.flowTrack.style.display = 'flex';
         this.flowTrack.style.flexDirection = 'column';
         this.flowTrack.style.gap = '18px';
-        this.flowTrack.style.padding = '120px 5vw 40px';
+        /* 120px oben stammten vom waagerechten Filmstreifen des Entwurfs.
+           Im normalen Fluss ist das eine Luecke unter der Ueberschrift. */
+        this.flowTrack.style.padding = '0 5vw 8px';
         this.flowTrack.style.borderLeft = 'none';
       } else {
         this.flowTrack.style.position = 'absolute';

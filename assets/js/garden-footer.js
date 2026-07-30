@@ -31,13 +31,27 @@
         '@keyframes gfSway{0%,100%{transform:rotate(-1.7deg)}50%{transform:rotate(1.7deg)}}' +
         '@media (prefers-reduced-motion:reduce){*{animation:none !important}}' +
         '@media (max-width: 900px){.gf-pad{padding-left:clamp(18px,5vw,40px);padding-right:clamp(18px,5vw,40px)}.gf-tree{display:none}}' +
+        /* Handy: die gezeichnete Gartenszene traegt hier nicht. Sie kostete
+           1216 px Fusszeile — knapp ein Drittel der ganzen Seite — und wirkte
+           bei dieser Breite wie Clipart. Bleibt am Desktop, faellt hier weg. */
+        /* ⚠ Alle Abstaende stehen im Design als Inline-Style. Der schlaegt
+           jede Regel aus dem Stylesheet — ohne !important passiert hier
+           nichts. Nachgemessen: 185 px Kopfpolster blieben stehen. */
+        '@media (max-width: 760px){' +
+          '.gf-pad{padding:40px clamp(16px,5vw,24px) 26px !important}' +
+          '[data-meadow],[data-band]{display:none !important}' +
+          '.gf-card{border-radius:20px !important;padding:20px 18px !important;box-shadow:0 18px 40px -30px rgba(12,29,20,.35) !important}' +
+          '.gf-name{font-size:24px !important}' +
+          '.gf-lead{display:none !important}' +
+          '.gf-social{margin-top:14px !important}' +
+        '}' +
         '.gf-wrap{container-type:inline-size}' +
         '.gf-row{display:grid;grid-template-columns:minmax(min-content,2fr) repeat(3,minmax(min-content,.9fr));gap:clamp(14px,1.6vw,36px);align-items:start}' +
         '@container (max-width: 760px){.gf-row{grid-template-columns:repeat(2,minmax(min-content,1fr))}.gf-row>:first-child{grid-column:1/-1}}' +
-        '@container (max-width: 430px){.gf-row{grid-template-columns:minmax(0,1fr)}}' +
+        '@container (max-width: 430px){.gf-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 14px}.gf-row>:first-child{grid-column:1/-1}}' +
         '</style>' +
         '<footer class="gf-pad" style="position:relative;z-index:4;padding:clamp(150px,22vh,270px) clamp(20px,9vw,190px) 96px;background:linear-gradient(180deg,rgba(237,243,232,0) 0%,#EDF3E8 12%,#E6EEE0 100%)">' +
-          '<div style="position:absolute;left:0;right:0;bottom:-14px;height:230px;pointer-events:none;z-index:2;overflow:visible">' +
+          '<div data-meadow style="position:absolute;left:0;right:0;bottom:-14px;height:230px;pointer-events:none;z-index:2;overflow:visible">' +
             '<svg viewBox="0 0 1600 230" preserveAspectRatio="none" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible"></svg>' +
           '</div>' +
           '<div style="position:absolute;left:0;right:0;bottom:-14px;height:104px;pointer-events:none;z-index:6;overflow:visible" data-band>' +
@@ -50,15 +64,15 @@
             '<svg viewBox="0 0 290 900" preserveAspectRatio="xMaxYMax meet" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;overflow:hidden"></svg>' +
           '</div>' +
           '<div class="gf-wrap" style="position:relative;z-index:5;max-width:1280px;margin:0 auto">' +
-            '<div style="position:relative;overflow:hidden;border-radius:clamp(24px,3vw,36px);padding:clamp(26px,3.4vw,48px);background:linear-gradient(155deg,rgba(255,255,255,.72),rgba(255,255,255,.42));backdrop-filter:blur(26px) saturate(1.7);border:1px solid rgba(255,255,255,.72);box-shadow:0 30px 60px -34px rgba(12,29,20,.4), inset 0 1px 0 rgba(255,255,255,.92), inset 0 -1px 0 rgba(255,255,255,.35)">' +
+            '<div class="gf-card" style="position:relative;overflow:hidden;border-radius:clamp(24px,3vw,36px);padding:clamp(26px,3.4vw,48px);background:linear-gradient(155deg,rgba(255,255,255,.72),rgba(255,255,255,.42));backdrop-filter:blur(26px) saturate(1.7);border:1px solid rgba(255,255,255,.72);box-shadow:0 30px 60px -34px rgba(12,29,20,.4), inset 0 1px 0 rgba(255,255,255,.92), inset 0 -1px 0 rgba(255,255,255,.35)">' +
             '<div class="gf-row">' +
             '<div style="min-width:0">' +
             '<div style="display:flex;align-items:center;gap:clamp(12px,1.6vw,20px)">' +
             '<img src="assets/img/rg-logo.webp" alt="" width="84" height="84" style="flex:none;width:clamp(52px,6vw,84px);height:clamp(52px,6vw,84px);border-radius:50%;object-fit:cover;display:block;border:2px solid rgba(255,255,255,.85);box-shadow:0 14px 30px -16px rgba(12,29,20,.45)">' +
-            '<div style="font-size:clamp(28px,4vw,54px);line-height:.94;font-weight:600;letter-spacing:-.045em;background:linear-gradient(120deg,#1B4332,#46761F);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent"><span style="display:block;white-space:nowrap">de Vries</span><span style="display:block;white-space:nowrap">GaLa-Bau</span></div>' +
+            '<div class="gf-name" style="font-size:clamp(28px,4vw,54px);line-height:.94;font-weight:600;letter-spacing:-.045em;background:linear-gradient(120deg,#1B4332,#46761F);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent"><span style="display:block;white-space:nowrap">de Vries</span><span style="display:block;white-space:nowrap">GaLa-Bau</span></div>' +
             '</div>' +
-            '<p style="margin:16px 0 0;font-size:14.5px;line-height:1.6;color:#3C5145;max-width:32ch">Garten- und Landschaftsbau in Salzhemmendorf. Gestaltung, Planung, Bepflanzung und Pflege — seit 1998 aus einer Hand.</p>' +
-            '<div style="display:flex;gap:10px;margin-top:20px">' +
+            '<p class="gf-lead" style="margin:16px 0 0;font-size:14.5px;line-height:1.6;color:#3C5145;max-width:32ch">Garten- und Landschaftsbau in Salzhemmendorf. Gestaltung, Planung, Bepflanzung und Pflege — seit 1998 aus einer Hand.</p>' +
+            '<div class="gf-social" style="display:flex;gap:10px;margin-top:20px">' +
             '<a href="https://www.instagram.com/dv_devries/" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;padding:9px 16px;border-radius:999px;font-size:13px;font-weight:600;color:#1B4332;background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.7)">Instagram</a>' +
             '<a href="https://www.facebook.com/devriesdienstleistungen" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;padding:9px 16px;border-radius:999px;font-size:13px;font-weight:600;color:#1B4332;background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.7)">Facebook</a>' +
             '</div>' +

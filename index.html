@@ -23,7 +23,7 @@
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png?v=1">
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/outfit-600-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/outfit-400-latin.woff2" crossorigin>
-<link rel="stylesheet" href="assets/css/base.css?v=10">
+<link rel="stylesheet" href="assets/css/base.css?v=18">
 <style>
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;background:#EDF3E8;color:#10231A}
@@ -67,7 +67,7 @@
       <p style="position:relative;margin:0 0 18px;font-size:12px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:#2C6E49">Salzhemmendorf · seit 1998</p>
       <h1 style="position:relative;margin:0;font-size:clamp(38px,7vw,104px);line-height:.94;letter-spacing:-.04em;font-weight:600;text-wrap:balance;color:#0A1810">Herzlich<br><span style="font-family:'Instrument Serif',Georgia,serif;font-style:italic;font-weight:400;color:#1F5637;display:inline-block;padding:0 .08em;margin:0 -.08em">Willkommen</span></h1>
       <p style="position:relative;margin:26px auto 0;max-width:46ch;font-size:clamp(15px,1.4vw,19px);line-height:1.55;color:#26382E;text-wrap:pretty">Seit 1998 Ihr Partner für Gartengestaltung, Bepflanzung, Pflasterarbeiten und Pflege. Gehen Sie hindurch — der Weg führt an jeder unserer Leistungen vorbei.</p>
-      <div style="position:relative;display:inline-flex;align-items:center;gap:10px;margin-top:34px;padding:11px 20px;border-radius:999px;background:rgba(255,255,255,.72);backdrop-filter:blur(10px);border:1px solid rgba(16,35,26,.1);font-size:13px;font-weight:500;animation:dvDrift 2.6s ease-in-out infinite">
+      <div data-scrollhinweis style="position:relative;display:inline-flex;align-items:center;gap:10px;margin-top:34px;padding:11px 20px;border-radius:999px;background:rgba(255,255,255,.72);backdrop-filter:blur(10px);border:1px solid rgba(16,35,26,.1);font-size:13px;font-weight:500;animation:dvDrift 2.6s ease-in-out infinite">
         <span style="width:7px;height:7px;border-radius:50%;background:#8ECF4F;display:block;animation:dvBreathe 2.2s ease-in-out infinite"></span>
         Scrollen, um loszugehen
       </div>
@@ -397,13 +397,13 @@
     </section>
 
     <div id="rg-flow" data-screen-label="Ablauf" style="position:relative;z-index:4;height:520vh">
-      <div style="position:sticky;top:0;height:100vh;overflow:hidden">
+      <div data-flow-stage style="position:sticky;top:0;height:100vh;overflow:hidden">
         <div style="position:absolute;inset:0;pointer-events:none;background:radial-gradient(80% 60% at 30% 46%,rgba(214,232,208,.52),rgba(246,249,244,0) 74%)"></div>
-        <div style="position:absolute;left:clamp(20px,5vw,68px);top:clamp(74px,11vh,120px);z-index:3">
+        <div data-flow-head style="position:absolute;left:clamp(20px,5vw,68px);top:clamp(74px,11vh,120px);z-index:3">
           <p style="margin:0 0 10px;font-size:12px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:#2C6E49">So arbeiten wir</p>
           <h2 style="margin:0;font-size:clamp(24px,3.2vw,46px);line-height:1.02;letter-spacing:-.035em;font-weight:600;max-width:16ch;color:#0F2318">Folgen Sie dem Weg.</h2>
         </div>
-        <div style="position:absolute;right:clamp(20px,5vw,68px);top:clamp(78px,11vh,124px);z-index:3;display:flex;align-items:center;gap:13px;padding:11px 20px;border-radius:999px;background:linear-gradient(155deg,rgba(255,255,255,.74),rgba(255,255,255,.44));backdrop-filter:blur(24px) saturate(1.6);border:1px solid rgba(255,255,255,.76);font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#3C5145">
+        <div data-flow-progress style="position:absolute;right:clamp(20px,5vw,68px);top:clamp(78px,11vh,124px);z-index:3;display:flex;align-items:center;gap:13px;padding:11px 20px;border-radius:999px;background:linear-gradient(155deg,rgba(255,255,255,.74),rgba(255,255,255,.44));backdrop-filter:blur(24px) saturate(1.6);border:1px solid rgba(255,255,255,.76);font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#3C5145">
           <span id="rg-flownum">01</span>
           <span style="position:relative;display:block;width:clamp(70px,10vw,150px);height:3px;border-radius:2px;background:rgba(16,35,26,.14)"><span id="rg-flowbar" style="position:absolute;left:0;top:0;height:100%;width:0%;border-radius:2px;background:linear-gradient(90deg,#46761F,#8ECF4F)"></span></span>
           <span id="rg-flowcap" style="letter-spacing:.1em">Vor Ort schauen</span>
@@ -823,10 +823,12 @@
     <garden-footer active="Rundgang"></garden-footer>
   </div>
 </div>
-<script src="assets/js/garden-header.js?v=10"></script>
-<script src="assets/js/garden-footer.js?v=10"></script>
-<script src="assets/js/three.min.js"></script>
-<script src="assets/js/formular.js?v=10"></script>
-<script src="assets/js/index.js?v=10"></script>
+<script src="assets/js/garden-header.js?v=18"></script>
+<script src="assets/js/garden-footer.js?v=18"></script>
+<!-- three.js wird NICHT fest eingebunden: gepackt sind das 146 KB, und auf
+     dem Handy soll sie nur laden, wenn jemand den Rundgang wirklich startet.
+     Das Nachladen steuert assets/js/index.js (ladeTHREE). -->
+<script src="assets/js/formular.js?v=18"></script>
+<script src="assets/js/index.js?v=18"></script>
 </body>
 </html>
