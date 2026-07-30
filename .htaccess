@@ -1,10 +1,11 @@
 # de Vries Galabau — Apache-Konfiguration (Strato & vergleichbare Hoster)
 #
 # Warum diese Datei existiert:
-# Ohne Kompression liefert der Server style.css mit 62 KB statt 17 KB und
-# main.js mit 35 KB statt 11 KB aus. Gemessen mit Lighthouse (Mobil, Slow 4G,
-# 4x CPU-Drosselung) macht das auf der Startseite den Unterschied zwischen
-# Performance 86 und 95 — bei identischem Code.
+# Ohne Kompression gehen die Skripte ungepackt raus. Gemessen mit Lighthouse
+# (Mobil, Slow 4G, 4x CPU-Drosselung) machte das am alten Stand auf der
+# Startseite den Unterschied zwischen Performance 86 und 95 — bei identischem
+# Code. Seit v9 wiegt index.js 145 KB und three.min.js 589 KB; gepackt bleibt
+# davon rund ein Viertel. Ohne Kompression ist die Startseite unbrauchbar.
 #
 # Für Netlify/Cloudflare Pages ist nichts zu tun, dort ist Kompression
 # standardmäßig aktiv (die vorhandene Datei _redirects gilt dort weiter).
@@ -26,7 +27,7 @@
 </IfModule>
 
 # ── Caching ──────────────────────────────────────────────────────────
-# CSS und JS tragen einen Versionsparameter (?v=7) und dürfen deshalb lange
+# CSS und JS tragen einen Versionsparameter (?v=9) und dürfen deshalb lange
 # im Cache bleiben. HTML bewusst kurz, damit Inhaltsänderungen sofort greifen.
 <IfModule mod_expires.c>
   ExpiresActive On

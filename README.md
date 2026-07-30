@@ -3,7 +3,7 @@
 Statische Website für **de Vries Garten- und Landschaftsbau**, Salzhemmendorf.
 Kein Framework, kein Build-Step, keine externen Aufrufe zur Laufzeit.
 
-**Stand:** v7 (`?v=7`) · 2026-07-27
+**Stand:** v9 („Gartenrundgang") · 2026-07-30
 
 ---
 
@@ -36,11 +36,14 @@ Vor dem Deployment sind lediglich diese Verzeichnisse auszuschließen
 (sie stehen bereits in `.gitignore`):
 
 ```
-.planning/            Analyse- und Arbeitsstände
+.planning/            Analyse, Recherche, Design-Quellen, altes Design
 assets/img/raw/       Originaldateien der Bilder
-docs/                 Audit-Screenshots und Messdaten
-*.md                  interne Dokumentation
+.claude/              lokale Entwicklungskonfiguration
 ```
+
+Ebenfalls **nicht** mit ausliefern: `CLAUDE.md`, `CONTENT_INVENTORY.md`,
+`DESIGN-AND-MOTION-SYSTEM.md` und `IMAGE_SOURCES.md`. Das sind interne Arbeitsunterlagen
+mit Notizen zu offenen Punkten — auf einem öffentlichen Branch haben sie nichts verloren.
 
 ### Aktuelles Deployment: GitHub Pages
 
@@ -64,8 +67,8 @@ Zwei Dinge sind auf GitHub Pages zu beachten:
   `frame-ancestors` und `X-Frame-Options` lassen sich dort nicht setzen. Beim späteren
   Wechsel auf Strato/Apache übernimmt das die beiliegende `.htaccess`.
 
-Kompression stellt GitHub Pages selbst bereit — gemessen: `style.css` 17,9 statt 64 KB,
-`main.js` 11,7 statt 35 KB.
+Kompression stellt GitHub Pages selbst bereit. Das ist hier wichtiger als früher: die
+Startseite lädt `three.min.js` mit 589 KB und `index.js` mit 145 KB.
 
 ### Umstellung auf die eigene Domain
 
@@ -93,21 +96,21 @@ Vorschau-URL indexiert wird.
 | **Strato / Apache** | Ordner hochladen. `.htaccess` aktiviert Kompression, Caching, Sicherheitsheader, HTTPS- und www-Weiterleitung sowie die Weiterleitungen der alten WordPress-URLs. |
 | **Netlify / Cloudflare Pages** | Ordner hochladen. `_redirects` wird automatisch ausgewertet, Kompression ist Standard. |
 
-**Kompression ist nicht optional.** Ohne sie wird `style.css` mit 64 statt 18 KB
-ausgeliefert. Gemessen entspricht das auf der Startseite mobil dem Unterschied zwischen
-Lighthouse-Performance 86 und 95 — bei identischem Code.
+**Kompression ist nicht optional.** Die Startseite lädt `three.min.js` (589 KB) und
+`index.js` (145 KB); gepackt bleibt davon etwa ein Viertel. Ohne Kompression ist sie auf
+Mobilfunk unbrauchbar.
 
-### Gemessen auf der Live-Seite
+### Messwerte
 
-Lighthouse gegen <https://chaos20140.github.io/devries-galabau/>,
-Mobil mit Slow-4G und 4-facher CPU-Drosselung:
+Die Lighthouse-Zahlen des alten Designs sind mit v9 hinfällig — das Design wurde ersetzt,
+nicht überarbeitet. **Für den Gartenrundgang liegt noch keine Messung vor.**
+Erwartungsgemäß liegt die Startseite deutlich unter den früheren Werten, weil sie eine
+WebGL-Szene lädt; die Unterseiten sind dagegen leichter als vorher (eine CSS-Datei mit
+reiner Schriftbindung, ein Skript à 2 KB, ein Bild).
 
-| Seite | Gerät | Performance | Accessibility | Best Practices | SEO | LCP | CLS |
-|---|---|---|---|---|---|---|---|
-| Startseite | Desktop | 99 | 100 | 100 | 100 | 0,8 s | 0 |
-| Startseite | Mobil | 93 | 100 | 100 | 100 | 2,3 s | 0 |
-| Referenzen | Mobil | 100 | 100 | 100 | 100 | 1,7 s | 0 |
-| Kontakt | Mobil | 100 | 100 | 100 | 100 | 1,7 s | 0 |
+Verifiziert ist der funktionale Stand: alle 14 Seiten auf 1440 und 375 px ohne
+Konsolenfehler, ohne HTTP-Fehler, ohne waagerechten Überlauf, mit je genau einer H1 und
+vollständigen Alt-Texten.
 
 ---
 
@@ -115,42 +118,39 @@ Mobil mit Slow-4G und 4-facher CPU-Drosselung:
 
 ```
 .
-├── index.html                    Startseite
+├── index.html                    Startseite: 3D-Gartenrundgang + flache Abschnitte
 ├── ueber-uns.html
 ├── gartengestaltung.html · gartenplanung.html · gartenpflege.html · bepflanzung.html
-├── referenzen.html               Galerie mit Filter + Lightbox, 6 Projekt-Stories
-├── kontakt.html                  Adressen, Formular, Karte nach Einwilligung
-├── anfrage.html                  5-Schritt-Anfrage mit Fortschrittsbalken
+├── referenzen.html               6 Projektkarten + 3 Bewertungen im Wortlaut
+├── kontakt.html                  Kontaktwege, Ablauf, Anfrageband
+├── anfrage.html                  ein Formular (Bereich, Zeitraum, Kontaktdaten)
 ├── danke.html                    Erfolgsseite (noindex)
-├── stellenangebote.html
+├── stellenangebote.html          derzeit keine offene Stelle + Initiativbewerbung
 ├── impressum.html · datenschutz.html    Rechtstexte, verbatim
-├── 404.html
+├── 404.html                      (noindex)
 │
 ├── assets/
-│   ├── css/style.css             komplettes Stylesheet, §-nummeriert
-│   ├── js/main.js                Motion- und Interaktions-Engine (eine IIFE)
-│   ├── js/gsap.min.js            nur für die beiden Signatur-Momente
-│   ├── js/ScrollTrigger.min.js
-│   ├── js/lenis.min.js           Smooth-Scroll
-│   ├── fonts/                    4 × woff2, self-hosted
+│   ├── css/base.css              NUR Schriften, Sprungmarke, Fokusring, .sr-only
+│   ├── js/garden-header.js       Kopfzeile als Web Component (Shadow DOM)
+│   ├── js/garden-footer.js       Fußzeile als Web Component (Shadow DOM)
+│   ├── js/<seite>.js             Seitenlogik, eine Datei je Seite
+│   ├── js/three.min.js           nur index.html
+│   ├── fonts/                    7 × woff2, self-hosted
 │   └── img/                      optimierte WebP + raw/ (Originale, nicht deployen)
 │
-├── .htaccess                     Apache: Kompression, Caching, Weiterleitungen
+├── .htaccess                     Apache: Kompression, Caching, Sicherheitsheader
 ├── _redirects                    Netlify: Weiterleitungen
 ├── robots.txt · sitemap.xml
-│
-├── CLAUDE.md                     Bauanleitung für künftige Arbeitssitzungen
-├── CONTENT_INVENTORY.md          Inhalte und Fakten (Quelle der Wahrheit)
-├── IMAGE_SOURCES.md              Bildherkunft und Lizenzen
-├── DESIGN-AND-MOTION-SYSTEM.md   Farben, Typografie, Raster, Motion-Tokens
-├── AUDIT-BEFORE-UPGRADE.md       Befunde vor dem v7-Upgrade
-├── TOOLING-DECISIONS.md          Werkzeugwahl und Begründung
-├── CHANGELOG-AWWWARDS-UPGRADE.md v6 → v7 mit Messwerten
-│
-├── docs/audit-before/            Screenshots + Rohdaten vor dem Upgrade
-├── docs/audit-after/             dieselben Aufnahmen danach
-└── .planning/                    vollständige Analyse der alten WordPress-Seite
+└── <alt-slug>/index.html         20 Weiterleitungs-Stubs auf die alten WordPress-URLs
 ```
+
+**Das Aussehen steht bewusst in jeder Seite selbst** — im `<style>`-Block und in den
+Inline-Styles, so wie im Design-Projekt angelegt. Dadurch bleibt jede Seite einzeln mit der
+Vorlage vergleichbar. `base.css` bindet nur die Schriften ein. Bitte daraus **keine**
+gemeinsame Stildatei destillieren, das ist kein Versehen.
+
+Nicht im Deployment, nur im Arbeits-Branch: `CLAUDE.md`, `CONTENT_INVENTORY.md`,
+`DESIGN-AND-MOTION-SYSTEM.md`, `IMAGE_SOURCES.md` und `.planning/`.
 
 Die Unterordner mit Namen alter WordPress-URLs (`/gartengestaltung/`, `/blogs/` usw.)
 enthalten je eine `index.html` mit Meta-Refresh — sie halten die alten Links am Leben.
@@ -161,17 +161,18 @@ enthalten je eine `index.html` mit Meta-Refresh — sie halten die alten Links a
 
 **Keine.** Die Seite ist vollständig statisch.
 
-Die einzige konfigurierbare Stelle steht am Anfang von `assets/js/main.js`:
+Die konfigurierbare Stelle steht am Anfang von `assets/js/anfrage.js`:
 
 ```js
-var MAIL_TO = "info@devries-galabau.de";
-var SUBMIT_ENDPOINT = null;   // z. B. "https://formspree.io/f/XXXX"
+var SUBMIT_ENDPOINT = '';   // leer = mailto
 ```
 
-Solange `SUBMIT_ENDPOINT` auf `null` steht, öffnen beide Formulare das E-Mail-Programm
-des Nutzers mit einer fertig ausgefüllten Nachricht (`mailto:`) und bieten zusätzlich eine
-Kopier-Rückfalllösung an. Wird ein Endpoint eingetragen, ist das die einzige Stelle,
-die dafür geändert werden muss.
+Solange die Zeichenkette leer ist, öffnen die Formulare das E-Mail-Programm mit einer
+fertig ausgefüllten Nachricht (`mailto:`). Wird ein Endpunkt eingetragen, geht die Anfrage
+per `fetch` dorthin und `mailto` bleibt nur noch Ausweichweg.
+
+> Ein Endpunkt bedeutet einen zusätzlichen Auftragsverarbeiter. Dann sind auch
+> `connect-src` in der CSP jeder betroffenen Seite und die Datenschutzerklärung anzupassen.
 
 ---
 
@@ -179,15 +180,16 @@ die dafür geändert werden muss.
 
 | Bibliothek | Größe (roh / gzip) | Wofür |
 |---|---|---|
-| GSAP | 71 / 27 KB | nur die zwei gescrubten Signatur-Momente |
-| ScrollTrigger | 42 / 17 KB | Pinning und Scrub |
-| Lenis | 13 / 4 KB | Smooth-Scroll (einziges System) |
+| three.js | 589 / ~150 KB | **nur** die 3D-Szene auf der Startseite |
 
-Alles Weitere — Reveals, Stagger, Masken, Parallax, Lightbox, Formulare, Mobile-Navigation —
-läuft mit IntersectionObserver und CSS-Transitions ohne zusätzliche Bibliothek.
+Alles Weitere — Aufdecken, Staffelung, Galerie, Materialband, Ablauf, Formulare,
+Navigation — läuft mit IntersectionObserver, CSS-Transitions und einer eigenen
+`requestAnimationFrame`-Schleife ohne zusätzliche Bibliothek.
+GSAP und Lenis sind mit v9 entfallen.
 
-**Kein CDN, keine Google Fonts, kein Tracking.** Alle Schriften und Skripte liegen im Projekt.
-Externe Inhalte (die Karte auf `kontakt.html`) werden erst nach ausdrücklicher Zustimmung geladen.
+**Kein CDN, keine Google Fonts, kein Tracking, kein Cookie-Banner.** Alle Schriften und
+Skripte liegen im Projekt; zur Laufzeit geht kein einziger Aufruf nach außen. Die CSP
+erlaubt entsprechend `connect-src 'self'` und `frame-src 'none'`.
 
 ---
 
@@ -262,17 +264,20 @@ Die Maße gehören in `assets/img/img-manifest.json`, damit sie auffindbar bleib
 
 - [ ] Alle Seiten laden ohne Konsolenfehler
 - [ ] Kein horizontaler Overflow bei 360, 390, 768, 1024, 1440, 1920 px
-- [ ] Mobile-Menü: öffnet, Fokus bleibt darin, Escape schließt, Fokus kehrt zurück
-- [ ] Lightbox: öffnet, Pfeiltasten, Escape
-- [ ] Beide Formulare: Pflichtfelder, Einwilligung, Fehlermeldungen
+- [ ] Gartenrundgang: Stationen lösen einander beim Scrollen ab, Stationsleiste weicht aus
+- [ ] Menü der Kopfzeile: öffnet, Escape schließt
+- [ ] Formulare auf `anfrage.html`, `kontakt.html` und der Startseite
 - [ ] Reduced-Motion-Fassung (Systemeinstellung „Bewegung reduzieren")
 - [ ] Tastaturdurchlauf mit sichtbarem Fokusring
 - [ ] `?v=N` überall gleich hochgezählt
+- [ ] Interne Arbeitsunterlagen **nicht** im Deployment-Branch
 
 ---
 
 ## Weiterführend
 
-- `CLAUDE.md` — Bauanleitung, Designvertrag, technische Lehren aus der Qualitätssicherung
-- `DESIGN-AND-MOTION-SYSTEM.md` — Tokens, Motion-Regeln, Reduced Motion, Mobile Motion
-- `CHANGELOG-AWWWARDS-UPGRADE.md` — was sich in v7 geändert hat, mit Messwerten
+Beide Dateien liegen nur im Arbeits-Branch, nicht im Deployment:
+
+- `CLAUDE.md` — Bauanleitung, technische Lehren aus der Qualitätssicherung
+- `DESIGN-AND-MOTION-SYSTEM.md` — Farben mit gemessenen Kontrasten, Typografie, Raster,
+  Bewegung, Abweichungen vom Entwurf
