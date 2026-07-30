@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; frame-src https://*.google.com https://maps.google.com; form-action 'self' mailto:">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; connect-src 'self'; frame-src 'none'; form-action 'self' mailto:">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>de Vries Galabau – Garten- & Landschaftsbau in Salzhemmendorf</title>
@@ -59,24 +59,6 @@
 
   <garden-header active="Rundgang"></garden-header>
 
-  <div id="rg-admin" style="position:fixed;left:0;right:0;bottom:0;z-index:60;display:none;flex-wrap:wrap;align-items:center;gap:12px;padding:12px clamp(14px,3vw,28px);background:linear-gradient(180deg,rgba(15,35,24,.96),rgba(9,26,17,.98));color:#EAF3E4;font-size:13px;box-shadow:0 -18px 44px -20px rgba(9,26,17,.6)">
-    <span style="display:flex;align-items:center;gap:8px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:11px;color:#B6E85C">
-      <span style="width:8px;height:8px;border-radius:50%;background:#B6E85C;display:block"></span>Verwaltung
-    </span>
-    <div style="position:relative">
-      <button id="rg-admin-add" type="button" style="font:inherit;cursor:pointer;display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);color:#EAF3E4;border:1px solid rgba(255,255,255,.22);border-radius:10px;padding:9px 14px;font-weight:600">Abschnitt ergänzen <span style="opacity:.7">▾</span></button>
-      <div id="rg-admin-menu" style="position:absolute;left:0;bottom:calc(100% + 8px);display:none;flex-direction:column;min-width:220px;background:#12301F;border:1px solid rgba(255,255,255,.16);border-radius:12px;overflow:hidden;box-shadow:0 22px 50px -18px rgba(0,0,0,.6)">
-        <button type="button" data-add="stellenangebote" style="font:inherit;cursor:pointer;text-align:left;background:none;border:none;color:#EAF3E4;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.08)">Stellenangebote</button>
-        <button type="button" data-add="team" style="font:inherit;cursor:pointer;text-align:left;background:none;border:none;color:#EAF3E4;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.08)">Team</button>
-        <button type="button" data-add="faq" style="font:inherit;cursor:pointer;text-align:left;background:none;border:none;color:#EAF3E4;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.08)">Häufige Fragen</button>
-        <button type="button" data-add="ablauf" style="font:inherit;cursor:pointer;text-align:left;background:none;border:none;color:#EAF3E4;padding:12px 16px">Ablauf einer Anfrage</button>
-      </div>
-    </div>
-    <button id="rg-admin-edit" type="button" style="font:inherit;cursor:pointer;background:rgba(255,255,255,.1);color:#EAF3E4;border:1px solid rgba(255,255,255,.22);border-radius:10px;padding:9px 14px;font-weight:600">Texte bearbeiten</button>
-    <button id="rg-admin-reset" type="button" style="font:inherit;cursor:pointer;background:none;color:rgba(234,243,228,.72);border:1px solid rgba(255,255,255,.16);border-radius:10px;padding:9px 14px">Änderungen zurücksetzen</button>
-    <span id="rg-admin-state" style="color:rgba(234,243,228,.6)"></span>
-    <button id="rg-admin-close" type="button" aria-label="Verwaltung schließen" style="font:inherit;cursor:pointer;margin-left:auto;background:none;color:rgba(234,243,228,.72);border:1px solid rgba(255,255,255,.16);border-radius:10px;padding:9px 13px">Schließen</button>
-  </div>
 
 
   <div id="rg-stations" style="position:fixed;top:0;left:0;right:0;bottom:0;z-index:20;pointer-events:none">
@@ -154,7 +136,7 @@
     <div data-station="6" data-side="center" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(820px,92vw);text-align:center;opacity:0">
       <span style="position:absolute;left:50%;top:50%;width:132%;height:250%;transform:translate(-50%,-50%);pointer-events:none;background:radial-gradient(closest-side,rgba(243,247,240,.99) 0%,rgba(243,247,240,.97) 40%,rgba(243,247,240,.86) 56%,rgba(243,247,240,.52) 70%,rgba(243,247,240,.18) 84%,rgba(243,247,240,0) 96%);filter:blur(30px)"></span>
       <p style="position:relative;margin:0 0 16px;font-size:12px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:#2C6E49">Der Rückblick</p>
-      <h2 style="position:relative;margin:0;font-size:clamp(30px,5vw,72px);line-height:1;letter-spacing:-.035em;font-weight:600;color:#0A1810">Fünf Gewerke.<br>Ein <span style="font-family:'Instrument Serif',Georgia,serif;font-style:italic;font-weight:400;color:#1F5637">Ansprechpartner</span>.</h2>
+      <h2 style="position:relative;margin:0;font-size:clamp(30px,5vw,72px);line-height:1;letter-spacing:-.035em;font-weight:600;color:#0A1810">Fünf Bereiche.<br>Ein <span style="font-family:'Instrument Serif',Georgia,serif;font-style:italic;font-weight:400;color:#1F5637">Ansprechpartner</span>.</h2>
       <p style="position:relative;margin:24px auto 0;max-width:48ch;font-size:clamp(15px,1.4vw,19px);line-height:1.55;color:#26382E;text-wrap:pretty">Weg, Mauer, Beet, Wasser, Platz — bei uns aus einer Hand, von der ersten Skizze bis zum Schnitt im dritten Jahr.</p>
     </div>
 
@@ -325,12 +307,12 @@
       </div>
     </div>
 
-    <section id="rg-gal" data-screen-label="Fünf Gewerke" style="position:relative;z-index:4;padding:clamp(56px,9vh,120px) clamp(20px,5vw,68px)">
+    <section id="rg-gal" data-screen-label="Fünf Bereiche" style="position:relative;z-index:4;padding:clamp(56px,9vh,120px) clamp(20px,5vw,68px)">
       <div style="max-width:1420px;margin:0 auto">
         <div data-reveal style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:clamp(22px,3.6vh,40px)">
           <div>
-            <p style="margin:0 0 13px;font-size:12px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:#2C6E49">Fünf Gewerke</p>
-            <h2 style="margin:0;font-size:clamp(25px,3.4vw,50px);line-height:1.02;letter-spacing:-.035em;font-weight:700;max-width:20ch;color:#0F2318">Fünf Gewerke, eine Handschrift.</h2>
+            <p style="margin:0 0 13px;font-size:12px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:#2C6E49">Fünf Bereiche</p>
+            <h2 style="margin:0;font-size:clamp(25px,3.4vw,50px);line-height:1.02;letter-spacing:-.035em;font-weight:700;max-width:20ch;color:#0F2318">Fünf Bereiche, eine Handschrift.</h2>
           </div>
           <p style="margin:0;max-width:34ch;font-size:14.5px;line-height:1.55;color:#3C5145">Fahren Sie über ein Bild — es öffnet sich und zeigt, was dahinter steckt.</p>
         </div>
@@ -696,75 +678,75 @@
       </div>
     </section>
 
-    <section id="rg-sec-ablauf" data-optional="ablauf" data-screen-label="Ablauf einer Anfrage" style="position:relative;z-index:4;padding:clamp(50px,8vh,110px) clamp(20px,5vw,68px)">
+    <section id="rg-sec-ablauf" data-screen-label="Ablauf einer Anfrage" style="position:relative;z-index:4;padding:clamp(50px,8vh,110px) clamp(20px,5vw,68px)">
       <div style="max-width:1240px;margin:0 auto">
-        <p data-reveal data-edit style="margin:0 0 14px;font-size:12px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:#2C6E49">Ablauf einer Anfrage</p>
-        <h2 data-reveal data-edit style="margin:0;font-size:clamp(25px,3.4vw,50px);line-height:1.04;letter-spacing:-.035em;font-weight:600;color:#0F2318;max-width:22ch;margin-bottom:clamp(24px,4vh,44px)">In vier Schritten zum Angebot.</h2>
+        <p data-reveal style="margin:0 0 14px;font-size:12px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:#2C6E49">Ablauf einer Anfrage</p>
+        <h2 data-reveal style="margin:0;font-size:clamp(25px,3.4vw,50px);line-height:1.04;letter-spacing:-.035em;font-weight:600;color:#0F2318;max-width:22ch;margin-bottom:clamp(24px,4vh,44px)">In vier Schritten zum Angebot.</h2>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:clamp(14px,1.6vw,20px)">
           <div data-reveal data-par="0.04" style="border-radius:26px;padding:clamp(22px,2.4vw,34px);background:linear-gradient(155deg,rgba(255,255,255,.78),rgba(255,255,255,.48));backdrop-filter:blur(26px) saturate(1.6);border:1px solid rgba(255,255,255,.82);box-shadow:0 26px 54px -30px rgba(12,29,20,.34);display:flex;flex-direction:column;gap:10px">
             <span style="font-family:'Instrument Serif',Georgia,serif;font-size:clamp(30px,3.2vw,46px);line-height:.8;color:#2C6E49">01</span>
-            <span data-edit style="font-size:clamp(17px,1.6vw,22px);font-weight:600;letter-spacing:-.02em;color:#0F2318">Anfrage</span>
-            <p data-edit style="margin:0;font-size:14.5px;line-height:1.55;color:#3C5145;text-wrap:pretty">Sie schreiben oder rufen an und beschreiben grob, worum es geht. Fotos helfen, sind aber kein Muss.</p>
+            <span style="font-size:clamp(17px,1.6vw,22px);font-weight:600;letter-spacing:-.02em;color:#0F2318">Anfrage</span>
+            <p style="margin:0;font-size:14.5px;line-height:1.55;color:#3C5145;text-wrap:pretty">Sie schreiben oder rufen an und beschreiben grob, worum es geht. Fotos helfen, sind aber kein Muss.</p>
           </div>
           <div data-reveal data-par="0.08" style="border-radius:26px;padding:clamp(22px,2.4vw,34px);background:linear-gradient(155deg,rgba(255,255,255,.78),rgba(255,255,255,.48));backdrop-filter:blur(26px) saturate(1.6);border:1px solid rgba(255,255,255,.82);box-shadow:0 26px 54px -30px rgba(12,29,20,.34);display:flex;flex-direction:column;gap:10px">
             <span style="font-family:'Instrument Serif',Georgia,serif;font-size:clamp(30px,3.2vw,46px);line-height:.8;color:#2C6E49">02</span>
-            <span data-edit style="font-size:clamp(17px,1.6vw,22px);font-weight:600;letter-spacing:-.02em;color:#0F2318">Vor-Ort-Termin</span>
-            <p data-edit style="margin:0;font-size:14.5px;line-height:1.55;color:#3C5145;text-wrap:pretty">Wir kommen vorbei, schauen uns Boden, Licht, Höhen und Zugänge an und hören zu.</p>
+            <span style="font-size:clamp(17px,1.6vw,22px);font-weight:600;letter-spacing:-.02em;color:#0F2318">Vor-Ort-Termin</span>
+            <p style="margin:0;font-size:14.5px;line-height:1.55;color:#3C5145;text-wrap:pretty">Wir kommen vorbei, schauen uns Boden, Licht, Höhen und Zugänge an und hören zu.</p>
           </div>
           <div data-reveal data-par="0.12" style="border-radius:26px;padding:clamp(22px,2.4vw,34px);background:linear-gradient(155deg,rgba(255,255,255,.78),rgba(255,255,255,.48));backdrop-filter:blur(26px) saturate(1.6);border:1px solid rgba(255,255,255,.82);box-shadow:0 26px 54px -30px rgba(12,29,20,.34);display:flex;flex-direction:column;gap:10px">
             <span style="font-family:'Instrument Serif',Georgia,serif;font-size:clamp(30px,3.2vw,46px);line-height:.8;color:#2C6E49">03</span>
-            <span data-edit style="font-size:clamp(17px,1.6vw,22px);font-weight:600;letter-spacing:-.02em;color:#0F2318">Angebot</span>
-            <p data-edit style="margin:0;font-size:14.5px;line-height:1.55;color:#3C5145;text-wrap:pretty">Sie erhalten ein schriftliches Angebot mit Leistungen, Materialien, Dauer und Preis — kostenfrei.</p>
+            <span style="font-size:clamp(17px,1.6vw,22px);font-weight:600;letter-spacing:-.02em;color:#0F2318">Angebot</span>
+            <p style="margin:0;font-size:14.5px;line-height:1.55;color:#3C5145;text-wrap:pretty">Sie erhalten ein schriftliches Angebot mit Leistungen, Materialien, Dauer und Preis — kostenfrei.</p>
           </div>
           <div data-reveal data-par="0.16" style="border-radius:26px;padding:clamp(22px,2.4vw,34px);background:linear-gradient(155deg,rgba(255,255,255,.78),rgba(255,255,255,.48));backdrop-filter:blur(26px) saturate(1.6);border:1px solid rgba(255,255,255,.82);box-shadow:0 26px 54px -30px rgba(12,29,20,.34);display:flex;flex-direction:column;gap:10px">
             <span style="font-family:'Instrument Serif',Georgia,serif;font-size:clamp(30px,3.2vw,46px);line-height:.8;color:#2C6E49">04</span>
-            <span data-edit style="font-size:clamp(17px,1.6vw,22px);font-weight:600;letter-spacing:-.02em;color:#0F2318">Umsetzung</span>
-            <p data-edit style="margin:0;font-size:14.5px;line-height:1.55;color:#3C5145;text-wrap:pretty">Nach Ihrer Freigabe legen wir Termine fest und arbeiten in klaren Abschnitten, mit aufgeräumter Baustelle.</p>
+            <span style="font-size:clamp(17px,1.6vw,22px);font-weight:600;letter-spacing:-.02em;color:#0F2318">Umsetzung</span>
+            <p style="margin:0;font-size:14.5px;line-height:1.55;color:#3C5145;text-wrap:pretty">Nach Ihrer Freigabe legen wir Termine fest und arbeiten in klaren Abschnitten, mit aufgeräumter Baustelle.</p>
           </div>
         </div>
       </div>
     </section>
 
-    <section id="rg-sec-faq" data-optional="faq" data-screen-label="Häufige Fragen" style="position:relative;z-index:4;padding:clamp(50px,8vh,110px) clamp(20px,5vw,68px)">
+    <section id="rg-sec-faq" data-screen-label="Häufige Fragen" style="position:relative;z-index:4;padding:clamp(50px,8vh,110px) clamp(20px,5vw,68px)">
       <div style="max-width:1100px;margin:0 auto">
-        <p data-reveal data-edit style="margin:0 0 14px;font-size:12px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:#2C6E49">FAQ</p>
-        <h2 data-reveal data-edit style="margin:0;font-size:clamp(25px,3.4vw,50px);line-height:1.04;letter-spacing:-.035em;font-weight:600;color:#0F2318;max-width:20ch;margin-bottom:clamp(22px,3.6vh,38px)">Häufige Fragen.</h2>
+        <p data-reveal style="margin:0 0 14px;font-size:12px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:#2C6E49">FAQ</p>
+        <h2 data-reveal style="margin:0;font-size:clamp(25px,3.4vw,50px);line-height:1.04;letter-spacing:-.035em;font-weight:600;color:#0F2318;max-width:20ch;margin-bottom:clamp(22px,3.6vh,38px)">Häufige Fragen.</h2>
         <div style="display:flex;flex-direction:column;gap:10px">
           <details data-reveal data-par="0.03" style="border-radius:26px;padding:clamp(22px,2.4vw,34px);background:linear-gradient(155deg,rgba(255,255,255,.78),rgba(255,255,255,.48));backdrop-filter:blur(26px) saturate(1.6);border:1px solid rgba(255,255,255,.82);box-shadow:0 26px 54px -30px rgba(12,29,20,.34);padding:clamp(16px,1.8vw,24px)">
             <summary style="cursor:pointer;font-size:clamp(15.5px,1.4vw,19px);font-weight:600;letter-spacing:-.015em;color:#0F2318;list-style:none">Was kostet eine Gartenplanung?<span class="faq-ico" aria-hidden="true" style="flex:none;position:relative;width:30px;height:30px;border-radius:50%"><span style="position:absolute;left:50%;top:50%;width:12px;height:2px;border-radius:2px;background:#2C6E49;transform:translate(-50%,-50%)"></span><span class="faq-bar" style="position:absolute;left:50%;top:50%;width:2px;height:12px;border-radius:2px;background:#2C6E49;transform:translate(-50%,-50%);transition:opacity .3s ease,transform .4s ease"></span></span></summary>
-            <p data-edit style="margin:12px 0 0;font-size:14.5px;line-height:1.6;color:#3C5145;text-wrap:pretty">Das hängt von Größe und Umfang ab. Der erste Vor-Ort-Termin und das Angebot sind bei uns kostenfrei und unverbindlich — erst danach entscheiden Sie.</p>
+            <p style="margin:12px 0 0;font-size:14.5px;line-height:1.6;color:#3C5145;text-wrap:pretty">Das hängt von Größe und Umfang ab. Der erste Vor-Ort-Termin und das Angebot sind bei uns kostenfrei und unverbindlich — erst danach entscheiden Sie.</p>
           </details>
           <details data-reveal data-par="0.05" style="border-radius:26px;padding:clamp(22px,2.4vw,34px);background:linear-gradient(155deg,rgba(255,255,255,.78),rgba(255,255,255,.48));backdrop-filter:blur(26px) saturate(1.6);border:1px solid rgba(255,255,255,.82);box-shadow:0 26px 54px -30px rgba(12,29,20,.34);padding:clamp(16px,1.8vw,24px)">
             <summary style="cursor:pointer;font-size:clamp(15.5px,1.4vw,19px);font-weight:600;letter-spacing:-.015em;color:#0F2318;list-style:none">Wie lange dauert ein Projekt?<span class="faq-ico" aria-hidden="true" style="flex:none;position:relative;width:30px;height:30px;border-radius:50%"><span style="position:absolute;left:50%;top:50%;width:12px;height:2px;border-radius:2px;background:#2C6E49;transform:translate(-50%,-50%)"></span><span class="faq-bar" style="position:absolute;left:50%;top:50%;width:2px;height:12px;border-radius:2px;background:#2C6E49;transform:translate(-50%,-50%);transition:opacity .3s ease,transform .4s ease"></span></span></summary>
-            <p data-edit style="margin:12px 0 0;font-size:14.5px;line-height:1.6;color:#3C5145;text-wrap:pretty">Kleine Arbeiten erledigen wir in wenigen Tagen, eine komplette Neuanlage dauert je nach Umfang zwei bis sechs Wochen. Den Zeitplan legen wir vorab gemeinsam fest.</p>
+            <p style="margin:12px 0 0;font-size:14.5px;line-height:1.6;color:#3C5145;text-wrap:pretty">Kleine Arbeiten erledigen wir in wenigen Tagen, eine komplette Neuanlage dauert je nach Umfang zwei bis sechs Wochen. Den Zeitplan legen wir vorab gemeinsam fest.</p>
           </details>
           <details data-reveal data-par="0.07" style="border-radius:26px;padding:clamp(22px,2.4vw,34px);background:linear-gradient(155deg,rgba(255,255,255,.78),rgba(255,255,255,.48));backdrop-filter:blur(26px) saturate(1.6);border:1px solid rgba(255,255,255,.82);box-shadow:0 26px 54px -30px rgba(12,29,20,.34);padding:clamp(16px,1.8vw,24px)">
             <summary style="cursor:pointer;font-size:clamp(15.5px,1.4vw,19px);font-weight:600;letter-spacing:-.015em;color:#0F2318;list-style:none">Arbeiten Sie auch in meinem Ort?<span class="faq-ico" aria-hidden="true" style="flex:none;position:relative;width:30px;height:30px;border-radius:50%"><span style="position:absolute;left:50%;top:50%;width:12px;height:2px;border-radius:2px;background:#2C6E49;transform:translate(-50%,-50%)"></span><span class="faq-bar" style="position:absolute;left:50%;top:50%;width:2px;height:12px;border-radius:2px;background:#2C6E49;transform:translate(-50%,-50%);transition:opacity .3s ease,transform .4s ease"></span></span></summary>
-            <p data-edit style="margin:12px 0 0;font-size:14.5px;line-height:1.6;color:#3C5145;text-wrap:pretty">Unser Einsatzgebiet reicht von Salzhemmendorf über Hameln, Bad Münder und Coppenbrügge bis Alfeld, Elze und Hildesheim. Fragen Sie einfach nach.</p>
+            <p style="margin:12px 0 0;font-size:14.5px;line-height:1.6;color:#3C5145;text-wrap:pretty">Unser Einsatzgebiet reicht von Salzhemmendorf über Hameln, Bad Münder und Coppenbrügge bis Alfeld, Elze und Hildesheim. Fragen Sie einfach nach.</p>
           </details>
           <details data-reveal data-par="0.09" style="border-radius:26px;padding:clamp(22px,2.4vw,34px);background:linear-gradient(155deg,rgba(255,255,255,.78),rgba(255,255,255,.48));backdrop-filter:blur(26px) saturate(1.6);border:1px solid rgba(255,255,255,.82);box-shadow:0 26px 54px -30px rgba(12,29,20,.34);padding:clamp(16px,1.8vw,24px)">
             <summary style="cursor:pointer;font-size:clamp(15.5px,1.4vw,19px);font-weight:600;letter-spacing:-.015em;color:#0F2318;list-style:none">Übernehmen Sie auch die Pflege danach?<span class="faq-ico" aria-hidden="true" style="flex:none;position:relative;width:30px;height:30px;border-radius:50%"><span style="position:absolute;left:50%;top:50%;width:12px;height:2px;border-radius:2px;background:#2C6E49;transform:translate(-50%,-50%)"></span><span class="faq-bar" style="position:absolute;left:50%;top:50%;width:2px;height:12px;border-radius:2px;background:#2C6E49;transform:translate(-50%,-50%);transition:opacity .3s ease,transform .4s ease"></span></span></summary>
-            <p data-edit style="margin:12px 0 0;font-size:14.5px;line-height:1.6;color:#3C5145;text-wrap:pretty">Ja. Auf Wunsch betreuen wir Ihren Garten dauerhaft — regelmäßig oder gezielt zu bestimmten Jahreszeiten, ganz nach Pflegeplan.</p>
+            <p style="margin:12px 0 0;font-size:14.5px;line-height:1.6;color:#3C5145;text-wrap:pretty">Ja. Auf Wunsch betreuen wir Ihren Garten dauerhaft — regelmäßig oder gezielt zu bestimmten Jahreszeiten, ganz nach Pflegeplan.</p>
           </details>
           <details data-reveal data-par="0.11" style="border-radius:26px;padding:clamp(22px,2.4vw,34px);background:linear-gradient(155deg,rgba(255,255,255,.78),rgba(255,255,255,.48));backdrop-filter:blur(26px) saturate(1.6);border:1px solid rgba(255,255,255,.82);box-shadow:0 26px 54px -30px rgba(12,29,20,.34);padding:clamp(16px,1.8vw,24px)">
             <summary style="cursor:pointer;font-size:clamp(15.5px,1.4vw,19px);font-weight:600;letter-spacing:-.015em;color:#0F2318;list-style:none">Kann ich eigene Ideen einbringen?<span class="faq-ico" aria-hidden="true" style="flex:none;position:relative;width:30px;height:30px;border-radius:50%"><span style="position:absolute;left:50%;top:50%;width:12px;height:2px;border-radius:2px;background:#2C6E49;transform:translate(-50%,-50%)"></span><span class="faq-bar" style="position:absolute;left:50%;top:50%;width:2px;height:12px;border-radius:2px;background:#2C6E49;transform:translate(-50%,-50%);transition:opacity .3s ease,transform .4s ease"></span></span></summary>
-            <p data-edit style="margin:12px 0 0;font-size:14.5px;line-height:1.6;color:#3C5145;text-wrap:pretty">Ausdrücklich. Ihre Vorstellungen können jederzeit in den Entstehungsprozess einfließen — wir beraten zu Material, Pflanzenauswahl und Umsetzbarkeit.</p>
+            <p style="margin:12px 0 0;font-size:14.5px;line-height:1.6;color:#3C5145;text-wrap:pretty">Ausdrücklich. Ihre Vorstellungen können jederzeit in den Entstehungsprozess einfließen — wir beraten zu Material, Pflanzenauswahl und Umsetzbarkeit.</p>
           </details>
           <details data-reveal data-par="0.13" style="border-radius:26px;padding:clamp(22px,2.4vw,34px);background:linear-gradient(155deg,rgba(255,255,255,.78),rgba(255,255,255,.48));backdrop-filter:blur(26px) saturate(1.6);border:1px solid rgba(255,255,255,.82);box-shadow:0 26px 54px -30px rgba(12,29,20,.34);padding:clamp(16px,1.8vw,24px)">
             <summary style="cursor:pointer;font-size:clamp(15.5px,1.4vw,19px);font-weight:600;letter-spacing:-.015em;color:#0F2318;list-style:none">Machen Sie auch Sanierungen?<span class="faq-ico" aria-hidden="true" style="flex:none;position:relative;width:30px;height:30px;border-radius:50%"><span style="position:absolute;left:50%;top:50%;width:12px;height:2px;border-radius:2px;background:#2C6E49;transform:translate(-50%,-50%)"></span><span class="faq-bar" style="position:absolute;left:50%;top:50%;width:2px;height:12px;border-radius:2px;background:#2C6E49;transform:translate(-50%,-50%);transition:opacity .3s ease,transform .4s ease"></span></span></summary>
-            <p data-edit style="margin:12px 0 0;font-size:14.5px;line-height:1.6;color:#3C5145;text-wrap:pretty">Ja, wir sanieren bestehende Außenanlagen: Pflaster neu setzen, Mauern richten, Entwässerung nachrüsten, Flächen neu bepflanzen.</p>
+            <p style="margin:12px 0 0;font-size:14.5px;line-height:1.6;color:#3C5145;text-wrap:pretty">Ja, wir sanieren bestehende Außenanlagen: Pflaster neu setzen, Mauern richten, Entwässerung nachrüsten, Flächen neu bepflanzen.</p>
           </details>
         </div>
       </div>
     </section>
 
-    <section id="rg-sec-jobs" data-optional="stellenangebote" data-screen-label="Stellenangebote" style="position:relative;z-index:4;padding:clamp(50px,8vh,110px) clamp(20px,5vw,68px)">
+    <section id="rg-sec-jobs" data-screen-label="Stellenangebote" style="position:relative;z-index:4;padding:clamp(50px,8vh,110px) clamp(20px,5vw,68px)">
       <div style="max-width:1240px;margin:0 auto">
         <div data-reveal style="border-radius:26px;padding:clamp(22px,2.4vw,34px);background:linear-gradient(155deg,rgba(255,255,255,.78),rgba(255,255,255,.48));backdrop-filter:blur(26px) saturate(1.6);border:1px solid rgba(255,255,255,.82);box-shadow:0 26px 54px -30px rgba(12,29,20,.34);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:clamp(22px,3vw,48px);align-items:center;padding:clamp(26px,3.4vw,52px)">
           <div>
-            <p data-edit style="margin:0 0 14px;font-size:12px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:#2C6E49">Stellenangebote</p>
-            <h2 data-edit style="margin:0;font-size:clamp(25px,3.4vw,50px);line-height:1.04;letter-spacing:-.035em;font-weight:600;color:#0F2318;max-width:20ch">Wir suchen Verstärkung.</h2>
-            <p data-edit style="margin:18px 0 0;max-width:46ch;font-size:16px;line-height:1.6;color:#3C5145;text-wrap:pretty">Sie arbeiten gern draußen, mögen Handwerk und sauberes Ergebnis? Die aktuell offenen Stellen finden Sie auf unserer Stellenseite. Unaufgeforderte Bewerbungen sind uns jederzeit willkommen.</p>
+            <p style="margin:0 0 14px;font-size:12px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:#2C6E49">Stellenangebote</p>
+            <h2 style="margin:0;font-size:clamp(25px,3.4vw,50px);line-height:1.04;letter-spacing:-.035em;font-weight:600;color:#0F2318;max-width:20ch">Wir suchen Verstärkung.</h2>
+            <p style="margin:18px 0 0;max-width:46ch;font-size:16px;line-height:1.6;color:#3C5145;text-wrap:pretty">Sie arbeiten gern draußen, mögen Handwerk und sauberes Ergebnis? Die aktuell offenen Stellen finden Sie auf unserer Stellenseite. Unaufgeforderte Bewerbungen sind uns jederzeit willkommen.</p>
             <div style="display:flex;flex-wrap:wrap;gap:11px;margin-top:26px">
               <a href="https://devries-galabau.de/stellenangebote" style="background:linear-gradient(140deg,#2A6E42,#123324);color:#F4F9F0;border-radius:999px;padding:15px 26px;font-size:15px;font-weight:700">Offene Stellen ansehen →</a>
               <a href="mailto:info@devries-galabau.de?subject=Bewerbung" style="border:1px solid rgba(16,35,26,.18);color:#0F2318;border-radius:999px;padding:15px 26px;font-size:15px;font-weight:600">Bewerbung senden</a>
@@ -777,8 +759,8 @@
 
     <section id="rg-sec-form" data-screen-label="Kontaktformular" style="position:relative;z-index:4;padding:clamp(50px,8vh,110px) clamp(20px,5vw,68px)">
       <div style="max-width:1100px;margin:0 auto">
-        <p data-reveal data-edit style="margin:0 0 14px;font-size:12px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:#2C6E49">Kostenlose Anfrage</p>
-        <h2 data-reveal data-edit style="margin:0;font-size:clamp(25px,3.4vw,50px);line-height:1.04;letter-spacing:-.035em;font-weight:600;color:#0F2318;max-width:22ch;margin-bottom:clamp(22px,3.6vh,38px)">Schreiben Sie uns.</h2>
+        <p data-reveal style="margin:0 0 14px;font-size:12px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:#2C6E49">Kostenlose Anfrage</p>
+        <h2 data-reveal style="margin:0;font-size:clamp(25px,3.4vw,50px);line-height:1.04;letter-spacing:-.035em;font-weight:600;color:#0F2318;max-width:22ch;margin-bottom:clamp(22px,3.6vh,38px)">Schreiben Sie uns.</h2>
         <form id="rg-form" data-reveal style="border-radius:26px;padding:clamp(22px,2.4vw,34px);background:linear-gradient(155deg,rgba(255,255,255,.78),rgba(255,255,255,.48));backdrop-filter:blur(26px) saturate(1.6);border:1px solid rgba(255,255,255,.82);box-shadow:0 26px 54px -30px rgba(12,29,20,.34);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:clamp(14px,1.6vw,20px);padding:clamp(24px,3vw,44px)">
           <label style="display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:600;letter-spacing:.02em;color:#2C6E49">Name
             <input name="name" required style="font:inherit;font-size:15px;color:#0F2318;padding:13px 15px;border-radius:13px;border:1px solid rgba(16,35,26,.16);background:rgba(255,255,255,.8)">

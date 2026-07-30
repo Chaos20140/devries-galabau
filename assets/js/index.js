@@ -63,7 +63,7 @@ class Component extends DCLogic {
     this.stationP = [0.02, 0.27, 0.44, 0.57, 0.70, 0.84, 0.96];
     this.content = document.getElementById('rg-content');
     this.setupGallery();
-    this.setupAdmin();
+    this.setupForm();
     this.ring = document.getElementById('rg-ring');
     this.sunGlow = document.getElementById('rg-sunglow');
     this.grows = Array.from(document.querySelectorAll('[data-grow]')).map(el => ({
@@ -305,102 +305,15 @@ class Component extends DCLogic {
     this.flowReady = true;
   }
 
-  setupAdmin() {
-    this.admin = document.getElementById('rg-admin');
-    if (!this.admin || this.adminBound) return;
-    this.adminBound = true;
-    const KEY = 'dv-rg-admin';
-    const state = () => { try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { return {}; } };
-    const save = s => { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} };
-    this.optional = Array.from(document.querySelectorAll('[data-optional]'));
-    const note = document.getElementById('rg-admin-state');
-    const applyState = () => {
-      const s = state();
-      const off = s.hidden || [];
-      this.optional.forEach(sec => { sec.style.display = off.indexOf(sec.getAttribute('data-optional')) > -1 ? 'none' : ''; });
-      const txt = s.text || {};
-      Array.from(document.querySelectorAll('[data-edit]')).forEach((el, i) => {
-        const k = 'e' + i;
-        if (txt[k] != null) el.innerHTML = txt[k];
-      });
-      if (note) {
-        const n = Object.keys(txt).length;
-        note.textContent = (off.length ? off.length + ' ausgeblendet' : 'alle Abschnitte sichtbar') + (n ? ' · ' + n + ' Texte geändert' : '');
-      }
-    };
-    applyState();
-
-    const openAdmin = on => {
-      this.admin.style.display = on ? 'flex' : 'none';
-      document.body.style.paddingBottom = on ? '68px' : '';
-    };
-    const isAdmin = location.hash === '#admin' || location.search.indexOf('admin') > -1;
-    if (isAdmin) openAdmin(true);
-    window.addEventListener('keydown', e => {
-      if (e.altKey && (e.key === 'a' || e.key === 'A')) { e.preventDefault(); openAdmin(this.admin.style.display === 'none'); }
-    });
-    const closeBtn = document.getElementById('rg-admin-close');
-    if (closeBtn) closeBtn.addEventListener('click', () => openAdmin(false));
-
-    const addBtn = document.getElementById('rg-admin-add');
-    const addMenu = document.getElementById('rg-admin-menu');
-    if (addBtn && addMenu) {
-      addBtn.addEventListener('click', () => {
-        const open = addMenu.style.display === 'flex';
-        addMenu.style.display = open ? 'none' : 'flex';
-        const s = state(), off = s.hidden || [];
-        Array.from(addMenu.querySelectorAll('[data-add]')).forEach(b => {
-          const hidden = off.indexOf(b.getAttribute('data-add')) > -1;
-          b.style.opacity = hidden ? '1' : '.5';
-          b.textContent = b.textContent.replace(/ ✓$/, '') + (hidden ? '' : ' ✓');
-        });
-      });
-      Array.from(addMenu.querySelectorAll('[data-add]')).forEach(b => {
-        b.addEventListener('click', () => {
-          const key = b.getAttribute('data-add');
-          const s = state();
-          s.hidden = s.hidden || [];
-          const i = s.hidden.indexOf(key);
-          if (i > -1) s.hidden.splice(i, 1); else s.hidden.push(key);
-          save(s);
-          applyState();
-          addMenu.style.display = 'none';
-          const sec = this.optional.find(x => x.getAttribute('data-optional') === key);
-          if (sec && i > -1) window.scrollTo({ top: sec.offsetTop - 90, behavior: 'smooth' });
-        });
-      });
-    }
-
-    const editBtn = document.getElementById('rg-admin-edit');
-    if (editBtn) {
-      editBtn.addEventListener('click', () => {
-        this.editing = !this.editing;
-        editBtn.textContent = this.editing ? 'Bearbeitung beenden' : 'Texte bearbeiten';
-        editBtn.style.background = this.editing ? '#B6E85C' : 'rgba(255,255,255,.1)';
-        editBtn.style.color = this.editing ? '#0F2318' : '#EAF3E4';
-        Array.from(document.querySelectorAll('[data-edit]')).forEach((el, i) => {
-          el.contentEditable = this.editing ? 'true' : 'false';
-          el.style.outline = this.editing ? '1px dashed rgba(44,110,73,.5)' : '';
-          el.style.outlineOffset = this.editing ? '3px' : '';
-          if (this.editing && !el.__bound) {
-            el.__bound = true;
-            el.addEventListener('blur', () => {
-              const s = state();
-              s.text = s.text || {};
-              s.text['e' + i] = el.innerHTML;
-              save(s);
-              applyState();
-            });
-          }
-        });
-      });
-    }
-
-    const resetBtn = document.getElementById('rg-admin-reset');
-    if (resetBtn) resetBtn.addEventListener('click', () => {
-      try { localStorage.removeItem(KEY); } catch (e) {}
-      location.reload();
-    });
+  /* Fruehere setupAdmin(): Der Entwurf hatte hier ein Autorenwerkzeug, mit
+     dem sich Texte im Browser aendern und Abschnitte ausblenden liessen.
+     Es liess sich von jedem Besucher oeffnen, speicherte im Browser und
+     spielte das Gespeicherte als Markup zurueck — auf einer Livesite ein
+     Fremdkoerper und eine Einfallstelle fuer eingeschleusten Code.
+     Entfernt; nur der Formularversand ist geblieben. */
+  setupForm() {
+    if (this.formBound) return;
+    this.formBound = true;
 
     const form = document.getElementById('rg-form');
     if (form) form.addEventListener('submit', e => {

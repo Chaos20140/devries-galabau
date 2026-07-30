@@ -235,6 +235,9 @@ gemeinsame Stildatei, die man versehentlich global verändern könnte.
 | Sprungmarke, Fokusring | ergänzt | Tastaturbedienung |
 | Datenschutz, Anfrage, Danke, 404 | neu gebaut | im Design nicht vorhanden |
 | `prefers-reduced-motion` | ergänzt, führt `props.motion` | das Design fragte die Einstellung nie ab |
+| „Fünf Gewerke" | zu „Fünf Bereiche" | Weg, Mauer, Beet, Wasser, Platz sind Bauteile, keine Gewerke — und Garten- und Landschaftsbau ist selbst *ein* Gewerk |
+| Seiten-Editor (`#rg-admin`) | entfernt | Autorenwerkzeug des Entwurfs, siehe § 11 |
+| CSP | enger gefasst | `data:`, `blob:` und `frame-src` auf Google wurden nicht mehr gebraucht |
 
 ---
 
@@ -253,3 +256,46 @@ Belegt im Browser: Stationen lösen einander in der richtigen Reihenfolge ab, di
 weicht rechten Tafeln aus, 0 Konsolenfehler. Nur der Nachlauf fällt in einer Testumgebung ohne
 Grafikkarte auf — bei `0.031` je Bild und einem halben Bild pro Sekunde dauert eine Station
 Minuten statt Sekunden. Wer dort prüft, muss entsprechend lange warten; das ist kein Fehler.
+
+---
+
+## 11. Entfernt: der Seiten-Editor aus dem Entwurf
+
+Die Startseite des Design-Projekts brachte ein Autorenwerkzeug mit (`setupAdmin`, Leiste
+`#rg-admin`). Es ließ sich über `#admin`, einen `admin`-Parameter in der Adresse **oder die
+Tastenkombination Alt + A** öffnen — also von jedem Besucher. Damit ließen sich Texte über
+`contentEditable` ändern und Abschnitte ausblenden; gespeichert wurde unter dem Schlüssel
+`dv-rg-admin` im Browser.
+
+Ausschlaggebend für das Entfernen war die Rückgabe: Der gespeicherte Text wurde beim nächsten
+Aufruf per `innerHTML` zurückgeschrieben. Damit ist alles, was in diesem Speicherplatz landet,
+ausführbares Markup — eine dauerhafte Einfallstelle, erreichbar über jede andere Lücke, eine
+Browsererweiterung oder einen fremd genutzten Rechner. Dazu kommt: ein Werkzeug, mit dem
+Besucher „ihre" Fassung der Seite bauen und abfotografieren können, gehört nicht auf eine
+Firmenseite.
+
+Entfernt wurden die Methode, die Bedienleiste im Markup und die Attribute `data-edit`,
+`data-optional` und `data-add`. Der Formularversand der Startseite hing im selben Block und ist
+als `setupForm()` erhalten. Geprüft: Alt + A und `#admin` bewirken nichts mehr, kein Element ist
+editierbar, im Browserspeicher wird nichts mehr abgelegt.
+
+### Inhalt der Auslieferungsrichtlinie (CSP)
+
+Auf jeder Seite als `<meta>`, auf allen 14 identisch:
+
+```
+default-src 'self'; base-uri 'self'; object-src 'none';
+script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';
+img-src 'self'; font-src 'self'; connect-src 'self';
+frame-src 'none'; form-action 'self' mailto:
+```
+
+`'unsafe-inline'` ist unvermeidbar, weil das Design sein gesamtes Aussehen als Inline-`style`
+trägt. `data:` und `blob:` bei den Bildern und `frame-src` auf Google-Domains stammten aus dem
+alten Aufbau (SVG-Masken, Consent-Karte) und wurden entfernt, nachdem geprüft war, dass es
+weder `data:`-Bildquellen noch `createObjectURL` noch ein einziges `iframe` im Baum gibt.
+
+`frame-ancestors` steht bewusst **nicht** im `<meta>` — dort ist die Angabe wirkungslos. Sie
+kommt zusammen mit `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy` und
+`X-Frame-Options` aus der `.htaccess`, sofern der Hoster sie auswertet. GitHub Pages tut das
+nicht; auf einem Apache-Hoster greift sie.

@@ -374,6 +374,20 @@ erweitern statt parallele bauen → 4. Desktop+Mobile im selben Schritt → 5. B
 - **`prefers-reduced-motion` fehlte im Entwurf vollständig.** Es gab nur `props.motion`, fest
   auf 1. Der Regler wird jetzt von der Systemeinstellung geführt; Vögel, Enten, Falter und
   Bienen mussten zusätzlich an `MO > 0` gehängt werden, weil sie im Original nicht daran hingen.
+- **Entwürfe bringen Autorenwerkzeug mit — auf einer Livesite ist das eine Lücke.**
+  Die Startseite hatte einen Seiten-Editor (`setupAdmin`, `#rg-admin`), zu öffnen mit `#admin`,
+  `?admin` **oder Alt + A**, also von jedem Besucher. Er machte Texte über `contentEditable`
+  änderbar und spielte Gespeichertes aus `localStorage` per `innerHTML` zurück — damit ist
+  alles in diesem Speicherplatz ausführbares Markup. Entfernt. **Achtung beim Entfernen:** der
+  Formularversand der Startseite hing im selben Block und musste als `setupForm()` bleiben.
+- **Wortwahl aus dem Entwurf gegen das Fachvokabular prüfen.** „Fünf Gewerke: Weg, Mauer, Beet,
+  Wasser, Platz" — das sind Bauteile, keine Gewerke, und Garten- und Landschaftsbau ist selbst
+  *ein* Gewerk. Auf der Seite eines Handwerksmeisters fällt so etwas dem auf, der die Leistung
+  einkauft. Jetzt „Fünf Bereiche".
+- **CSP nach dem Umbau nachziehen.** `data:`, `blob:` und `frame-src` auf Google-Domains
+  stammten aus dem alten Aufbau (SVG-Masken, Consent-Karte). Erst prüfen (keine
+  `data:`-Bildquelle, kein `createObjectURL`, kein `iframe` im Baum), dann streichen.
+  `frame-ancestors` gehört **nicht** ins `<meta>` — dort wirkt es nicht, es steht in `.htaccess`.
 - **Screenshots fremder Websites gehören nicht ins Kundenrepo.** 19 Recherchebilder von
   Aesop, Terremoto, Vogt und anderen lagen im öffentlichen Repository. Liegen jetzt unter
   `.planning/recherche-screenshots/`.
@@ -515,3 +529,23 @@ erweitern statt parallele bauen → 4. Desktop+Mobile im selben Schritt → 5. B
   vorbereitet) · Lighthouse für das neue Design noch nicht gemessen · Projektkarten auf
   `referenzen.html` verweisen auf die Berichte unter devries-galabau.de, bis es eigene
   Detailseiten gibt · `main` trägt noch das alte Design.
+
+- **2026-07-30 · v9 (Nacharbeit am selben Tag).** Vier Punkte, alle auf `redesign/gartenrundgang`:
+  **1.** Die Bildschleife des Gartenrundgangs ist jetzt das **Original** statt eines Nachbaus —
+  vordere Hälfte aus der abgeschnittenen Design-Datei, hintere vom Auftraggeber nachgereicht,
+  zusammengesetzt bei `const yaw = Math.atan`.
+  **2.** `prefers-reduced-motion` ergänzt (das Design fragte es nie ab): führt `props.motion`,
+  Tiere zusätzlich an `MO > 0`, Reveals ohne Versatz mit `.35s`.
+  **3.** „Fünf Gewerke" → **„Fünf Bereiche"** an vier Stellen der Startseite; Weg, Mauer, Beet,
+  Wasser und Platz sind Bauteile, keine Gewerke.
+  **4. Sicherheitsdurchgang:** Der aus dem Entwurf mitgebrachte **Seiten-Editor ist entfernt**
+  (`setupAdmin`, `#rg-admin`, `data-edit`/`data-optional`/`data-add`) — er ließ sich mit Alt + A
+  von jedem Besucher öffnen und spielte `localStorage` per `innerHTML` zurück. Der
+  Formularversand blieb als `setupForm()`. **CSP enger gefasst** auf allen 14 Seiten:
+  `data:`, `blob:` und `frame-src` auf Google-Domains gestrichen, nachdem geprüft war, dass
+  nichts davon mehr gebraucht wird. Geprüft und unauffällig: keine DOM-Injektion mit
+  eingesetzten Werten, alle `mailto:`-Felder über `encodeURIComponent`, keine Geheimnisse,
+  kein `target="_blank"` ohne `noopener`, kein Formular mit fremdem `action`, keine externe
+  Einbindung außer den Verweisen im Rechtstext.
+  **QA:** 13 Unterseiten × 2 Viewports ohne Befund; Startseite Desktop und Mobil je 0
+  Konsolenfehler, 0 HTTP-Fehler, 0 Überlauf; Alt + A und `#admin` bewirken nichts mehr.
