@@ -3,8 +3,12 @@
 > **Audience = ich selbst in künftigen Sessions.** Vor jeder größeren Änderung ERST diese Datei lesen,
 > dann Code hinterfragen. Nach jeder Änderung diese Datei aktualisieren (§Änderungsprotokoll).
 > Schwesterprojekt (eigener Look, NICHT vermischen): `C:\Users\Tolun\Rene` = die **Pflege**-Seite
-> (warmes Papier + Fraunces-Serif + **Rot**). de Vries **Galabau** hat einen EIGENEN Look:
-> Editorial-Natur, **Grün + Erdtöne + Ton**, Display-Grotesk, Leitidee **„Vom Strich zum Garten"**.
+> (warmes Papier + Fraunces-Serif + **Rot**).
+>
+> **Aktueller Look seit v8 (2026-07-30): „Gartenrundgang".** Heller Grünton `#EDF3E8`,
+> milchige Glaskarten, Outfit + Instrument Serif, Leitidee **ein Rundgang durch einen Garten**
+> (begehbare 3D-Startseite). Maßgeblich ist `DESIGN-AND-MOTION-SYSTEM.md`.
+> ~~Bis v7: Editorial-Natur, Grün + Erdtöne + Ton, Display-Grotesk, „Vom Strich zum Garten".~~
 
 ## 0. Selbstcheck vor jeder Änderung
 1. **Was will der Nutzer?** Awwwards-Niveau, individuell, emotional, hochwertig, aber vertrauenswürdig
