@@ -21,8 +21,8 @@
   "use strict";
 
   var CFG = {
-    url: '',            // z. B. 'https://abcdefghijkl.supabase.co' (ohne Schraegstrich am Ende)
-    key: '',            // anon / publishable key
+    url: 'https://pvcbgwzqjnzzpehwuywi.supabase.co',
+    key: 'sb_publishable_mOml55je_orXhUm5ltVnQg_xHRVi1MV',
     tabelle: 'galabau_anfragen'
   };
 

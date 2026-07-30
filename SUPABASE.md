@@ -1,9 +1,21 @@
-# Supabase anbinden — Anleitung und offene Entscheidungen
+# Supabase — Stand, Betrieb und was noch fehlt
 
-**Stand: vorbereitet, nicht aktiv.** Der Code ist vollständig eingebaut, aber
-`assets/js/formular.js` enthält noch keine Zugangsdaten. Solange das so bleibt, verhält sich
-die Website exakt wie bisher: jeder Formularknopf öffnet das E-Mail-Programm (`mailto:`).
-Es geht **kein** Aufruf nach außen.
+**Eingerichtet und geprüft, aber NICHT veröffentlicht.**
+
+| | |
+|---|---|
+| Projekt | `devries-galabau` (Ref `pvcbgwzqjnzzpehwuywi`), Organisation *Reel Rebel* |
+| Region | Central EU — Frankfurt |
+| Tabelle | `public.galabau_anfragen`, RLS an und erzwungen, eine Policy (nur `insert`) |
+| Im Code | `assets/js/formular.js` ist gefüllt, `connect-src` auf sieben Seiten geöffnet |
+| Live | **nein** — `main` liefert weiter den `mailto`-Stand |
+
+Das Projekt liegt bewusst **getrennt** von `de-vries`: dort liegen sechs `devries_*`-Tabellen
+einer anderen Website (Bewerbungen, Terminbuchungen). Die werden hier nicht angefasst.
+
+**Das Datenbank-Passwort wurde zufällig erzeugt und nirgends gespeichert.** Die Website braucht
+es nicht — sie spricht nur die REST-Schnittstelle mit dem öffentlichen Schlüssel an. Wer eine
+direkte Postgres-Verbindung will, setzt im Dashboard unter *Settings → Database* ein eigenes.
 
 ---
 
@@ -27,73 +39,36 @@ Die Anbindung liegt fertig da — sie zu aktivieren ist eine Entscheidung, keine
 
 ---
 
-## Was noch fehlt
+## Was noch fehlt — und warum es noch nicht live ist
 
-1. **Ein Supabase-Projekt.** Ich konnte keins anlegen: der Supabase-Zugang ist in dieser
-   Sitzung nicht angemeldet.
-   → Region **Frankfurt (eu-central-1)** wählen. Nicht die US-Regionen: die Daten sind
-   Kontaktdaten von Privatpersonen.
-2. **Projekt-URL und `anon`-Schlüssel** aus *Project Settings → API*.
-3. **Der Auftragsverarbeitungsvertrag** mit Supabase (im Dashboard unter *Legal → DPA*).
-   Ohne den ist der Einsatz für personenbezogene Daten nicht sauber.
-4. **Ein Absatz in der Datenschutzerklärung.** Der ist rechtlich Pflicht, sobald Formulardaten
-   an einen Dritten gehen. Den Rechtstext ändere ich nicht von mir aus — sag Bescheid, dann
-   formuliere ich einen Vorschlag zum Gegenlesen durch jemanden mit juristischem Blick.
+Zwei Dinge, beide nur von dir zu erledigen:
+
+1. **Auftragsverarbeitungsvertrag mit Supabase.** Im Dashboard unter *Organization → Legal →
+   DPA* bestätigen. Ohne den ist die Verarbeitung personenbezogener Daten durch einen
+   Dienstleister nicht zulässig — daran ändert auch der beste Datenschutztext nichts.
+2. **Absatz in der Datenschutzerklärung.** Sobald Formulardaten an Supabase gehen, ist die
+   Nennung Pflicht: wer verarbeitet, was, wozu, auf welcher Rechtsgrundlage, wie lange.
+
+**Deshalb steht die Anbindung fertig, aber unveröffentlicht.** Sie erst freizuschalten und den
+Rechtstext später nachzuziehen hieße, in der Zwischenzeit Kontaktdaten von Privatpersonen ohne
+Grundlage weiterzugeben. Einen Datenschutztext von mir einzusetzen, der einen noch nicht
+geschlossenen Vertrag behauptet, wäre ebenso falsch.
+
+Sobald Punkt 1 erledigt ist: sag Bescheid, ich formuliere den Absatz zum Gegenlesen und
+veröffentliche beides zusammen. Der Live-Gang ist dann ein Deployment, keine Bastelei —
+Konfiguration und CSP stehen bereits im Branch.
 
 ---
 
-## Einrichten in vier Schritten
+## Wo die Anfragen landen
 
-### 1. Tabelle anlegen
+Im Supabase-Dashboard → *Table Editor* → `galabau_anfragen`. Der Table Editor läuft über
+`service_role` und umgeht RLS, deshalb braucht es dafür keine Leseregel.
 
-`supabase/schema.sql` im SQL-Editor des Projekts **vollständig** ausführen.
-
-Der wichtigste Teil steht am Ende: Row Level Security ist aktiv, `anon` darf ausschließlich
-`insert`. Es gibt bewusst **keine** `select`-Regel — sonst könnte jeder Besucher sämtliche
-Kundenanfragen abrufen, denn der Schlüssel steht im Quelltext.
-
-Danach im SQL-Editor gegenprüfen:
-
-```sql
-set role anon;
-select * from public.galabau_anfragen;                       -- muss 0 Zeilen liefern
-insert into public.galabau_anfragen (quelle, name, email)
-  values ('probe', 'Test', 'test@example.org');      -- muss klappen
-reset role;
-```
-
-Liefert das `select` Zeilen, ist etwas falsch — dann **nicht** weitermachen.
-
-### 2. Zugangsdaten eintragen
-
-In `assets/js/formular.js`:
-
-```js
-var CFG = {
-  url: 'https://<projekt-ref>.supabase.co',
-  key: '<anon / publishable key>',
-  tabelle: 'anfragen'
-};
-```
-
-Der `anon`-Schlüssel gehört in den Quelltext, er ist kein Geheimnis. **Niemals** den
-`service_role`-Schlüssel eintragen — der umgeht sämtliche Regeln.
-
-### 3. CSP öffnen
-
-Auf den sieben Seiten mit Formular (`index`, `anfrage`, `kontakt`, `gartenplanung`,
-`gartenpflege`, `bepflanzung`, `gartengestaltung`) im `<meta http-equiv="Content-Security-Policy">`:
-
-```
-connect-src 'self'   →   connect-src 'self' https://<projekt-ref>.supabase.co
-```
-
-Ohne das blockiert der Browser den Aufruf — und der `mailto`-Rückfallweg greift, ohne dass
-jemand merkt, dass die Datenbank nie erreicht wurde.
-
-### 4. Versionsnummer hochzählen
-
-`?v=10` in allen `*.html` auf `?v=11`, sonst sehen wiederkehrende Besucher das alte Skript.
+Es gibt **keine** Benachrichtigung per E-Mail. Wer eine will, braucht zusätzlich eine Edge
+Function auf einem Datenbank-Webhook plus einen Mailversender. Solange das fehlt, muss jemand
+die Tabelle aktiv öffnen — das ist der Grund, warum `mailto` für den reinen Posteingang
+weiterhin die schlichtere Lösung ist.
 
 ---
 

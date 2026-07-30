@@ -7,3 +7,6 @@ assets/img/raw/
 node_modules/
 .DS_Store
 Thumbs.db
+
+# Verknuepfungsdaten der Supabase-CLI (enthalten Verbindungszeichenfolgen)
+supabase/.temp/

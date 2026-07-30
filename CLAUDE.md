@@ -75,7 +75,7 @@ gewerblich; Menschen mit Interesse an Qualität, individueller & naturnaher Gest
 >   Aktiver Punkt über `active="…"`, CTA-Ziel über `cta="…"`.
 > - Je Seite **eine** Logikdatei `assets/js/<seite>.js` (Reveals, ggf. Formular).
 > - `assets/js/three.min.js` **nur** auf `index.html` (3D-Gartenrundgang).
-> - Cache-Busting weiterhin `?v=N` auf allen Seiten gleichzeitig hochzählen (aktuell `v=10`).
+> - Cache-Busting weiterhin `?v=N` auf allen Seiten gleichzeitig hochzählen (aktuell `v=11`).
 >
 > Die folgenden Absätze 3, 6.1–6.5 und 7 beschreiben den v1–v7-Stand und bleiben nur als
 > Entwicklungsgeschichte stehen — **nicht** als Vorgabe.
@@ -572,3 +572,28 @@ erweitern statt parallele bauen → 4. Desktop+Mobile im selben Schritt → 5. B
   Geprüft gegen einen lokalen Nachbau der REST-Schnittstelle: normaler Fall speichert und
   leitet auf `danke.html`, Fehler 500 fällt auf `mailto` zurück, Honigtopf und Zeitschwelle
   greifen — beide **ohne** stilles Verwerfen, die Nachricht geht per `mailto` trotzdem raus.
+
+- **2026-07-31 · Supabase eingerichtet, bewusst noch nicht veröffentlicht.**
+  Zugang kam über die lokal angemeldete Supabase-CLI — kein Token ging durch den Chat.
+  **Erst falsch abgebogen:** Tabelle im Projekt `de-vries` angelegt, das aber zur
+  Pflege-Seite gehört (sechs `devries_*`-Tabellen: Bewerbungen mit Geburtsdatum,
+  Terminbuchungen, Kontakte). Auf Zuruf sofort zurückgebaut — Tabelle gedroppt, Konfiguration
+  und CSP zurückgesetzt, Projekt exakt im Vorzustand. **Lehre: vor dem ersten `create table`
+  prüfen, wem das Projekt gehört, nicht nur ob es passend heißt.**
+  **Dann richtig:** eigenes Projekt `devries-galabau` (Ref `pvcbgwzqjnzzpehwuywi`, Frankfurt),
+  Tabelle `public.galabau_anfragen`, RLS an **und erzwungen**, genau eine Policy (`insert`
+  für `anon`), keine `select`-Regel. Gegenprobe mit dem echten öffentlichen Schlüssel gegen
+  die Live-Schnittstelle: einfügen 201, lesen 401, ändern 401, löschen 401, Nachricht über
+  5000 Zeichen 400, E-Mail ohne @ 400. Browsertest Ende zu Ende: POST 201, Zeile mit allen
+  Feldern und korrekten Umlauten, weiter zu `danke.html`, keine CSP-Verletzung.
+  **Nicht deployt**, weil zwei Dinge fehlen, die nur der Betreiber erledigen kann: der
+  Auftragsverarbeitungsvertrag mit Supabase und der Absatz in der Datenschutzerklärung.
+  Freischalten und den Rechtstext nachziehen hieße, in der Zwischenzeit Kontaktdaten ohne
+  Grundlage weiterzugeben; einen Text einzusetzen, der einen ungeschlossenen Vertrag
+  behauptet, wäre ebenso falsch. Details in `SUPABASE.md`.
+  **Nebenbefund am fremden Projekt (nicht geändert):** die sechs `devries_*`-Tabellen haben
+  RLS an, aber **null Policies** und trotzdem `anon`-Grants für SELECT und INSERT. Aktuell
+  dicht — geprüft, alle liefern `[]`. Wer dort je eine freizügige Policy ergänzt oder RLS
+  abschaltet, öffnet damit sofort den Lesezugriff auf Bewerbungsdaten. Die Grants gehören
+  entzogen.
+  **`supabase/.temp/` steht jetzt in `.gitignore`** — dort liegen Verbindungszeichenfolgen.
