@@ -2811,10 +2811,301 @@ class Component extends DCLogic {
     this.camera.updateProjectionMatrix();
   }
 
-  /* ⚠ HIER BRICHT DIE UEBERNAHME AB.
-     Die Design-Datei ist groesser als das Leselimit der Schnittstelle
-     (256 KiB); der Rest der Szene fehlt. Bis die Quelldatei aufgeteilt
-     ist, endet die Klasse hier, damit die Seite ueberhaupt laedt. */
+  /* =====================================================================
+     ⚠ AB HIER NACHGEBAUT, NICHT AUS DEM DESIGN UEBERNOMMEN.
+     Die Design-Datei Gartenrundgang.dc.html ist groesser als das Leselimit
+     der Schnittstelle (256 KiB) und bricht mitten in dieser Schleife ab.
+     Alles davor ist woertlich uebernommen; die Bildschleife hier ist von
+     Hand aus dem vorhandenen Szenenzustand rekonstruiert: Sie benutzt
+     ausschliesslich Felder, die weiter oben angelegt werden (this.curve,
+     this.focus, this.focusMix, this.stationP, this.bees, this.ducks,
+     this.birds, this.butterflies, this.falls, this.drops, this.ripples,
+     this.uTime, this.uWind). Bewegungsablauf und Timing sind daher
+     stimmig, aber nicht zeichengenau die des Entwurfs. Sobald die
+     Quelldatei geteilt vorliegt, kann dieser Block 1:1 ersetzt werden.
+     ===================================================================== */
+
+  /* Weiche Stufe: 0 -> 1 mit waagerechten Enden, statt harter Kante. */
+  static ease(k) { k = k < 0 ? 0 : k > 1 ? 1 : k; return k * k * (3 - 2 * k); }
+
+  /* Wo stehen wir zwischen zwei Stationen? Liefert Index und Anteil. */
+  stationAt(p) {
+    const s = this.stationP;
+    if (p <= s[0]) return { i: 0, j: 0, k: 0 };
+    for (let i = 0; i < s.length - 1; i++) {
+      if (p <= s[i + 1]) return { i: i, j: i + 1, k: (p - s[i]) / (s[i + 1] - s[i]) };
+    }
+    return { i: s.length - 1, j: s.length - 1, k: 0 };
+  }
+
+  updateWalk(t, p) {
+    const THREE = window.THREE;
+    const seg = this.stationAt(p);
+    const kk = Component.ease(seg.k);
+
+    /* Kamera laeuft den Gartenweg entlang; Blick mischt sich zwischen
+       "nach vorn" und dem Blickfang der jeweiligen Station. */
+    const u = Math.min(0.999, Math.max(0, p));
+    const pos = this.curve.getPointAt(u);
+    const ahead = this.curve.getPointAt(Math.min(0.999, u + 0.035));
+
+    const sway = this.reduce ? 0 : Math.sin(t * 0.62) * 0.09;
+    const bob = this.reduce ? 0 : Math.sin(t * 1.15) * 0.022;
+    const mx = this.mx * (this.reduce ? 0 : 1);
+    const my = this.my * (this.reduce ? 0 : 1);
+
+    this.camera.position.set(
+      pos.x + sway * 0.5 + mx * 0.28,
+      1.62 + bob - my * 0.12,
+      pos.z
+    );
+
+    const fa = this.focus[seg.i], fb = this.focus[seg.j];
+    const fx = fa.x + (fb.x - fa.x) * kk;
+    const fy = fa.y + (fb.y - fa.y) * kk;
+    const fz = fa.z + (fb.z - fa.z) * kk;
+    const ma = this.focusMix[seg.i], mb = this.focusMix[seg.j];
+    const mix = ma + (mb - ma) * kk;
+
+    if (!this.lookAt) this.lookAt = new THREE.Vector3(fx, fy, fz);
+    const tx = ahead.x + (fx - ahead.x) * mix + mx * 0.5;
+    const ty = 1.42 + (fy - 1.42) * mix - my * 0.32;
+    const tz = ahead.z + (fz - ahead.z) * mix;
+    this.lookAt.x += (tx - this.lookAt.x) * 0.09;
+    this.lookAt.y += (ty - this.lookAt.y) * 0.09;
+    this.lookAt.z += (tz - this.lookAt.z) * 0.09;
+    this.camera.lookAt(this.lookAt);
+
+    this.camera.getWorldDirection(this.camFwd);
+    if (this.sunSprite && this.sunDir) {
+      this.sunSprite.position.copy(this.camera.position).addScaledVector(this.sunDir, 320);
+    }
+
+    /* Texttafeln: nur die Station im Blickfeld ist sichtbar. */
+    let active = seg.i;
+    let best = 1e9;
+    for (let i = 0; i < this.stationP.length; i++) {
+      const d = Math.abs(p - this.stationP[i]);
+      if (d < best) { best = d; active = i; }
+    }
+    if (this.panels) {
+      const S = this.stationP;
+      for (let i = 0; i < this.panels.length; i++) {
+        const el = this.panels[i];
+        const d = p - S[i];
+        /* Halber Abstand zur Nachbarstation auf der jeweiligen Seite —
+           so bleibt jede Tafel ueber den groessten Teil ihres Abschnitts
+           voll lesbar und blendet erst kurz vor der naechsten weg.
+           Ein fester Radius liess sie nur an einer einzigen Scrollposition
+           deckend erscheinen und dazwischen fast verschwinden. */
+        const gap = d < 0
+          ? (i > 0 ? S[i] - S[i - 1] : 0.14)
+          : (i < S.length - 1 ? S[i + 1] - S[i] : 0.14);
+        const n = Math.abs(d) / (gap * 0.5);
+        const v = n <= 0.62 ? 1 : n >= 0.95 ? 0 : Component.ease((0.95 - n) / 0.33);
+        if (el.__v === v) continue;
+        el.__v = v;
+        el.style.opacity = v.toFixed(3);
+        el.style.pointerEvents = v > 0.6 ? 'auto' : 'none';
+        if (!this.reduce && el.getAttribute('data-side') !== 'center' && !this.isMobile) {
+          el.style.transform = (el.dataset.dTransform || '') + ' translateY(' + ((1 - v) * 26).toFixed(1) + 'px)';
+        }
+      }
+    }
+    if (active !== this.active) {
+      this.active = active;
+      this.dots.forEach((d, i) => {
+        d.style.background = i === active ? 'rgba(44,110,73,.2)' : 'transparent';
+        d.setAttribute('aria-current', i === active ? 'true' : 'false');
+      });
+    }
+  }
+
+  updateLife(t) {
+    if (this.bees) for (const b of this.bees) {
+      const d = b.userData, a = t * d.sp + d.ph;
+      b.position.set(
+        d.ax + Math.cos(a) * d.r,
+        d.h + Math.sin(a * 2.7 + d.ph) * 0.12,
+        d.az + Math.sin(a * 1.3) * d.r
+      );
+      b.rotation.y = -a;
+    }
+
+    if (this.butterflies) for (const b of this.butterflies) {
+      const d = b.userData, a = t * d.sp + d.ph;
+      b.position.set(
+        d.ax + Math.cos(a) * d.r,
+        0.72 + Math.sin(a * 1.8 + d.ph) * 0.26,
+        d.az + Math.sin(a * 0.8) * d.r
+      );
+      b.rotation.y = -a + Math.PI / 2;
+      const flap = Math.sin(t * 11 + d.ph) * 0.85;
+      if (d.wl) d.wl.rotation.y = flap;
+      if (d.wr) d.wr.rotation.y = -flap;
+    }
+
+    if (this.birds) for (const b of this.birds) {
+      const d = b.userData, a = t * d.sp + d.ph;
+      b.position.set(Math.cos(a) * d.rad, d.y + Math.sin(a * 1.6) * 0.5, Math.sin(a) * d.rad);
+      b.rotation.y = -a + Math.PI / 2;
+      const flap = Math.sin(t * d.fl + d.ph) * 0.5;
+      if (d.wl) d.wl.rotation.z = flap;
+      if (d.wr) d.wr.rotation.z = -flap;
+    }
+
+    if (this.ducks && this.fountainPos) for (const dk of this.ducks) {
+      const d = dk.userData, a = t * d.sp + d.ph;
+      const x = this.fountainPos.x + Math.cos(a) * d.rad;
+      const z = this.fountainPos.z + Math.sin(a) * d.rad;
+      dk.position.x = x;
+      dk.position.z = z;
+      dk.rotation.y = -a + Math.PI / 2;
+      if (d.head) d.head.rotation.x = Math.sin(t * 0.9 + d.ph) * 0.16;
+      if (d.wake) {
+        d.wake.position.set(x, dk.position.y - 0.08, z);
+        const s = 1 + (Math.sin(t * 1.6 + d.ph) * 0.5 + 0.5) * 0.7;
+        d.wake.scale.set(s, s, s);
+        d.wake.material.opacity = 0.3 * (1 - (s - 1) / 0.7) * 0.9;
+      }
+    }
+
+    /* Brunnen: Tropfen steigen und fallen, danach ein Ring auf dem Wasser. */
+    if (this.drops && this.dropData && this.fountainPos) {
+      const D = this.dropDummy, o = this.fountainPos;
+      for (let i = 0; i < this.dropData.length; i++) {
+        const d = this.dropData[i];
+        let k = (t * d.sp + d.ph) % 1;
+        const vy = d.v * k - 4.9 * k * k;
+        D.position.set(
+          o.x + Math.cos(d.a) * d.vr * k,
+          o.y + 1.9 + vy * 0.42,
+          o.z + Math.sin(d.a) * d.vr * k
+        );
+        if (D.position.y < o.y + 0.12) D.position.y = o.y + 0.12;
+        D.updateMatrix();
+        this.drops.setMatrixAt(i, D.matrix);
+      }
+      this.drops.instanceMatrix.needsUpdate = true;
+    }
+
+    if (this.ripples) for (let i = 0; i < this.ripples.length; i++) {
+      const r = this.ripples[i];
+      const k = (t * 0.42 + i / this.ripples.length) % 1;
+      const s = 0.4 + k * 5.2;
+      r.scale.set(s, s, s);
+      r.material.opacity = 0.34 * (1 - k) * (1 - k);
+    }
+
+    /* Wasserfall: die Schleier wellen sich leicht in der Senkrechten. */
+    if (this.falls) for (const f of this.falls) {
+      const base = f.userData.base;
+      const at = f.geometry.getAttribute('position');
+      for (let v = 0; v < at.count; v++) {
+        const bx = base[v * 3], by = base[v * 3 + 1], bz = base[v * 3 + 2];
+        const k = -by / f.userData.h;
+        at.setXYZ(
+          v,
+          bx + Math.sin(t * 3.1 + f.userData.ph + k * 5.4) * 0.012 * k,
+          by,
+          bz + Math.cos(t * 2.4 + f.userData.ph + k * 4.1) * 0.02 * k
+        );
+      }
+      at.needsUpdate = true;
+    }
+
+    if (this.fallMist) for (const m of this.fallMist) {
+      const d = m.userData, k = (t * 0.28 + d.ph) % 1;
+      m.position.y = d.y0 + k * 0.7;
+      m.position.x = d.x0 + k * 0.3;
+      m.material.opacity = 0.26 * Math.sin(k * Math.PI);
+    }
+
+    if (this.fallSpray && this.fallDrops && this.fallTiers) {
+      const at = this.fallSpray.geometry.getAttribute('position');
+      for (let i = 0; i < this.fallDrops.length; i++) {
+        const d = this.fallDrops[i];
+        const tr = this.fallTiers[d.ti], prev = this.fallTiers[d.ti - 1] || tr;
+        const k = (t * d.sp + d.ph) % 1;
+        at.setXYZ(
+          i,
+          -tr[0] + 0.58 + d.out * 0.3 * k,
+          tr[1] + 0.1 - k * Math.max(0.2, tr[1] - prev[1]),
+          d.z
+        );
+      }
+      at.needsUpdate = true;
+    }
+
+    /* Wasserflaechen und Fontaenenstrahl leicht bewegen. */
+    if (this.water && this.water.material && this.water.material.map) {
+      this.water.material.map.offset.y = (t * 0.03) % 1;
+    }
+    if (this.jet) this.jet.scale.y = 1 + Math.sin(t * 4.2) * 0.05;
+    if (this.mJet && this.mJet.map) this.mJet.map.offset.y = (-t * 0.9) % 1;
+  }
+
+  tick = () => {
+    if (!this.alive) return;
+    this.raf = requestAnimationFrame(this.tick);
+
+    const now = performance.now();
+    if (this.tPrev == null) this.tPrev = now;
+    /* Nach einem Tabwechsel nicht springen: Schritt begrenzen. */
+    let dt = Math.min(50, now - this.tPrev);
+    this.tPrev = now;
+    this.t = (this.t || 0) + dt / 1000;
+    const t = this.t;
+
+    if (this.reduce == null) {
+      this.reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        || this.props.motion === 0;
+    }
+
+    /* Fortschritt des Rundgangs aus der Scrollposition. */
+    let raw = 0;
+    if (this.walk) {
+      const r = this.walk.getBoundingClientRect();
+      const span = Math.max(1, this.walk.offsetHeight - window.innerHeight);
+      raw = Math.min(1, Math.max(0, -r.top / span));
+    }
+    this.scrollVel = (raw - this.tp) * 1000 / Math.max(1, dt);
+    this.tp = raw;
+    /* Gedaempft folgen, damit der Gang ruhig bleibt und nicht am Rad klebt. */
+    const lag = this.reduce ? 1 : Math.min(1, dt / 1000 * 4.2);
+    this.p += (this.tp - this.p) * lag;
+    this.vel = this.tp - this.p;
+
+    const ml = this.reduce ? 1 : Math.min(1, dt / 1000 * 3);
+    this.mx += (this.tmx - this.mx) * ml;
+    this.my += (this.tmy - this.my) * ml;
+
+    try { this.updateExtras(t, dt); }
+    catch (e) { if (!this.warnedExtras) { this.warnedExtras = true; console.error('Rundgang (DOM):', e); } }
+
+    if (!this.ready || !this.renderer) return;
+
+    /* Leinwand nur zeichnen, solange der Rundgang im Bild ist. */
+    const vis = !this.walk || (this.walk.getBoundingClientRect().bottom > 0
+      && this.walk.getBoundingClientRect().top < window.innerHeight);
+    const cv = this.renderer.domElement;
+    if (vis !== this.canvasHidden) {
+      this.canvasHidden = vis;
+      cv.style.visibility = vis ? 'visible' : 'hidden';
+    }
+    if (!vis) return;
+
+    this.uTime.value = t;
+    this.uWind.value = this.reduce ? 0 : 1;
+
+    try {
+      this.updateWalk(t, this.p);
+      if (!this.reduce) this.updateLife(t);
+      this.renderer.render(this.scene, this.camera);
+    } catch (e) {
+      if (!this.warnedGL) { this.warnedGL = true; console.error('Rundgang (3D):', e); }
+    }
+  };
 }
 
   var __props = {
