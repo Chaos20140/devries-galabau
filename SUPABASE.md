@@ -46,16 +46,18 @@ Zwei Dinge, beide nur von dir zu erledigen:
 1. **Auftragsverarbeitungsvertrag mit Supabase.** Im Dashboard unter *Organization → Legal →
    DPA* bestätigen. Ohne den ist die Verarbeitung personenbezogener Daten durch einen
    Dienstleister nicht zulässig — daran ändert auch der beste Datenschutztext nichts.
-2. **Absatz in der Datenschutzerklärung.** Sobald Formulardaten an Supabase gehen, ist die
-   Nennung Pflicht: wer verarbeitet, was, wozu, auf welcher Rechtsgrundlage, wie lange.
+2. ~~Absatz in der Datenschutzerklärung.~~ **Erledigt** — steht in `datenschutz.html` als
+   eigener Abschnitt „Supabase (Speicherung der Formularanfragen)“ zwischen „Kontaktformular“
+   und „Anfrage per E-Mail“. Er behauptet allerdings, der AVV sei geschlossen. Das ist erst
+   nach Punkt 1 wahr — deshalb hängt die Veröffentlichung weiter daran.
 
 **Deshalb steht die Anbindung fertig, aber unveröffentlicht.** Sie erst freizuschalten und den
 Rechtstext später nachzuziehen hieße, in der Zwischenzeit Kontaktdaten von Privatpersonen ohne
 Grundlage weiterzugeben. Einen Datenschutztext von mir einzusetzen, der einen noch nicht
 geschlossenen Vertrag behauptet, wäre ebenso falsch.
 
-Sobald Punkt 1 erledigt ist: sag Bescheid, ich formuliere den Absatz zum Gegenlesen und
-veröffentliche beides zusammen. Der Live-Gang ist dann ein Deployment, keine Bastelei —
+Sobald Punkt 1 erledigt ist: sag Bescheid, dann veröffentliche ich Code und Rechtstext
+zusammen. Der Live-Gang ist dann ein Deployment, keine Bastelei —
 Konfiguration und CSP stehen bereits im Branch.
 
 ---
