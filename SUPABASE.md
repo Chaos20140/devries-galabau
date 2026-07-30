@@ -26,7 +26,7 @@ Der ehrliche Gegenwert einer Datenbank ist hier überschaubar, die Nebenkosten s
 | | `mailto` (heute) | Supabase |
 |---|---|---|
 | Anfrage landet | direkt im Postfach, das ohnehin gelesen wird | in einer Tabelle, die jemand öffnen muss |
-| Benachrichtigung | die E-Mail **ist** die Benachrichtigung | keine — dafür braucht es zusätzlich eine Edge Function und einen Mailversender |
+| Benachrichtigung | die E-Mail **ist** die Benachrichtigung | über die Edge Function `anfrage-mail`, eingerichtet |
 | Auftragsverarbeiter | keiner | einer mehr, mit Vertrag und Eintrag in der Datenschutzerklärung |
 | Missbrauch | Postfachfilter | offener Schreib-Endpunkt, siehe unten |
 | Ausfall | nur wenn das Postfach ausfällt | zusätzlicher Dienst, der ausfallen kann |
@@ -62,15 +62,73 @@ Konfiguration und CSP stehen bereits im Branch.
 
 ---
 
-## Wo die Anfragen landen
+## Benachrichtigung per E-Mail
+
+Eingerichtet und geprüft — es fehlt nur noch **ein Befehl von dir.**
+
+Beim Einfügen einer Zeile ruft ein Trigger die Edge Function `anfrage-mail` auf, die über das
+**eigene Postfach** verschickt. Kein weiterer Dienstleister, kein zusätzlicher Absatz in der
+Datenschutzerklärung.
+
+### Der eine Befehl
+
+Aus diesem Projektordner, mit den Zugangsdaten des Postfachs bei Strato:
+
+```bash
+supabase secrets set SMTP_USER=info@devries-galabau.de SMTP_PASS='DEIN-POSTFACH-PASSWORT'
+```
+
+Ich habe diese Zugangsdaten bewusst nicht angefasst. Sie liegen danach ausschließlich in den
+Secrets des Supabase-Projekts — serverseitig, nie im Browser, nie im Repository.
+
+Voreingestellt sind `smtp.strato.de`, Port 465 und Empfänger `info@devries-galabau.de`.
+Weicht davon etwas ab, im selben Befehl ergänzen: `SMTP_HOST=…`, `SMTP_PORT=…`, `MAIL_TO=…`,
+`MAIL_FROM=…`.
+
+### Gegenprobe danach
+
+```sql
+insert into public.galabau_anfragen (quelle, name, email, nachricht)
+  values ('pruefung', 'Test', 'test@example.org', 'Probelauf');
+select status_code, content from net._http_response order by created desc limit 1;
+delete from public.galabau_anfragen where quelle = 'pruefung';
+```
+
+`200` = Mail ist raus · `401` = Token stimmt nicht · `503` = SMTP-Secrets fehlen noch.
+
+### Was bereits läuft
+
+| | |
+|---|---|
+| Edge Function `anfrage-mail` | deployt, läuft ohne JWT-Prüfung |
+| Schutz der Funktion | gemeinsames Geheimnis im Kopf `x-anfrage-token`; ohne → 401, geprüft |
+| `ANFRAGE_TOKEN` | von mir zufällig erzeugt und gesetzt, steht nicht im Repository |
+| Trigger | `galabau_anfragen_benachrichtigung`, aktiv, geprüft |
+| Entkopplung | scheitert der Versand, **bleibt die Zeile trotzdem** — geprüft mit 503 |
+
+Der Token in `supabase/webhook.sql` steht dort als Platzhalter. Wer die Datei erneut ausführt,
+muss ihn ersetzen — oder den Trigger einfach so lassen, er ist bereits eingerichtet.
+
+### Warum die Funktion die Kopfzeilen putzt
+
+Name und E-Mail des Absenders wandern in Betreff und `Reply-To`. Ohne Bereinigung könnte
+jemand über `Name
+Bcc: opfer@example.org` eigene Kopfzeilen einschleusen und die
+Benachrichtigung an Dritte umleiten. Zeilenumbrüche und Tabulatoren werden deshalb entfernt,
+Längen begrenzt, und in `Reply-To` kommt nur eine Adresse, die wie eine Adresse aussieht.
+Zehn Fälle durchgespielt, alle bestanden.
+
+### Kein Versand ohne Mail-Konto
+
+Ohne `SMTP_USER`/`SMTP_PASS` antwortet die Funktion `503` und verschickt nichts. Sie fällt
+also geschlossen aus, statt stillschweigend nichts zu tun.
+
+---
+
+## Wo die Anfragen sonst noch liegen
 
 Im Supabase-Dashboard → *Table Editor* → `galabau_anfragen`. Der Table Editor läuft über
 `service_role` und umgeht RLS, deshalb braucht es dafür keine Leseregel.
-
-Es gibt **keine** Benachrichtigung per E-Mail. Wer eine will, braucht zusätzlich eine Edge
-Function auf einem Datenbank-Webhook plus einen Mailversender. Solange das fehlt, muss jemand
-die Tabelle aktiv öffnen — das ist der Grund, warum `mailto` für den reinen Posteingang
-weiterhin die schlichtere Lösung ist.
 
 ---
 

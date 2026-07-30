@@ -597,3 +597,29 @@ erweitern statt parallele bauen → 4. Desktop+Mobile im selben Schritt → 5. B
   abschaltet, öffnet damit sofort den Lesezugriff auf Bewerbungsdaten. Die Grants gehören
   entzogen.
   **`supabase/.temp/` steht jetzt in `.gitignore`** — dort liegen Verbindungszeichenfolgen.
+
+- **2026-07-31 · Mail-Benachrichtigung über das eigene Postfach.**
+  Ohne sie wäre der Umstieg auf Supabase ein Rückschritt gewesen: die Anfrage hätte nur noch
+  in einer Tabelle gelegen, die jemand aktiv öffnen muss. Jetzt ruft ein Trigger auf
+  `galabau_anfragen` die Edge Function `anfrage-mail` auf, die per SMTP über
+  `info@devries-galabau.de` benachrichtigt — **kein weiterer Auftragsverarbeiter**, deshalb
+  auch kein zusätzlicher Absatz in der Datenschutzerklärung.
+  **Bewusst entkoppelt:** `pg_net` arbeitet asynchron. Scheitert der Versand, bleibt die Zeile
+  trotzdem in der Tabelle — nachgewiesen mit einer Antwort `503` bei fehlenden SMTP-Secrets.
+  Eine Anfrage geht nie verloren, weil ein Mailserver hustet.
+  **Schutz der Funktion:** sie läuft ohne JWT-Prüfung, damit der Trigger keinen Dienstschlüssel
+  hinterlegen muss. Stattdessen ein gemeinsames Geheimnis im Kopf `x-anfrage-token`. Ohne oder
+  mit falschem Token: 401, geprüft. Der Token wurde zufällig erzeugt, ist als Secret gesetzt
+  und steht **nicht** im Repository — in `supabase/webhook.sql` bleibt ein Platzhalter.
+  **Kopfzeilen-Einschleusung abgewehrt:** Name und E-Mail wandern in Betreff und `Reply-To`.
+  Ohne Bereinigung ginge `Name\r\nBcc: opfer@…` als eigene Kopfzeile durch. Umbrüche und
+  Tabulatoren werden entfernt, Längen begrenzt, `Reply-To` nur bei plausibler Adresse.
+  Zehn Fälle durchgespielt, alle bestanden.
+  **Falle, die eine halbe Stunde gekostet hat:** `create extension pg_net with schema
+  extensions` wird ignoriert — pg_net legt immer sein eigenes Schema `net` an. Der Aufruf
+  `extensions.net.http_post` scheitert dann mit *cross-database references are not
+  implemented*, und weil das im Trigger passiert, **schlug jedes Einfügen fehl** (HTTP 400).
+  Richtig ist `net.http_post` mit `search_path = public, net`. Merke: nach dem Anlegen eines
+  Triggers immer einen echten Datensatz durchschicken, nicht nur die Existenz prüfen.
+  **Offen für den Betreiber:** ein Befehl, `supabase secrets set SMTP_USER=… SMTP_PASS=…`.
+  Die Postfach-Zugangsdaten habe ich bewusst nicht angefasst.
