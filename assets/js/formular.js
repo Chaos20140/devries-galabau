@@ -23,7 +23,7 @@
   var CFG = {
     url: '',            // z. B. 'https://abcdefghijkl.supabase.co' (ohne Schraegstrich am Ende)
     key: '',            // anon / publishable key
-    tabelle: 'anfragen'
+    tabelle: 'galabau_anfragen'
   };
 
   /* Laengen entsprechen den CHECK-Bedingungen in schema.sql. Hier wird

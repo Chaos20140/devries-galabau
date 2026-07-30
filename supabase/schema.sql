@@ -1,6 +1,10 @@
 -- =====================================================================
 -- de Vries Galabau — Tabelle fuer Formularanfragen
 --
+-- Der Praefix galabau_ trennt bewusst von den devries_*-Tabellen im
+-- selben Projekt: die gehoeren zur Pflege-Seite (Bewerbungen,
+-- Terminbuchungen) und werden hier nicht angefasst.
+--
 -- Im SQL-Editor des Supabase-Projekts einmal komplett ausfuehren.
 -- Danach assets/js/formular.js mit Projekt-URL und anon-Schluessel
 -- fuellen und connect-src in der CSP ergaenzen (siehe SUPABASE.md).
@@ -13,7 +17,7 @@
 
 create extension if not exists "pgcrypto";
 
-create table if not exists public.anfragen (
+create table if not exists public.galabau_anfragen (
   id              uuid        primary key default gen_random_uuid(),
   eingegangen_am  timestamptz not null    default now(),
   erledigt        boolean     not null    default false,
@@ -36,30 +40,30 @@ create table if not exists public.anfragen (
   nachricht       text                    check (char_length(nachricht) <= 5000)
 );
 
-comment on table public.anfragen is
+comment on table public.galabau_anfragen is
   'Anfragen aus den Formularen der Website. Schreibzugriff oeffentlich (anon), Lesezugriff nur intern.';
 
-create index if not exists anfragen_eingang_idx
-  on public.anfragen (eingegangen_am desc);
+create index if not exists galabau_anfragen_eingang_idx
+  on public.galabau_anfragen (eingegangen_am desc);
 
 -- ---------------------------------------------------------------------
 -- Rechte. Reihenfolge und Vollstaendigkeit sind hier wichtig.
 -- ---------------------------------------------------------------------
 
-alter table public.anfragen enable row level security;
+alter table public.galabau_anfragen enable row level security;
 -- Auch fuer den Tabelleneigentuemer erzwingen, damit keine Rolle
 -- versehentlich an den Regeln vorbeikommt:
-alter table public.anfragen force row level security;
+alter table public.galabau_anfragen force row level security;
 
 -- Erst alles wegnehmen, dann gezielt zurueckgeben.
-revoke all on public.anfragen from anon, authenticated;
+revoke all on public.galabau_anfragen from anon, authenticated;
 
 -- anon darf einfuegen — mehr nicht. Kein select, kein update, kein delete.
-grant insert on public.anfragen to anon;
+grant insert on public.galabau_anfragen to anon;
 
-drop policy if exists anfragen_insert_anon on public.anfragen;
-create policy anfragen_insert_anon
-  on public.anfragen
+drop policy if exists galabau_anfragen_insert_anon on public.galabau_anfragen;
+create policy galabau_anfragen_insert_anon
+  on public.galabau_anfragen
   for insert
   to anon
   with check (true);
@@ -70,16 +74,16 @@ create policy anfragen_insert_anon
 -- (der laeuft ueber service_role und umgeht RLS) oder legt sich einen
 -- angemeldeten Zugang an und ergaenzt dafuer eine eigene select-Policy:
 --
---   grant select on public.anfragen to authenticated;
---   create policy anfragen_select_intern
---     on public.anfragen for select to authenticated using (true);
+--   grant select on public.galabau_anfragen to authenticated;
+--   create policy galabau_anfragen_select_intern
+--     on public.galabau_anfragen for select to authenticated using (true);
 
 -- ---------------------------------------------------------------------
 -- Gegenprobe nach dem Ausfuehren (im SQL-Editor):
 --
 --   set role anon;
---   select * from public.anfragen;   -- muss 0 Zeilen liefern
---   insert into public.anfragen (quelle, name, email)
+--   select * from public.galabau_anfragen;   -- muss 0 Zeilen liefern
+--   insert into public.galabau_anfragen (quelle, name, email)
 --     values ('probe', 'Test', 'test@example.org');   -- muss klappen
 --   reset role;
 --

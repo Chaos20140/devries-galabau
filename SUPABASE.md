@@ -56,8 +56,8 @@ Danach im SQL-Editor gegenprüfen:
 
 ```sql
 set role anon;
-select * from public.anfragen;                       -- muss 0 Zeilen liefern
-insert into public.anfragen (quelle, name, email)
+select * from public.galabau_anfragen;                       -- muss 0 Zeilen liefern
+insert into public.galabau_anfragen (quelle, name, email)
   values ('probe', 'Test', 'test@example.org');      -- muss klappen
 reset role;
 ```
@@ -99,7 +99,7 @@ jemand merkt, dass die Datenbank nie erreicht wurde.
 
 ## Wie es sich dann verhält
 
-- Formular abgeschickt → Datensatz in `anfragen`, danach `danke.html`
+- Formular abgeschickt → Datensatz in `galabau_anfragen`, danach `danke.html`
 - Supabase antwortet mit Fehler, ist nicht erreichbar oder braucht länger als 8 Sekunden
   → automatisch zurück auf `mailto`, die Anfrage geht trotzdem raus
 - Zugangsdaten leer → direkt `mailto`, wie heute
@@ -136,9 +136,9 @@ Dann **nicht** einfach eine `select`-Regel für `anon` ergänzen. Stattdessen ei
 Zugang anlegen und die Regel an `authenticated` hängen:
 
 ```sql
-grant select, update on public.anfragen to authenticated;
-create policy anfragen_select_intern
-  on public.anfragen for select to authenticated using (true);
+grant select, update on public.galabau_anfragen to authenticated;
+create policy galabau_anfragen_select_intern
+  on public.galabau_anfragen for select to authenticated using (true);
 ```
 
 Zum bloßen Nachsehen reicht der Table-Editor im Supabase-Dashboard — der läuft über
