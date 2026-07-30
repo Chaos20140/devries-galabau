@@ -57,6 +57,25 @@ gewerblich; Menschen mit Interesse an Qualität, individueller & naturnaher Gest
 ---
 
 ## 3. Tech-Stack & Prinzip
+
+> **⚠ Seit v8 („Gartenrundgang") gilt ein anderer Aufbau als unten beschrieben.**
+> Es gibt **keine** `style.css` und **keine** `main.js` mehr, kein GSAP, kein Lenis, keine
+> Shared Blocks per Copy-Paste. Maßgeblich ist **`DESIGN-AND-MOTION-SYSTEM.md`**.
+> Kurzfassung des heutigen Stands:
+> - `assets/css/base.css` — **nur** Schriftbindung, Sprungmarke, Fokusring, `.sr-only`.
+>   Das Aussehen steht im `<style>`-Block und den Inline-Styles **jeder Seite**, genau wie
+>   im Design-Projekt. Das ist Absicht: so bleibt jede Seite einzeln mit der Vorlage
+>   vergleichbar. **Keine gemeinsame Stildatei anlegen.**
+> - Kopf- und Fußzeile sind **Web Components** mit Shadow DOM
+>   (`assets/js/garden-header.js`, `garden-footer.js`) — kein Copy-Paste mehr, eine Quelle.
+>   Aktiver Punkt über `active="…"`, CTA-Ziel über `cta="…"`.
+> - Je Seite **eine** Logikdatei `assets/js/<seite>.js` (Reveals, ggf. Formular).
+> - `assets/js/three.min.js` **nur** auf `index.html` (3D-Gartenrundgang).
+> - Cache-Busting weiterhin `?v=N` auf allen Seiten gleichzeitig hochzählen (aktuell `v=8`).
+>
+> Die folgenden Absätze 3, 6.1–6.5 und 7 beschreiben den v1–v7-Stand und bleiben nur als
+> Entwicklungsgeschichte stehen — **nicht** als Vorgabe.
+
 - **Statisches HTML + eine CSS-Datei + eine Vanilla-JS-Engine + Lenis (lokal).** Kein Framework,
   kein Build. Läuft direkt (GitHub Pages / Netlify / `python -m http.server`).
 - **Warum:** identisch zum bewährten Schwesterprojekt; DSGVO-sicher (alles self-hosted); schnell;
@@ -68,36 +87,45 @@ gewerblich; Menschen mit Interesse an Qualität, individueller & naturnaher Gest
 
 ---
 
-## 4. Dateistruktur (Soll)
+## 4. Dateistruktur (Ist, Stand v8)
 ```
 .
-├── index.html              # Startseite (Flagship)
+├── index.html              # Startseite = 3D-Gartenrundgang + flache Abschnitte
 ├── ueber-uns.html
 ├── gartengestaltung.html · gartenplanung.html · gartenpflege.html · bepflanzung.html
-├── referenzen.html         # Galerie (Filter+Lightbox) + 6 Projekt-Stories + Testimonials
-├── kontakt.html            # Adressen + Formular (mailto) + Consent-Karte
-├── anfrage.html            # 5-Schritt-Anfrage mit Fortschritt (mailto) → danke.html
+├── referenzen.html         # 6 Projektkarten + 3 Bewertungen im Wortlaut
+├── kontakt.html            # Kontaktwege + Ablauf + Anfrageband (mailto)
+├── anfrage.html            # ein Formular, Auftraggeber/Bereich/Zeitraum (mailto)
 ├── danke.html              # Erfolgsseite (noindex)
 ├── stellenangebote.html    # aktuell KEINE Stellen + Initiativbewerbung
-├── impressum.html · datenschutz.html   # .prose, verbatim, KEIN CTA-Band
-├── 404.html
+├── impressum.html · datenschutz.html   # Rechtstexte verbatim
+├── 404.html                # (noindex)
+├── <alt-slug>/index.html   # 20 Weiterleitungs-Stubs auf die alten WordPress-URLs
 ├── assets/
-│   ├── css/style.css       # komplettes Stylesheet (single file, §-nummeriert)
-│   ├── js/main.js          # Motion-/Interaktions-Engine (eine IIFE, vanilla)
-│   ├── js/lenis.min.js     # Lenis lokal (kein CDN)
-│   ├── fonts/              # bricolage-latin, jetbrains-mono-latin, manrope-latin (woff2, self-hosted)
+│   ├── css/base.css        # NUR Schriften, Sprungmarke, Fokusring, .sr-only
+│   ├── js/garden-header.js · garden-footer.js   # Web Components (Shadow DOM)
+│   ├── js/<seite>.js       # Seitenlogik, eine Datei je Seite
+│   ├── js/three.min.js     # nur index.html
+│   ├── fonts/              # outfit-300/400/500/600/700, instrument-serif (+italic), woff2
 │   └── img/                # optimierte WebP (‑1600/‑800), logo, favicons, og; raw/ = Originale (nicht deployen)
-├── CLAUDE.md · CONTENT_INVENTORY.md · IMAGE_SOURCES.md · robots.txt · sitemap.xml
-└── .planning/              # Analyse/Arbeitsstände (NICHT deployen)
+├── CLAUDE.md · CONTENT_INVENTORY.md · DESIGN-AND-MOTION-SYSTEM.md · IMAGE_SOURCES.md
+├── README.md · robots.txt · sitemap.xml · _redirects · .htaccess · .nojekyll
+└── .planning/              # Analyse/Arbeitsstände, Recherche, altes Design (NICHT deployen)
 ```
 
 ## 5. Seitenübersicht → siehe `CONTENT_INVENTORY.md` (Mapping alt→neu, Inhalt je Seite, Status).
-Jede Unterseite bekommt **eigene Dramaturgie** (nicht überall gleicher Aufbau):
-- **Gartengestaltung:** Material-/Leistungswelt, Natursteine/Gabionen/Treppen; kräftige Bildinszenierung.
-- **Gartenplanung:** Signatur-Fokus „Vom Strich zum Garten" (Plan-Linien zeichnen sich → Foto).
-- **Gartenpflege:** ruhig, Pflegekonzepte; optionaler saisonaler Pflege-Rhythmus (4 Jahreszeiten).
-- **Bepflanzung:** farbigste Seite (Blühfarben/Stauden/Gräser), Farbkonzept-Motiv.
-- **Referenzen:** Editorial-Masonry-Galerie + Filter + Lightbox + 6 Projekt-Stories.
+Seit v8 tragen die **vier Leistungsseiten bewusst denselben Aufbau** (Hero · Bild · sechs
+Nummernkarten · Textspalte mit Punktliste · Anfrageband) — so hat das Design es angelegt, die
+Seiten unterscheiden sich über Text, Foto und Akzentwort. Eigene Dramaturgie haben:
+- **Startseite:** 3D-Gartenrundgang mit sieben Stationen, danach Galerie, Materialien, Ablauf,
+  Einsatzgebiet, Fragen, Anfrage.
+- **Referenzen:** sechs Projektkarten mit Foto + drei Bewertungen im Wortlaut.
+- **Über uns:** drei Kennzahlen, Bild, vier Gründe, Ortsliste als Chips.
+- **Stellenangebote:** ehrlicher Stand (keine offene Stelle) + Initiativbewerbung.
+
+> Die folgende Aufzählung beschreibt den v1–v7-Stand und gilt nicht mehr:
+> ~~Gartenplanung mit Plan-Draw-Signatur, Gartenpflege mit Jahreszeiten-Rhythmus,
+> Referenzen als Masonry mit Filter und Lightbox.~~
 
 ---
 
@@ -157,7 +185,11 @@ scroll-prog 90 · topbar 60 · nav 70 · mobile-nav 100 · cookie 110 · lightbo
 
 ---
 
-## 7. Motion-System („Vom Strich zum Garten") — `assets/js/main.js` (eine IIFE, vanilla)
+## 7. Motion-System — HISTORISCH (v1–v7), ersetzt durch DESIGN-AND-MOTION-SYSTEM.md §5
+> `main.js`, GSAP und Lenis existieren seit v8 nicht mehr. Bewegung läuft heute über einen
+> IntersectionObserver je Seite plus die rAF-Schleife des Gartenrundgangs auf `index.html`.
+
+### HISTORISCH: Motion-System („Vom Strich zum Garten") — `assets/js/main.js`
 Adaptiert aus der bewährten Referenz-Engine; Hooks:
 - **Lenis Smooth-Scroll** (lokal, guarded `typeof window.Lenis`, aus bei `reduce`, `smoothTouch:false`).
 - **Reveals:** ein IntersectionObserver togglet `.is-in` auf `[data-reveal]` (Varianten `left|right|
@@ -302,6 +334,38 @@ erweitern statt parallele bauen → 4. Desktop+Mobile im selben Schritt → 5. B
 - **Kompression ist Teil der Auslieferung, nicht des Codes.** `.htaccess` liegt bei.
   Ohne sie: Performance 86 statt 95 bei identischem Code.
 
+### Neu in v8 (2026-07-30) — Übernahme aus dem Design-Projekt, NICHT zurückdrehen
+
+- **Das Aussehen gehört in die Seite, nicht in eine Sammeldatei.** Klingt falsch, ist hier
+  aber Absicht: Die Vorlage ist ein Design-Projekt, und nur solange jede Seite ihre Styles
+  selbst trägt, lässt sich Zeile für Zeile gegen die Vorlage prüfen. Wer daraus eine
+  gemeinsame `style.css` destilliert, verliert genau diese Prüfbarkeit.
+- **`minmax(min(100%, 250px), 1fr)` — das `min()` ist nicht schmückend.** Ohne es erzwingt
+  `minmax` bei 375 px eine 250-px-Spalte plus Gaps und die Seite läuft waagerecht über.
+  Das Design hat es überall; beim Umbau nicht wegkürzen.
+- **`placeholder` aus `<image-slot>` taugt nicht als Alt-Text.** Dort standen Arbeitsnotizen
+  („Team bei der Arbeit — Foto einsetzen") und dreimal nur „Projektfoto". Der Konverter
+  übernimmt das Attribut, also muss es vorher inhaltlich stimmen.
+- **Ein Entwurf ist kein Faktencheck.** Im Design standen drei erfundene Stellenanzeigen,
+  gekürzte Zitate unter den Namen echter Rezensenten, falsche Öffnungszeiten und ein
+  Impressum mit „bitte ergänzen". Alles davon hätte live geschadet. Vor der Übernahme jede
+  Sachangabe gegen `CONTENT_INVENTORY.md` und die Livesite halten.
+- **Kontraste des Entwurfs nachrechnen, nicht glauben.** `#4F8524` auf Glas sind 4,23 : 1 —
+  bei 11 px Labels zu wenig. Jetzt `#46761F`.
+- **`get_file` der Design-Schnittstelle kappt bei 256 KiB.** `Gartenrundgang.dc.html` ist
+  größer; die Animationsschleife fehlt. `write_files` ersetzt **die ganze** Datei — ein
+  Zurückschreiben der gelesenen Hälfte würde den ungelesenen Rest löschen. Nicht versuchen.
+- **Ein fehlendes Klassenfeld sieht aus wie ein toter Renderer.** `requestAnimationFrame(this.tick)`
+  mit undefiniertem `tick` wirft, und zwar in der letzten Zeile von `componentDidMount` —
+  alles davor lief bereits. Symptom war eine schwarze Leinwand bei sonst intakter Seite.
+- **Software-WebGL im Testbrowser schafft ~2 fps.** „0 neue Zeichenaufrufe" in einem 600-ms-
+  Fenster heißt dort nicht „rendert nicht". Belegen über einen Zähler auf
+  `WebGLRenderingContext.prototype.drawElements`, nicht über Screenshots — `page.screenshot`
+  läuft bei einer Dauerschleife in den Timeout.
+- **Screenshots fremder Websites gehören nicht ins Kundenrepo.** 19 Recherchebilder von
+  Aesop, Terremoto, Vogt und anderen lagen im öffentlichen Repository. Liegen jetzt unter
+  `.planning/recherche-screenshots/`.
+
 ## 18. Änderungsprotokoll
 - **2026-07-21** — **Komplettbau v1.** Vollanalyse Live-Seite (21 URLs) + Referenz-Engine + Assets.
   Fonts (Bricolage/JetBrains Mono/Manrope self-hosted), 34 echte Bilder → WebP `‑1600/‑800` + Favicons +
@@ -402,3 +466,35 @@ erweitern statt parallele bauen → 4. Desktop+Mobile im selben Schritt → 5. B
   Startseite mobil LCP 2,9 s statt 2,5 s · Startseite bleibt 19,6 Bildschirmhöhen lang.
   Merke: **Erst messen, dann urteilen.** Zwei der drei größten Funde (undefinierte
   Button-Klassen, Flex-Kontext der `.wrap`) waren durch reine Codelektüre nicht sichtbar.
+
+- **2026-07-30 · v8 „Gartenrundgang" (`?v=8`, Branch `redesign/gartenrundgang`).** Auf Wunsch
+  **das komplette v4–v7-Design entfernt** und durch das Claude-Design-Projekt *Gartenrundgang*
+  ersetzt (1:1, Abweichungen einzeln begründet in `DESIGN-AND-MOTION-SYSTEM.md` §9).
+  **Weg:** `assets/css/style.css`, `assets/js/main.js`, `gsap.min.js`, `ScrollTrigger.min.js`,
+  `lenis.min.js`, die drei alten Schriftfamilien, Cookie-Banner, Karten-Consent.
+  **Neu:** `assets/css/base.css` (nur Schriften + Sprungmarke + Fokusring + `.sr-only`),
+  Kopf- und Fußzeile als **Web Components mit Shadow DOM**, je Seite eine Logikdatei,
+  `three.min.js` nur auf der Startseite. Schriften Outfit + Instrument Serif, selbst
+  ausgeliefert statt von Google.
+  **Startseite** ist jetzt ein begehbarer 3D-Garten: Kamera läuft beim Scrollen eine
+  `CatmullRomCurve3` entlang, sieben Stationen blenden Text ein, danach flache Abschnitte.
+  Die Bildschleife (`tick`/`updateWalk`/`updateLife`) ist **nachgebaut** — die Quelldatei
+  überschreitet das Leselimit der Design-Schnittstelle und bricht mitten darin ab; im Code
+  zwischen zwei Markierungen gekennzeichnet und 1:1 ersetzbar.
+  **14 Seiten** neu: 8 aus dem Design konvertiert, 4 selbst gebaut (Datenschutz — rechtlich
+  vorgeschrieben, Text wortgleich aus dem Bestand — sowie Anfrage, Danke, 404), Impressum mit
+  echten Angaben statt des Platzhalters.
+  **Inhaltlich korrigiert, weil der Entwurf Erfundenes enthielt:** drei Stellenanzeigen
+  (es gibt keine offene Stelle), Zitate unter echten Namen, Öffnungszeiten 7:30–17:00.
+  **Barrierefreiheit:** Kleinlabel `#4F8524` → `#46761F` (4,23 → 5,15 : 1), beschreibende
+  Alt-Texte, `.sr-only`-Überschriften, `role="img"` auf den Bewertungssternen, Sprungmarke,
+  globaler Fokusring.
+  **Aufgeräumt:** 19 Recherche-Screenshots fremder Websites und das gesamte Audit-Material des
+  alten Designs aus dem öffentlichen Baum nach `.planning/` verschoben.
+  **QA (Playwright, 1440 + 375 px, alle 14 Seiten):** 0 Konsolenfehler, 0 HTTP-Fehler,
+  0 waagerechter Überlauf, je genau eine H1, alle Bilder geladen mit Alt-Text, alle Reveals
+  lösen aus, Stationen wechseln beim Scrollen, Zeichenaufrufe der 3D-Szene belegt.
+  **Offen:** Formular-Endpunkt (weiterhin `mailto`, `SUBMIT_ENDPOINT` in `anfrage.js`
+  vorbereitet) · Lighthouse für das neue Design noch nicht gemessen · Projektkarten auf
+  `referenzen.html` verweisen auf die Berichte unter devries-galabau.de, bis es eigene
+  Detailseiten gibt · `main` trägt noch das alte Design.

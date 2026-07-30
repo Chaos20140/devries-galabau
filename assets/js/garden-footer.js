@@ -55,7 +55,7 @@
             '<div style="min-width:0">' +
             '<div style="display:flex;align-items:center;gap:clamp(12px,1.6vw,20px)">' +
             '<img src="assets/img/rg-logo.webp" alt="" width="84" height="84" style="flex:none;width:clamp(52px,6vw,84px);height:clamp(52px,6vw,84px);border-radius:50%;object-fit:cover;display:block;border:2px solid rgba(255,255,255,.85);box-shadow:0 14px 30px -16px rgba(12,29,20,.45)">' +
-            '<div style="font-size:clamp(28px,4vw,54px);line-height:.94;font-weight:600;letter-spacing:-.045em;background:linear-gradient(120deg,#1B4332,#4F8524);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent"><span style="display:block;white-space:nowrap">de Vries</span><span style="display:block;white-space:nowrap">GaLa-Bau</span></div>' +
+            '<div style="font-size:clamp(28px,4vw,54px);line-height:.94;font-weight:600;letter-spacing:-.045em;background:linear-gradient(120deg,#1B4332,#46761F);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent"><span style="display:block;white-space:nowrap">de Vries</span><span style="display:block;white-space:nowrap">GaLa-Bau</span></div>' +
             '</div>' +
             '<p style="margin:16px 0 0;font-size:14.5px;line-height:1.6;color:#3C5145;max-width:32ch">Garten- und Landschaftsbau in Salzhemmendorf. Gestaltung, Planung, Bepflanzung und Pflege — seit 1998 aus einer Hand.</p>' +
             '<div style="display:flex;gap:10px;margin-top:20px">' +
@@ -64,14 +64,14 @@
             '</div>' +
             '</div>' +
             '<div style="display:flex;flex-direction:column;gap:11px;min-width:0">' +
-            '<div style="font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#4F8524">Leistungen</div>' +
+            '<div style="font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#46761F">Leistungen</div>' +
             '<a href="gartengestaltung.html" style="font-size:15px;color:#26382E;text-decoration:none">Gartengestaltung</a>' +
             '<a href="gartenplanung.html" style="font-size:15px;color:#26382E;text-decoration:none">Gartenplanung</a>' +
             '<a href="gartenpflege.html" style="font-size:15px;color:#26382E;text-decoration:none">Gartenpflege</a>' +
             '<a href="bepflanzung.html" style="font-size:15px;color:#26382E;text-decoration:none">Bepflanzung</a>' +
             '</div>' +
             '<div style="display:flex;flex-direction:column;gap:11px;min-width:0">' +
-            '<div style="font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#4F8524">Ansichten</div>' +
+            '<div style="font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#46761F">Ansichten</div>' +
             '<a href="index.html" style="font-size:15px;color:#26382E;text-decoration:none">Rundgang</a>' +
             '<a href="ueber-uns.html" style="font-size:15px;color:#26382E;text-decoration:none">Über uns</a>' +
             '<a href="referenzen.html" style="font-size:15px;color:#26382E;text-decoration:none">Referenzen</a>' +
@@ -81,7 +81,7 @@
             '<a href="datenschutz.html" style="font-size:15px;color:#26382E;text-decoration:none">Datenschutz</a>' +
             '</div>' +
             '<div style="display:flex;flex-direction:column;gap:11px;min-width:0">' +
-            '<div style="font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#4F8524">Kontakt</div>' +
+            '<div style="font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#46761F">Kontakt</div>' +
             '<a href="tel:051531552" style="font-size:19px;font-weight:600;color:#1B4332;letter-spacing:-.01em">05153 1552</a>' +
             '<a href="mailto:info@devries-galabau.de" style="font-size:15px;color:#26382E;text-decoration:none">info@devries-galabau.de</a>' +
             '<div style="font-size:14.5px;line-height:1.6;color:#3C5145">Mo–Fr 8:00–16:00<br>Salzhemmendorf, Niedersachsen</div>' +

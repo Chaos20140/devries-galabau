@@ -237,7 +237,7 @@ class Component extends DCLogic {
       const stemUp = document.createElementNS(ns3, 'path');
       stemUp.setAttribute('d', 'M 0 2 C -3 -14 2 -30 0 -44');
       stemUp.setAttribute('fill', 'none');
-      stemUp.setAttribute('stroke', '#4F8524');
+      stemUp.setAttribute('stroke', '#46761F');
       stemUp.setAttribute('stroke-width', '4');
       stemUp.setAttribute('stroke-linecap', 'round');
       tip.appendChild(stemUp);
@@ -252,7 +252,7 @@ class Component extends DCLogic {
         const sep = document.createElementNS(ns3, 'ellipse');
         sep.setAttribute('rx', '9'); sep.setAttribute('ry', '4');
         sep.setAttribute('cx', '9'); sep.setAttribute('cy', '-46');
-        sep.setAttribute('fill', '#4F8524');
+        sep.setAttribute('fill', '#46761F');
         sep.setAttribute('transform', 'rotate(' + (q * 72 + 36) + ' 0 -46)');
         tip.appendChild(sep);
       }
