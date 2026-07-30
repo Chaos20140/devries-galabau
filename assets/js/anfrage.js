@@ -8,14 +8,23 @@
 (function () {
   "use strict";
 
+  /* Systemeinstellung "Bewegung reduzieren" — im Design nicht vorgesehen. */
+  var __reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+
   var SUBMIT_ENDPOINT = '';
 
   function reveal() {
     var els = Array.prototype.slice.call(document.querySelectorAll('[data-reveal]'));
     els.forEach(function (el) {
       var r = el.getBoundingClientRect();
-      if (r.top > window.innerHeight * 0.92) { el.style.opacity = '0'; el.style.transform = 'translateY(26px)'; }
-      el.style.transition = 'opacity .9s cubic-bezier(.16,1,.3,1), transform .9s cubic-bezier(.16,1,.3,1)';
+      if (r.top > window.innerHeight * 0.92) {
+        el.style.opacity = '0';
+        if (!__reduce) el.style.transform = 'translateY(26px)';
+      }
+      el.style.transition = __reduce
+        ? 'opacity .35s ease'
+        : 'opacity .9s cubic-bezier(.16,1,.3,1), transform .9s cubic-bezier(.16,1,.3,1)';
     });
     var io = new IntersectionObserver(function (en) {
       en.forEach(function (e, i) {

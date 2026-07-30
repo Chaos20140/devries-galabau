@@ -140,23 +140,38 @@ Ein einziger Satz Werte, auf allen Seiten gleich:
 `threshold: .1–.12`), danach `unobserve`. Ein Zeitschloss nach 6 s (Startseite 8 s) macht alles
 sichtbar, falls der Observer nie auslöst — ohne JavaScript bleibt die Seite lesbar.
 
-**Startseite, Gartenrundgang:** eine `requestAnimationFrame`-Schleife, die
+**Startseite, Gartenrundgang:** eine `requestAnimationFrame`-Schleife (`tick`), die
 
 1. den Scrollfortschritt der 1800-vh-Bahn (`#rg-walk`, mobil 1000 vh) liest,
-2. ihn gedämpft nachführt (`dt/1000 * 4.2`), damit der Gang nicht am Mausrad klebt,
-3. die Kamera auf einer `CatmullRomCurve3` führt und den Blick zwischen „nach vorn" und dem
-   Blickfang der jeweiligen Station mischt (`focus` / `focusMix`),
-4. die Texttafeln ein- und ausblendet — voll deckend bis 62 % des Stationsabstands, dann
-   kurzer Übergang, dazwischen ein Moment nur Garten,
-5. Bienen, Enten, Vögel, Falter, Wasserfall und Brunnen bewegt,
-6. die Leinwand ausblendet, sobald der Rundgang aus dem Bild gescrollt ist.
+2. ihn sehr weich nachführt (`this.p += (this.tp - this.p) * 0.031`) — bei 60 Bildern/s rund
+   anderthalb Sekunden Nachlauf. Das ist Absicht: der Gang klebt nicht am Mausrad,
+3. die Kamera auf einer `CatmullRomCurve3` führt, mit Schrittwippen aus der Scrollgeschwindigkeit
+   (`stepPhase`, `walkBob`) und Mausversatz,
+4. den Blick zwischen „nach vorn" und dem Blickfang der Station mischt (`focus`, `focusMix`,
+   `fpCur.lerp(…, 0.028)`); die Blickhöhe wird begrenzt, damit die Kamera nie kippt,
+5. die Texttafeln ein- und ausblendet — Spanne 0,22 für die erste Station, 0,085 für alle
+   weiteren, mit seitlichem Versatz je nach `data-side`,
+6. die Stationsleiste ausblendet und nach rechts wegschiebt, sobald eine rechte Tafel
+   erscheint (`rightVis`), und die Punkte auf erreicht/aktuell/offen umfärbt,
+7. Wasserfläche, Bachlauf, Wasserfall, Sprühnebel, Dunst, Brunnenstrahl, Tropfen und Ringe
+   rechnet, dazu Vögel, Enten, Falter, Bienen, Pollen und die Laternenhelligkeit,
+8. das Sonnenlicht mit dem Fortschritt mitzieht und den Blendfleck (`#rg-sunglow`) über die
+   projizierte Sonnenposition setzt,
+9. die Leinwand ausblendet, sobald der flache Teil der Seite beginnt — ab da läuft nur noch
+   `updateExtras` für Galerie, Materialband, Ablauf und Karte.
 
 Wind in Gras und Laub läuft im Vertex-Shader (`windify`), gesteuert über zwei Uniforms
 (`uTime`, `uWind`) — kein JavaScript pro Halm.
 
-**Reduzierte Bewegung** ist keine abgeschaltete, sondern eine ruhigere Fassung: Kamerawiegen,
-Kopfbewegung, Mausparallaxe und sämtliches Getier stehen still, der Rundgang folgt dem Scrollen
-aber weiterhin und alle Texte erscheinen. `uWind` geht auf 0.
+**Reduzierte Bewegung** ist keine abgeschaltete, sondern eine ruhigere Fassung. Das Design hatte
+dafür einen Regler `props.motion`, der fest auf 1 stand und `prefers-reduced-motion` nirgends
+abfragte. Der Regler wird jetzt von der Systemeinstellung geführt (`motion: 0`):
+
+- still: Wind, Kamerawippen, Mausversatz, DOM-Parallaxe, Wellen auf Teich und Bach,
+  Wasserfallschleier, Brunnenstrahl, Pollen, sowie Vögel, Enten, Falter und Bienen;
+- weiter: der Rundgang folgt dem Scrollen, alle Texte erscheinen, Sprühnebel und Ringe behalten
+  einen leisen Rest (`Math.max(0.15, MO)`) — das ist die Vorgabe des Entwurfs und bleibt so;
+- Reveals auf allen Seiten: kein Versatz mehr, nur noch eine Blende über `.35s` statt `.9s`.
 
 **Mobil** ist eigens geregelt (`applyMobile`): Bahn auf 1000 vh gekürzt, Stationsleiste aus,
 Texttafeln unten über die volle Breite mit begrenzter Höhe, Filmstreifen und Ablaufband
@@ -219,19 +234,22 @@ gemeinsame Stildatei, die man versehentlich global verändern könnte.
 | `.sr-only`-Überschriften | ergänzt | Überschriftengliederung |
 | Sprungmarke, Fokusring | ergänzt | Tastaturbedienung |
 | Datenschutz, Anfrage, Danke, 404 | neu gebaut | im Design nicht vorhanden |
-| Bildschleife der Startseite | nachgebaut | Quelldatei überschreitet das Leselimit (§ 10) |
+| `prefers-reduced-motion` | ergänzt, führt `props.motion` | das Design fragte die Einstellung nie ab |
 
 ---
 
-## 10. Offener Punkt: die Bildschleife der Startseite
+## 10. Die Bildschleife der Startseite ist vollständig
 
 `Gartenrundgang.dc.html` im Design-Projekt ist größer als das Leselimit der Schnittstelle
-(256 KiB) und bricht mitten in der Animationsschleife ab (bei `const yaw = Math.atan`). Alles
-davor — Aufbau der Szene, Geometrien, Materialien, Licht, sämtliche DOM-Logik — ist wörtlich
-übernommen. Die Schleife selbst (`tick`, `updateWalk`, `updateLife`) ist von Hand aus dem
-vorhandenen Szenenzustand rekonstruiert und im Code zwischen zwei Markierungen als Nachbau
-gekennzeichnet.
+(256 KiB) und bricht mitten in `tick` ab, bei `const yaw = Math.atan`. Die Datei ist deshalb in
+zwei Hälften übernommen worden: die vordere aus dem gelesenen Teil, die hintere vom Auftraggeber
+nachgereicht. Beide Hälften stoßen exakt an dieser Zeile aneinander, die Naht ist geprüft
+(Klammerbilanz, Parser, alle 48 Felder, die `tick` liest, werden vorher gesetzt).
 
-Sie benutzt ausschließlich Felder, die weiter oben angelegt werden, und ist deshalb funktional
-stimmig — aber nicht zeichengenau die Choreografie des Entwurfs. Sobald die Quelldatei geteilt
-vorliegt (etwa Szene und Schleife in zwei Dateien), lässt sich der Block 1:1 ersetzen.
+**Im Code steht damit die Choreografie des Entwurfs, kein Nachbau.** Ein früherer, von Hand
+rekonstruierter Zwischenstand wurde vollständig ersetzt.
+
+Belegt im Browser: Stationen lösen einander in der richtigen Reihenfolge ab, die Stationsleiste
+weicht rechten Tafeln aus, 0 Konsolenfehler. Nur der Nachlauf fällt in einer Testumgebung ohne
+Grafikkarte auf — bei `0.031` je Bild und einem halben Bild pro Sekunde dauert eine Station
+Minuten statt Sekunden. Wer dort prüft, muss entsprechend lange warten; das ist kein Fehler.

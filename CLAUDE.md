@@ -357,15 +357,23 @@ erweitern statt parallele bauen → 4. Desktop+Mobile im selben Schritt → 5. B
 - **Kontraste des Entwurfs nachrechnen, nicht glauben.** `#4F8524` auf Glas sind 4,23 : 1 —
   bei 11 px Labels zu wenig. Jetzt `#46761F`.
 - **`get_file` der Design-Schnittstelle kappt bei 256 KiB.** `Gartenrundgang.dc.html` ist
-  größer; die Animationsschleife fehlt. `write_files` ersetzt **die ganze** Datei — ein
-  Zurückschreiben der gelesenen Hälfte würde den ungelesenen Rest löschen. Nicht versuchen.
+  größer; `tick` bricht bei `const yaw = Math.atan` ab. `write_files` ersetzt **die ganze**
+  Datei — ein Zurückschreiben der gelesenen Hälfte würde den ungelesenen Rest löschen.
+  Lösung war: gelesene Hälfte von der Platte (`scratchpad/design/…`, exakt 262 144 Bytes) plus
+  nachgereichter Rest, an genau dieser Zeile zusammengesetzt. **Die abgeschnittene Datei auf
+  der Platte nicht löschen**, sie ist die einzige Kopie der vorderen Hälfte.
 - **Ein fehlendes Klassenfeld sieht aus wie ein toter Renderer.** `requestAnimationFrame(this.tick)`
   mit undefiniertem `tick` wirft, und zwar in der letzten Zeile von `componentDidMount` —
   alles davor lief bereits. Symptom war eine schwarze Leinwand bei sonst intakter Seite.
-- **Software-WebGL im Testbrowser schafft ~2 fps.** „0 neue Zeichenaufrufe" in einem 600-ms-
-  Fenster heißt dort nicht „rendert nicht". Belegen über einen Zähler auf
-  `WebGLRenderingContext.prototype.drawElements`, nicht über Screenshots — `page.screenshot`
-  läuft bei einer Dauerschleife in den Timeout.
+- **Software-WebGL im Testbrowser schafft 0,4–3 fps.** Zwei Fallen daraus: „0 neue
+  Zeichenaufrufe" in einem kurzen Fenster heißt nicht „rendert nicht", und `this.p += … * 0.031`
+  braucht dort **Minuten** statt Sekunden, um eine Station weiterzukommen. Wer mit 1,5-Sekunden-
+  Wartezeiten prüft, sieht immer Station 0 und hält die Schleife fälschlich für kaputt.
+  Belegen über einen Zähler auf `WebGLRenderingContext.prototype.drawElements` und lange
+  Wartefenster — `page.screenshot` läuft bei einer Dauerschleife ohnehin in den Timeout.
+- **`prefers-reduced-motion` fehlte im Entwurf vollständig.** Es gab nur `props.motion`, fest
+  auf 1. Der Regler wird jetzt von der Systemeinstellung geführt; Vögel, Enten, Falter und
+  Bienen mussten zusätzlich an `MO > 0` gehängt werden, weil sie im Original nicht daran hingen.
 - **Screenshots fremder Websites gehören nicht ins Kundenrepo.** 19 Recherchebilder von
   Aesop, Terremoto, Vogt und anderen lagen im öffentlichen Repository. Liegen jetzt unter
   `.planning/recherche-screenshots/`.
@@ -482,9 +490,14 @@ erweitern statt parallele bauen → 4. Desktop+Mobile im selben Schritt → 5. B
   ausgeliefert statt von Google.
   **Startseite** ist jetzt ein begehbarer 3D-Garten: Kamera läuft beim Scrollen eine
   `CatmullRomCurve3` entlang, sieben Stationen blenden Text ein, danach flache Abschnitte.
-  Die Bildschleife (`tick`/`updateWalk`/`updateLife`) ist **nachgebaut** — die Quelldatei
-  überschreitet das Leselimit der Design-Schnittstelle und bricht mitten darin ab; im Code
-  zwischen zwei Markierungen gekennzeichnet und 1:1 ersetzbar.
+  Die Bildschleife (`tick`) ist **das Original**: Die Quelldatei überschreitet das Leselimit
+  der Design-Schnittstelle und bricht bei `const yaw = Math.atan` ab; sie wurde aus der
+  gelesenen vorderen Hälfte und dem vom Auftraggeber nachgereichten Rest an genau dieser Zeile
+  zusammengesetzt (Naht geprüft: Klammerbilanz, Parser, alle 48 Felder vorher gesetzt).
+  Ein zwischenzeitlicher Nachbau wurde vollständig ersetzt.
+  **Reduzierte Bewegung** ergänzt: Das Design fragte `prefers-reduced-motion` nie ab: der
+  Regler `props.motion` wird jetzt davon geführt, Tiere zusätzlich an `MO > 0` gehängt,
+  Reveals ohne Versatz und mit `.35s` statt `.9s`.
   **14 Seiten** neu: 8 aus dem Design konvertiert, 4 selbst gebaut (Datenschutz — rechtlich
   vorgeschrieben, Text wortgleich aus dem Bestand — sowie Anfrage, Danke, 404), Impressum mit
   echten Angaben statt des Platzhalters.

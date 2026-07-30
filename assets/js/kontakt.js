@@ -6,6 +6,10 @@
 (function () {
   "use strict";
 
+  /* Systemeinstellung "Bewegung reduzieren" — im Design nicht vorgesehen. */
+  var __reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+
   /* Minimale Nachbildung der Basisklasse der Design-Laufzeit. */
   class DCLogic {
     constructor(props) { this.props = props || {}; }
@@ -18,8 +22,14 @@ class Component extends DCLogic {
     const els = Array.from(document.querySelectorAll('[data-reveal]'));
     els.forEach(el => {
       const r = el.getBoundingClientRect();
-      if (r.top > window.innerHeight * 0.92) { el.style.opacity = '0'; el.style.transform = 'translateY(26px)'; }
-      el.style.transition = 'opacity .9s cubic-bezier(.16,1,.3,1), transform .9s cubic-bezier(.16,1,.3,1)';
+      if (r.top > window.innerHeight * 0.92) {
+        el.style.opacity = '0';
+        /* Bei reduzierter Bewegung nur blenden, nicht schieben. */
+        if (!__reduce) el.style.transform = 'translateY(26px)';
+      }
+      el.style.transition = __reduce
+        ? 'opacity .35s ease'
+        : 'opacity .9s cubic-bezier(.16,1,.3,1), transform .9s cubic-bezier(.16,1,.3,1)';
     });
     this.io = new IntersectionObserver(en => {
       en.forEach((e, i) => {

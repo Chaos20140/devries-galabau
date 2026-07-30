@@ -6,6 +6,10 @@
 (function () {
   "use strict";
 
+  /* Systemeinstellung "Bewegung reduzieren" — im Design nicht vorgesehen. */
+  var __reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+
   /* Minimale Nachbildung der Basisklasse der Design-Laufzeit. */
   class DCLogic {
     constructor(props) { this.props = props || {}; }
@@ -798,8 +802,11 @@ class Component extends DCLogic {
     const els = Array.from(document.querySelectorAll('[data-reveal]'));
     els.forEach(el => {
       el.style.opacity = '0';
-      el.style.transform = 'translateY(26px)';
-      el.style.transition = 'opacity .9s cubic-bezier(.16,1,.3,1), transform .9s cubic-bezier(.16,1,.3,1)';
+      /* Bei reduzierter Bewegung nur blenden, nicht schieben. */
+      if (!__reduce) el.style.transform = 'translateY(26px)';
+      el.style.transition = __reduce
+        ? 'opacity .35s ease'
+        : 'opacity .9s cubic-bezier(.16,1,.3,1), transform .9s cubic-bezier(.16,1,.3,1)';
     });
     this.io = new IntersectionObserver(en => {
       en.forEach((e, i) => {
@@ -2811,306 +2818,412 @@ class Component extends DCLogic {
     this.camera.updateProjectionMatrix();
   }
 
-  /* =====================================================================
-     ⚠ AB HIER NACHGEBAUT, NICHT AUS DEM DESIGN UEBERNOMMEN.
-     Die Design-Datei Gartenrundgang.dc.html ist groesser als das Leselimit
-     der Schnittstelle (256 KiB) und bricht mitten in dieser Schleife ab.
-     Alles davor ist woertlich uebernommen; die Bildschleife hier ist von
-     Hand aus dem vorhandenen Szenenzustand rekonstruiert: Sie benutzt
-     ausschliesslich Felder, die weiter oben angelegt werden (this.curve,
-     this.focus, this.focusMix, this.stationP, this.bees, this.ducks,
-     this.birds, this.butterflies, this.falls, this.drops, this.ripples,
-     this.uTime, this.uWind). Bewegungsablauf und Timing sind daher
-     stimmig, aber nicht zeichengenau die des Entwurfs. Sobald die
-     Quelldatei geteilt vorliegt, kann dieser Block 1:1 ersetzt werden.
-     ===================================================================== */
-
-  /* Weiche Stufe: 0 -> 1 mit waagerechten Enden, statt harter Kante. */
-  static ease(k) { k = k < 0 ? 0 : k > 1 ? 1 : k; return k * k * (3 - 2 * k); }
-
-  /* Wo stehen wir zwischen zwei Stationen? Liefert Index und Anteil. */
-  stationAt(p) {
-    const s = this.stationP;
-    if (p <= s[0]) return { i: 0, j: 0, k: 0 };
-    for (let i = 0; i < s.length - 1; i++) {
-      if (p <= s[i + 1]) return { i: i, j: i + 1, k: (p - s[i]) / (s[i + 1] - s[i]) };
+  tick = () => {
+    this.raf = requestAnimationFrame(this.tick);
+    const canvas = document.getElementById('rg-canvas');
+    if (!canvas) return;
+    if (!this.walk || !this.walk.isConnected) {
+      this.reacquire();
+      if (window.THREE) this.initScene();
+      if (this.renderer) this.resizeGL();
+      return;
     }
-    return { i: s.length - 1, j: s.length - 1, k: 0 };
-  }
-
-  updateWalk(t, p) {
-    const THREE = window.THREE;
-    const seg = this.stationAt(p);
-    const kk = Component.ease(seg.k);
-
-    /* Kamera laeuft den Gartenweg entlang; Blick mischt sich zwischen
-       "nach vorn" und dem Blickfang der jeweiligen Station. */
-    const u = Math.min(0.999, Math.max(0, p));
-    const pos = this.curve.getPointAt(u);
-    const ahead = this.curve.getPointAt(Math.min(0.999, u + 0.035));
-
-    const sway = this.reduce ? 0 : Math.sin(t * 0.62) * 0.09;
-    const bob = this.reduce ? 0 : Math.sin(t * 1.15) * 0.022;
-    const mx = this.mx * (this.reduce ? 0 : 1);
-    const my = this.my * (this.reduce ? 0 : 1);
-
-    this.camera.position.set(
-      pos.x + sway * 0.5 + mx * 0.28,
-      1.62 + bob - my * 0.12,
-      pos.z
-    );
-
-    const fa = this.focus[seg.i], fb = this.focus[seg.j];
-    const fx = fa.x + (fb.x - fa.x) * kk;
-    const fy = fa.y + (fb.y - fa.y) * kk;
-    const fz = fa.z + (fb.z - fa.z) * kk;
-    const ma = this.focusMix[seg.i], mb = this.focusMix[seg.j];
-    const mix = ma + (mb - ma) * kk;
-
-    if (!this.lookAt) this.lookAt = new THREE.Vector3(fx, fy, fz);
-    const tx = ahead.x + (fx - ahead.x) * mix + mx * 0.5;
-    const ty = 1.42 + (fy - 1.42) * mix - my * 0.32;
-    const tz = ahead.z + (fz - ahead.z) * mix;
-    this.lookAt.x += (tx - this.lookAt.x) * 0.09;
-    this.lookAt.y += (ty - this.lookAt.y) * 0.09;
-    this.lookAt.z += (tz - this.lookAt.z) * 0.09;
-    this.camera.lookAt(this.lookAt);
-
-    this.camera.getWorldDirection(this.camFwd);
-    if (this.sunSprite && this.sunDir) {
-      this.sunSprite.position.copy(this.camera.position).addScaledVector(this.sunDir, 320);
+    if (window.THREE && (!this.renderer || this.renderer.domElement !== canvas)) {
+      this.initScene();
+      if (this.renderer) this.resizeGL();
+      return;
+    }
+    if (this.content && this.content.isConnected) {
+      const ct = this.content.getBoundingClientRect().top;
+      const hide = ct < 2;
+      if (hide !== this.canvasHidden) {
+        this.canvasHidden = hide;
+        canvas.style.visibility = hide ? 'hidden' : 'visible';
+        if (this.stationsEl) this.stationsEl.style.display = hide ? 'none' : '';
+      }
+      if (hide) {
+        const nw = performance.now();
+        const d2 = Math.min(40, nw - (this.lastNow || nw));
+        this.lastNow = nw;
+        this.scrollVel = (this.scrollVel || 0) * 0.9;
+        this.updateExtras(nw * 0.001, d2);
+        return;
+      }
     }
 
-    /* Texttafeln: nur die Station im Blickfeld ist sichtbar. */
-    let active = seg.i;
-    let best = 1e9;
-    for (let i = 0; i < this.stationP.length; i++) {
-      const d = Math.abs(p - this.stationP[i]);
-      if (d < best) { best = d; active = i; }
+    const MO = this.props.motion == null ? 1 : this.props.motion;
+    const walkH = this.walk ? this.walk.offsetHeight - window.innerHeight : 1;    this.tp = Math.min(1, Math.max(0, window.scrollY / Math.max(1, walkH)));
+    const prev = this.p;
+    this.p += (this.tp - this.p) * 0.031;
+    this.mx += (this.tmx - this.mx) * 0.045;
+    this.my += (this.tmy - this.my) * 0.045;
+    this.vel += (Math.abs(this.p - prev) * 60 - this.vel) * 0.12;
+
+    const inWalk = window.scrollY < walkH + window.innerHeight * 0.5;
+
+    const now = performance.now();
+    const dt = Math.min(50, now - (this.lastT || now - 16));
+    this.lastT = now;
+    const sy = window.scrollY;
+    const raw = sy - (this.lastSy == null ? sy : this.lastSy);
+    this.lastSy = sy;
+    this.scrollVel = (this.scrollVel || 0) + (raw - (this.scrollVel || 0)) * 0.22;
+    this.updateExtras(now * 0.001, dt);
+
+    if (this.head) {
+      const compact = window.scrollY > 70;
+      if (compact !== this.headCompact) {
+        this.headCompact = compact;
+        this.head.style.padding = compact ? '8px clamp(14px,3vw,32px)' : '12px clamp(14px,3vw,32px)';
+      }
     }
+    if (this.ring) this.ring.style.strokeDashoffset = (113 * (1 - this.p)).toFixed(1);
+
     if (this.panels) {
-      const S = this.stationP;
+      let best = -1, bestD = 9, rightVis = 0;
       for (let i = 0; i < this.panels.length; i++) {
-        const el = this.panels[i];
-        const d = p - S[i];
-        /* Halber Abstand zur Nachbarstation auf der jeweiligen Seite —
-           so bleibt jede Tafel ueber den groessten Teil ihres Abschnitts
-           voll lesbar und blendet erst kurz vor der naechsten weg.
-           Ein fester Radius liess sie nur an einer einzigen Scrollposition
-           deckend erscheinen und dazwischen fast verschwinden. */
-        const gap = d < 0
-          ? (i > 0 ? S[i] - S[i - 1] : 0.14)
-          : (i < S.length - 1 ? S[i + 1] - S[i] : 0.14);
-        const n = Math.abs(d) / (gap * 0.5);
-        const v = n <= 0.62 ? 1 : n >= 0.95 ? 0 : Component.ease((0.95 - n) / 0.33);
-        if (el.__v === v) continue;
-        el.__v = v;
-        el.style.opacity = v.toFixed(3);
-        el.style.pointerEvents = v > 0.6 ? 'auto' : 'none';
-        if (!this.reduce && el.getAttribute('data-side') !== 'center' && !this.isMobile) {
-          el.style.transform = (el.dataset.dTransform || '') + ' translateY(' + ((1 - v) * 26).toFixed(1) + 'px)';
+        const d = Math.abs(this.p - this.stationP[i]);
+        const span = i === 0 ? 0.22 : 0.085;
+        const vis = Math.max(0, 1 - d / span);
+        let e = vis * vis * (3 - 2 * vis);
+        if (!inWalk) e = 0;
+        else if (i === this.panels.length - 1 && this.tp >= 0.999) {
+          const over = (window.scrollY - walkH) / Math.max(1, window.innerHeight * 0.5);
+          e *= Math.max(0, 1 - over);
         }
+        const el = this.panels[i];
+        el.style.opacity = e.toFixed(3);
+        el.style.pointerEvents = e > 0.5 ? 'auto' : 'none';
+        el.style.visibility = e > 0.004 ? 'visible' : 'hidden';
+        const side = el.getAttribute('data-side');
+        const slide = (1 - e) * 34;
+        if (side === 'center') el.style.transform = 'translate(-50%,-50%) translateY(' + (slide * 0.5).toFixed(1) + 'px)';
+        else if (this.isMobile) el.style.transform = 'translateY(' + slide.toFixed(1) + 'px)';
+        else el.style.transform = 'translateY(-50%) translateX(' + (side === 'left' ? -slide : slide).toFixed(1) + 'px)';
+        if (side === 'right' && e > rightVis) rightVis = e;
+        if (d < bestD) { bestD = d; best = i; }
       }
-    }
-    if (active !== this.active) {
-      this.active = active;
-      this.dots.forEach((d, i) => {
-        d.style.background = i === active ? 'rgba(44,110,73,.2)' : 'transparent';
-        d.setAttribute('aria-current', i === active ? 'true' : 'false');
-      });
-    }
-  }
-
-  updateLife(t) {
-    if (this.bees) for (const b of this.bees) {
-      const d = b.userData, a = t * d.sp + d.ph;
-      b.position.set(
-        d.ax + Math.cos(a) * d.r,
-        d.h + Math.sin(a * 2.7 + d.ph) * 0.12,
-        d.az + Math.sin(a * 1.3) * d.r
-      );
-      b.rotation.y = -a;
-    }
-
-    if (this.butterflies) for (const b of this.butterflies) {
-      const d = b.userData, a = t * d.sp + d.ph;
-      b.position.set(
-        d.ax + Math.cos(a) * d.r,
-        0.72 + Math.sin(a * 1.8 + d.ph) * 0.26,
-        d.az + Math.sin(a * 0.8) * d.r
-      );
-      b.rotation.y = -a + Math.PI / 2;
-      const flap = Math.sin(t * 11 + d.ph) * 0.85;
-      if (d.wl) d.wl.rotation.y = flap;
-      if (d.wr) d.wr.rotation.y = -flap;
-    }
-
-    if (this.birds) for (const b of this.birds) {
-      const d = b.userData, a = t * d.sp + d.ph;
-      b.position.set(Math.cos(a) * d.rad, d.y + Math.sin(a * 1.6) * 0.5, Math.sin(a) * d.rad);
-      b.rotation.y = -a + Math.PI / 2;
-      const flap = Math.sin(t * d.fl + d.ph) * 0.5;
-      if (d.wl) d.wl.rotation.z = flap;
-      if (d.wr) d.wr.rotation.z = -flap;
-    }
-
-    if (this.ducks && this.fountainPos) for (const dk of this.ducks) {
-      const d = dk.userData, a = t * d.sp + d.ph;
-      const x = this.fountainPos.x + Math.cos(a) * d.rad;
-      const z = this.fountainPos.z + Math.sin(a) * d.rad;
-      dk.position.x = x;
-      dk.position.z = z;
-      dk.rotation.y = -a + Math.PI / 2;
-      if (d.head) d.head.rotation.x = Math.sin(t * 0.9 + d.ph) * 0.16;
-      if (d.wake) {
-        d.wake.position.set(x, dk.position.y - 0.08, z);
-        const s = 1 + (Math.sin(t * 1.6 + d.ph) * 0.5 + 0.5) * 0.7;
-        d.wake.scale.set(s, s, s);
-        d.wake.material.opacity = 0.3 * (1 - (s - 1) / 0.7) * 0.9;
+      if (this.rail) {
+        const base = inWalk && this.p > 0.04 ? 1 : 0;
+        const duck = Math.min(1, Math.max(0, (rightVis - 0.12) / 0.3));
+        const ease = duck * duck * (3 - 2 * duck);
+        const railOp = base * (1 - ease);
+        this.rail.style.opacity = railOp.toFixed(3);
+        this.rail.style.transform = 'translateY(-50%) translateX(' + (ease * 92).toFixed(1) + 'px)';
+        this.rail.style.pointerEvents = railOp > 0.5 ? 'auto' : 'none';
+        this.rail.style.visibility = railOp > 0.01 ? 'visible' : 'hidden';
+      }
+      if (best !== this.active) {
+        this.active = best;
+        this.dots.forEach((dd, i) => {
+          const on = i === best;
+          const done = i < best;
+          dd.style.color = on ? '#1F5637' : (done ? '#46761F' : '#8DA093');
+          dd.style.background = on ? 'rgba(44,110,73,.13)' : 'transparent';
+          const lbl = dd.querySelector('[data-label]');
+          if (lbl) lbl.style.opacity = on ? '1' : (done ? '.8' : '.5');
+          const core = dd.querySelector('span span:last-child');
+          if (core) core.style.transform = on ? 'scale(2.1)' : (done ? 'scale(1.4)' : 'scale(1)');
+        });
       }
     }
 
-    /* Brunnen: Tropfen steigen und fallen, danach ein Ring auf dem Wasser. */
-    if (this.drops && this.dropData && this.fountainPos) {
-      const D = this.dropDummy, o = this.fountainPos;
+    if (this.grows && this.grows.length && this.content) {
+      const cr = this.content.getBoundingClientRect();
+      const total = Math.max(1, this.content.offsetHeight - window.innerHeight * 0.5);
+      const cp = Math.min(1, Math.max(0, (-cr.top + window.innerHeight * 0.7) / total));
+      for (let i = 0; i < this.grows.length; i++) {
+        const g = this.grows[i];
+        const v = Math.min(1, Math.max(0, (cp - g.s) / 0.17));
+        const e = v < 0.5 ? 2 * v * v : 1 - Math.pow(-2 * v + 2, 2) / 2;
+        g.el.style.transform = g.leaf ? 'scale(' + e.toFixed(3) + ')' : 'scaleY(' + e.toFixed(3) + ')';
+      }
+    }
+
+    if (this.pars && this.pars.length) {
+      const vh = window.innerHeight;
+      for (let i = 0; i < this.pars.length; i++) {
+        const it = this.pars[i];
+        if (it.el.style.opacity !== '1') continue;
+        const r = it.el.getBoundingClientRect();
+        if (r.bottom < -240 || r.top > vh + 240) continue;
+        const rel = (r.top + r.height / 2) - vh / 2;
+        it.el.style.transform = 'translate3d(0,' + (-rel * it.f * 0.1 * MO).toFixed(1) + 'px,0)';
+      }
+    }
+
+    if (!this.ready) return;
+    const t = now * 0.001;
+    this.uTime.value = t;
+    this.uWind.value = MO;
+
+    const tt = Math.min(0.999, Math.max(0, this.p));
+    const pos = this.curve.getPointAt(tt);
+    const ahead = this.curve.getPointAt(Math.min(1, tt + 0.13));
+    const gy = this.groundY(pos.x, pos.z);
+
+    this.stepPhase = (this.stepPhase || 0) + this.vel * 1.35;
+    const walkBob = Math.min(1, this.vel * 26);
+    const bobY = Math.sin(this.stepPhase * 2) * 0.028 * walkBob * MO;
+    const bobR = Math.sin(this.stepPhase) * 0.012 * walkBob * MO;
+
+    this.camera.position.set(pos.x + this.mx * 0.34 * MO, gy + 1.62 + bobY - this.my * 0.1 * MO, pos.z);
+
+    const camY = gy + 1.62 + bobY;
+    const fIdx = this.active < 0 ? 0 : this.active;
+    if (!this.fpCur) this.fpCur = this.focus[fIdx].clone();
+    this.fpCur.lerp(this.focus[fIdx], 0.028);
+    const fTarget = this.fpCur;
+    if (this.fMix == null) this.fMix = 0;
+    this.fMix += (this.focusMix[fIdx] - this.fMix) * 0.03;
+    const near = Math.max(0, 1 - Math.abs(this.p - this.stationP[fIdx]) / 0.1);
+    const look = new THREE.Vector3(
+      ahead.x + this.mx * 0.9 * MO,
+      camY - 0.05 - this.my * 0.42 * MO,
+      ahead.z
+    );
+    const blend = near * near * (3 - 2 * near) * this.fMix;
+    look.lerp(fTarget, blend);
+    const dir = look.clone().sub(this.camera.position);
+    if (dir.x * dir.x + dir.z * dir.z < 0.3) dir.set(ahead.x - pos.x, dir.y, ahead.z - pos.z);
+    const flat = Math.max(0.6, Math.hypot(dir.x, dir.z));
+    dir.y = Math.max(-flat * 0.3, Math.min(flat * 0.26, dir.y));
+    dir.normalize().multiplyScalar(9);
+    look.copy(this.camera.position).add(dir);
+    this.camera.lookAt(look);
+    this.camera.rotateZ(bobR);
+
+    if (this.gateWings) {
+      const gp = Math.min(1, Math.max(0, (this.p - 0.05) / 0.15));
+      const ge2 = gp < 0.5 ? 4 * gp * gp * gp : 1 - Math.pow(-2 * gp + 2, 3) / 2;
+      for (let i = 0; i < this.gateWings.length; i++) {
+        const w = this.gateWings[i];
+        w.rotation.y = w.userData.dir * 1.32 * ge2;
+      }
+    }
+
+    if (this.birds && MO > 0) {
+      if (!this.bFwd) this.bFwd = new THREE.Vector3();
+      this.camera.getWorldDirection(this.bFwd);
+      this.bFwd.y = 0;
+      if (this.bFwd.lengthSq() < 0.0001) this.bFwd.set(0, 0, -1);
+      this.bFwd.normalize();
+      const yaw = Math.atan2(this.bFwd.x, this.bFwd.z);
+      const cx = this.camera.position.x, cz = this.camera.position.z;
+      for (let i = 0; i < this.birds.length; i++) {
+        const b = this.birds[i], u = b.userData;
+        const bt = t * u.sp + u.ph;
+        const ang = yaw + bt;
+        b.position.set(cx + Math.sin(ang) * u.rad, u.y + Math.sin(bt * 1.7) * 0.7, cz + Math.cos(ang) * u.rad);
+        b.rotation.y = ang;
+        b.rotation.z = 0.2;
+        const flap = Math.sin(t * u.fl + u.ph);
+        u.wl.rotation.x = flap * 0.62;
+        u.wr.rotation.x = -flap * 0.62;
+        u.wl.rotation.y = flap * 0.16;
+        u.wr.rotation.y = -flap * 0.16;
+      }
+    }
+
+    if (this.water) {
+      const wp = this.water.geometry.attributes.position, wb = this.wBase;
+      this.wSlice = ((this.wSlice || 0) + 1) % 2;
+      for (let i = this.wSlice; i < wp.count; i += 2) {
+        const x = wb[i * 3], z = wb[i * 3 + 2];
+        wp.setY(i, Math.sin(x * 1.55 + t * 1.15) * 0.011 * MO
+          + Math.sin(z * 2.05 - t * 0.92) * 0.008 * MO
+          + Math.sin((x + z) * 3.3 - t * 1.7) * 0.005 * MO);
+      }
+      wp.needsUpdate = true;
+      if (this.wSlice === 0) this.water.geometry.computeVertexNormals();
+    }
+
+    if (this.falls) {
+      for (const fl of this.falls) {
+        const p3 = fl.geometry.attributes.position, bs = fl.userData.base;
+        for (let i = 0; i < p3.count; i++) {
+          const v = bs[i * 3 + 1] / -fl.userData.h;
+          const sw = Math.sin(t * 7.5 - v * 9 + fl.userData.ph) * 0.016 * (0.3 + v) * MO;
+          p3.setX(i, bs[i * 3] + sw);
+          p3.setZ(i, bs[i * 3 + 2] * (1 + Math.sin(t * 5.1 - v * 6 + fl.userData.ph) * 0.05 * MO));
+        }
+        p3.needsUpdate = true;
+      }
+      this.mFall.opacity = 0.82 + Math.sin(t * 4.3) * 0.06;
+    }
+    if (this.fallSpray) {
+      const arr = this.fallSpray.geometry.attributes.position.array;
+      const tiers = this.fallTiers, g2 = 3.6;
+      for (let i = 0; i < this.fallDrops.length; i++) {
+        const d = this.fallDrops[i], tr = tiers[d.ti], pv = tiers[d.ti - 1];
+        const life = 0.62;
+        const tt = (((t * 0.9 * d.sp * Math.max(0.15, MO)) + d.ph) % 1) * life;
+        arr[i * 3] = -tr[0] + 0.58 + tt * (0.35 + d.out * 0.7);
+        arr[i * 3 + 1] = Math.max(pv[1] + 0.08, tr[1] + 0.08 - 0.5 * g2 * tt * tt - tt * 0.3);
+        arr[i * 3 + 2] = d.z * (1 + tt * 0.9);
+      }
+      this.fallSpray.geometry.attributes.position.needsUpdate = true;
+    }
+    if (this.fallMist) {
+      for (const m2 of this.fallMist) {
+        const ph = ((t * 0.16 * Math.max(0.2, MO)) + m2.userData.ph) % 1;
+        m2.position.y = m2.userData.y0 + ph * 0.85;
+        m2.position.x = m2.userData.x0 + ph * 0.42;
+        const s = 0.7 + ph * 1.5;
+        m2.scale.setScalar(s);
+        m2.material.opacity = Math.sin(ph * Math.PI) * 0.2;
+      }
+    }
+    if (this.stream) {
+      const sp2 = this.stream.geometry.attributes.position, sb = this.streamBase;
+      for (let i = 0; i < sp2.count; i++) {
+        const x = sb[i * 3], z = sb[i * 3 + 2];
+        sp2.setY(i, sb[i * 3 + 1] + Math.sin((x + z) * 3.6 - t * 3.4) * 0.014 * MO + Math.sin(x * 5.2 - t * 5.1) * 0.007 * MO);
+      }
+      sp2.needsUpdate = true;
+      this.sSlice = ((this.sSlice || 0) + 1) % 3;
+      if (this.sSlice === 0) this.stream.geometry.computeVertexNormals();
+    }
+
+    if (this.jet) {
+      this.jet.scale.y = 1 + Math.sin(t * 5.2) * 0.14 * MO;
+      this.jet.scale.x = this.jet.scale.z = 1 + Math.sin(t * 7.1 + 1) * 0.07 * MO;
+      this.jet.rotation.z = Math.sin(t * 1.4) * 0.03 * MO;
+      this.mJet.opacity = 0.4 + Math.sin(t * 6.3) * 0.11;
+    }
+
+    if (this.drops) {
+      const F = this.fountainPos, g = 9.1, life = 1.05, dd = this.dropDummy;
       for (let i = 0; i < this.dropData.length; i++) {
         const d = this.dropData[i];
-        let k = (t * d.sp + d.ph) % 1;
-        const vy = d.v * k - 4.9 * k * k;
-        D.position.set(
-          o.x + Math.cos(d.a) * d.vr * k,
-          o.y + 1.9 + vy * 0.42,
-          o.z + Math.sin(d.a) * d.vr * k
-        );
-        if (D.position.y < o.y + 0.12) D.position.y = o.y + 0.12;
-        D.updateMatrix();
-        this.drops.setMatrixAt(i, D.matrix);
+        const pt = (((t * 0.72 * d.sp * Math.max(0.15, MO)) + d.ph) % 1) * life;
+        const r = 0.04 + d.vr * pt * pt * 1.5;
+        const vy = d.v - g * pt;
+        const y = F.y + 2.0 + d.v * pt - 0.5 * g * pt * pt;
+        const clamped = Math.max(F.y + 0.13, y);
+        dd.position.set(F.x + Math.cos(d.a) * r, clamped, F.z + Math.sin(d.a) * r);
+        const stretch = 1 + Math.min(0.85, Math.abs(vy) * 0.2);
+        dd.scale.set(1 / Math.sqrt(stretch), stretch, 1 / Math.sqrt(stretch));
+        dd.rotation.set(0, d.a, 0);
+        dd.updateMatrix();
+        this.drops.setMatrixAt(i, dd.matrix);
       }
       this.drops.instanceMatrix.needsUpdate = true;
     }
 
-    if (this.ripples) for (let i = 0; i < this.ripples.length; i++) {
-      const r = this.ripples[i];
-      const k = (t * 0.42 + i / this.ripples.length) % 1;
-      const s = 0.4 + k * 5.2;
-      r.scale.set(s, s, s);
-      r.material.opacity = 0.34 * (1 - k) * (1 - k);
-    }
-
-    /* Wasserfall: die Schleier wellen sich leicht in der Senkrechten. */
-    if (this.falls) for (const f of this.falls) {
-      const base = f.userData.base;
-      const at = f.geometry.getAttribute('position');
-      for (let v = 0; v < at.count; v++) {
-        const bx = base[v * 3], by = base[v * 3 + 1], bz = base[v * 3 + 2];
-        const k = -by / f.userData.h;
-        at.setXYZ(
-          v,
-          bx + Math.sin(t * 3.1 + f.userData.ph + k * 5.4) * 0.012 * k,
-          by,
-          bz + Math.cos(t * 2.4 + f.userData.ph + k * 4.1) * 0.02 * k
-        );
+    if (this.ripples) {
+      for (let i = 0; i < this.ripples.length; i++) {
+        const ring = this.ripples[i];
+        const ph = ((t * 0.5 * Math.max(0.2, MO)) + ring.userData.off) % 1;
+        const s = 1 + ph * 5.2;
+        ring.scale.set(s, s, 1);
+        ring.material.opacity = (1 - ph) * (1 - ph) * 0.5;
       }
-      at.needsUpdate = true;
     }
 
-    if (this.fallMist) for (const m of this.fallMist) {
-      const d = m.userData, k = (t * 0.28 + d.ph) % 1;
-      m.position.y = d.y0 + k * 0.7;
-      m.position.x = d.x0 + k * 0.3;
-      m.material.opacity = 0.26 * Math.sin(k * Math.PI);
-    }
-
-    if (this.fallSpray && this.fallDrops && this.fallTiers) {
-      const at = this.fallSpray.geometry.getAttribute('position');
-      for (let i = 0; i < this.fallDrops.length; i++) {
-        const d = this.fallDrops[i];
-        const tr = this.fallTiers[d.ti], prev = this.fallTiers[d.ti - 1] || tr;
-        const k = (t * d.sp + d.ph) % 1;
-        at.setXYZ(
-          i,
-          -tr[0] + 0.58 + d.out * 0.3 * k,
-          tr[1] + 0.1 - k * Math.max(0.2, tr[1] - prev[1]),
-          d.z
-        );
+    if (this.ducks && MO > 0) {
+      const pc = this.fountainPos;
+      for (let i = 0; i < this.ducks.length; i++) {
+        const d = this.ducks[i], u = d.userData;
+        const a = t * u.sp + u.ph;
+        d.position.set(pc.x + Math.cos(a) * u.rad, pc.y + 0.1 + Math.sin(t * 1.3 + u.ph) * 0.014, pc.z + Math.sin(a * 1.15) * u.rad * 0.72);
+        d.rotation.y = -a - 1.35;
+        d.rotation.z = Math.sin(t * 0.9 + u.ph) * 0.045;
+        if (u.head) u.head.position.y = 0.3 + Math.sin(t * 1.7 + u.ph) * 0.022;
+        if (u.wake) {
+          const wp2 = ((t * 0.42 + u.ph) % 1);
+          u.wake.position.set(d.position.x, pc.y + 0.115, d.position.z);
+          const ws = 1 + wp2 * 5.4;
+          u.wake.scale.set(ws, ws, 1);
+          u.wake.material.opacity = (1 - wp2) * (1 - wp2) * 0.34;
+        }
       }
-      at.needsUpdate = true;
     }
 
-    /* Wasserflaechen und Fontaenenstrahl leicht bewegen. */
-    if (this.water && this.water.material && this.water.material.map) {
-      this.water.material.map.offset.y = (t * 0.03) % 1;
-    }
-    if (this.jet) this.jet.scale.y = 1 + Math.sin(t * 4.2) * 0.05;
-    if (this.mJet && this.mJet.map) this.mJet.map.offset.y = (-t * 0.9) % 1;
-  }
-
-  tick = () => {
-    if (!this.alive) return;
-    this.raf = requestAnimationFrame(this.tick);
-
-    const now = performance.now();
-    if (this.tPrev == null) this.tPrev = now;
-    /* Nach einem Tabwechsel nicht springen: Schritt begrenzen. */
-    let dt = Math.min(50, now - this.tPrev);
-    this.tPrev = now;
-    this.t = (this.t || 0) + dt / 1000;
-    const t = this.t;
-
-    if (this.reduce == null) {
-      this.reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-        || this.props.motion === 0;
+    if (this.steam) {
+      const sd = this.steamDummy, o = this.steamOrigin;
+      for (let i = 0; i < 18; i++) {
+        const ph = ((t * 0.22 + i / 18) % 1);
+        const rise = ph * 0.56;
+        sd.position.set(
+          o.x + Math.sin(ph * 7 + i) * 0.035 * ph + (i % 2 ? 0.2 : 0) * 0,
+          o.y + rise,
+          o.z + Math.cos(ph * 5.4 + i) * 0.03 * ph
+        );
+        const s = (0.35 + ph * 1.5) * (1 - ph * 0.55);
+        sd.scale.setScalar(Math.max(0.001, s));
+        sd.updateMatrix();
+        this.steam.setMatrixAt(i, sd.matrix);
+      }
+      this.steam.instanceMatrix.needsUpdate = true;
     }
 
-    /* Fortschritt des Rundgangs aus der Scrollposition. */
-    let raw = 0;
-    if (this.walk) {
-      const r = this.walk.getBoundingClientRect();
-      const span = Math.max(1, this.walk.offsetHeight - window.innerHeight);
-      raw = Math.min(1, Math.max(0, -r.top / span));
+    if (this.butterflies && MO > 0) {
+      for (let i = 0; i < this.butterflies.length; i++) {
+        const bf = this.butterflies[i], u = bf.userData;
+        const bt = t * u.sp + u.ph;
+        bf.position.set(
+          u.ax + Math.sin(bt) * u.r + Math.cos(bt * 0.62) * 0.42,
+          this.groundY(u.ax, u.az) + 0.62 + Math.sin(bt * 2.1) * 0.24,
+          u.az + Math.cos(bt * 0.84) * u.r
+        );
+        bf.rotation.y = -bt * 1.1;
+        bf.rotation.z = Math.sin(bt * 2.1) * 0.2;
+        const flap = 0.5 + Math.sin(t * 13 + u.ph) * 0.95;
+        u.wl.rotation.x = flap;
+        u.wr.rotation.x = -flap;
+      }
     }
-    this.scrollVel = (raw - this.tp) * 1000 / Math.max(1, dt);
-    this.tp = raw;
-    /* Gedaempft folgen, damit der Gang ruhig bleibt und nicht am Rad klebt. */
-    const lag = this.reduce ? 1 : Math.min(1, dt / 1000 * 4.2);
-    this.p += (this.tp - this.p) * lag;
-    this.vel = this.tp - this.p;
 
-    const ml = this.reduce ? 1 : Math.min(1, dt / 1000 * 3);
-    this.mx += (this.tmx - this.mx) * ml;
-    this.my += (this.tmy - this.my) * ml;
-
-    try { this.updateExtras(t, dt); }
-    catch (e) { if (!this.warnedExtras) { this.warnedExtras = true; console.error('Rundgang (DOM):', e); } }
-
-    if (!this.ready || !this.renderer) return;
-
-    /* Leinwand nur zeichnen, solange der Rundgang im Bild ist. */
-    const vis = !this.walk || (this.walk.getBoundingClientRect().bottom > 0
-      && this.walk.getBoundingClientRect().top < window.innerHeight);
-    const cv = this.renderer.domElement;
-    if (vis !== this.canvasHidden) {
-      this.canvasHidden = vis;
-      cv.style.visibility = vis ? 'visible' : 'hidden';
+    if (this.bees && MO > 0) {
+      for (let i = 0; i < this.bees.length; i++) {
+        const be = this.bees[i], u = be.userData;
+        const bt = t * u.sp + u.ph;
+        be.position.set(
+          u.ax + Math.sin(bt) * u.r + Math.sin(bt * 3.7) * 0.14,
+          this.groundY(u.ax, u.az) + u.h + Math.sin(bt * 4.3) * 0.09,
+          u.az + Math.cos(bt * 1.31) * u.r + Math.cos(bt * 4.1) * 0.12
+        );
+        be.rotation.y = -bt * 1.4;
+        be.rotation.z = Math.sin(bt * 3.1) * 0.24;
+      }
     }
-    if (!vis) return;
 
-    this.uTime.value = t;
-    this.uWind.value = this.reduce ? 0 : 1;
-
-    try {
-      this.updateWalk(t, this.p);
-      if (!this.reduce) this.updateLife(t);
-      this.renderer.render(this.scene, this.camera);
-    } catch (e) {
-      if (!this.warnedGL) { this.warnedGL = true; console.error('Rundgang (3D):', e); }
+    if (this.pollen) {
+      this.pollen.rotation.y = t * 0.014 * MO;
+      this.pollen.position.y = Math.sin(t * 0.32) * 0.24;
     }
+    if (this.mLamp) this.mLamp.emissiveIntensity = (this.lampBase || 0.35) * (0.86 + Math.sin(t * 1.25) * 0.14);
+
+    if (this.sunSprite && this.sunDir) {
+      this.sunSprite.position.copy(this.camera.position).addScaledVector(this.sunDir, 300);
+      if (this.sunGlow) {
+        this.camera.getWorldDirection(this.camFwd);
+        const facing = Math.max(0, this.camFwd.dot(this.sunDir));
+        const sp = this.sunSprite.position.clone().project(this.camera);
+        const near = facing > 0.02;
+        const px = near ? Math.max(-0.6, Math.min(1.6, sp.x * 0.5 + 0.5)) : 0.5;
+        const py = near ? Math.max(-0.4, Math.min(1.4, -sp.y * 0.5 + 0.5)) : -0.2;
+        this.sunGlow.style.left = (px * 100).toFixed(2) + '%';
+        this.sunGlow.style.top = (py * 100).toFixed(2) + '%';
+        this.sunGlow.style.opacity = (0.1 + 0.5 * Math.pow(facing, 1.8)).toFixed(3);
+      }
+    }
+
+    this.sun.position.x = (this.sunBaseX == null ? -10 : this.sunBaseX) + this.p * 2.4;
+    this.sun.target.position.set(pos.x, 0, pos.z);
+    this.sun.target.updateMatrixWorld();
+
+    this.renderer.render(this.scene, this.camera);
   };
 }
 
   var __props = {
     "timeOfDay": "Mittag",
-    "motion": 1
+    /* Der Regler des Designs stand fest auf 1. Bei "Bewegung reduzieren"
+       geht er auf 0: Wind, Kamerawiegen, Mausversatz, Parallaxe und
+       Wellen stehen still, der Rundgang folgt dem Scrollen weiterhin. */
+    "motion": __reduce ? 0 : 1
   };
   var __page = new Component(__props);
 
