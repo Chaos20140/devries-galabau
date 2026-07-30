@@ -23,7 +23,7 @@
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png?v=1">
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/outfit-600-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/outfit-400-latin.woff2" crossorigin>
-<link rel="stylesheet" href="assets/css/base.css?v=15">
+<link rel="stylesheet" href="assets/css/base.css?v=18">
 <style>
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;background:#EDF3E8;color:#10231A}
@@ -67,7 +67,7 @@
       <p style="position:relative;margin:0 0 18px;font-size:12px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:#2C6E49">Salzhemmendorf · seit 1998</p>
       <h1 style="position:relative;margin:0;font-size:clamp(38px,7vw,104px);line-height:.94;letter-spacing:-.04em;font-weight:600;text-wrap:balance;color:#0A1810">Herzlich<br><span style="font-family:'Instrument Serif',Georgia,serif;font-style:italic;font-weight:400;color:#1F5637;display:inline-block;padding:0 .08em;margin:0 -.08em">Willkommen</span></h1>
       <p style="position:relative;margin:26px auto 0;max-width:46ch;font-size:clamp(15px,1.4vw,19px);line-height:1.55;color:#26382E;text-wrap:pretty">Seit 1998 Ihr Partner für Gartengestaltung, Bepflanzung, Pflasterarbeiten und Pflege. Gehen Sie hindurch — der Weg führt an jeder unserer Leistungen vorbei.</p>
-      <div style="position:relative;display:inline-flex;align-items:center;gap:10px;margin-top:34px;padding:11px 20px;border-radius:999px;background:rgba(255,255,255,.72);backdrop-filter:blur(10px);border:1px solid rgba(16,35,26,.1);font-size:13px;font-weight:500;animation:dvDrift 2.6s ease-in-out infinite">
+      <div data-scrollhinweis style="position:relative;display:inline-flex;align-items:center;gap:10px;margin-top:34px;padding:11px 20px;border-radius:999px;background:rgba(255,255,255,.72);backdrop-filter:blur(10px);border:1px solid rgba(16,35,26,.1);font-size:13px;font-weight:500;animation:dvDrift 2.6s ease-in-out infinite">
         <span style="width:7px;height:7px;border-radius:50%;background:#8ECF4F;display:block;animation:dvBreathe 2.2s ease-in-out infinite"></span>
         Scrollen, um loszugehen
       </div>
@@ -823,10 +823,12 @@
     <garden-footer active="Rundgang"></garden-footer>
   </div>
 </div>
-<script src="assets/js/garden-header.js?v=15"></script>
-<script src="assets/js/garden-footer.js?v=15"></script>
-<script src="assets/js/three.min.js"></script>
-<script src="assets/js/formular.js?v=15"></script>
-<script src="assets/js/index.js?v=15"></script>
+<script src="assets/js/garden-header.js?v=18"></script>
+<script src="assets/js/garden-footer.js?v=18"></script>
+<!-- three.js wird NICHT fest eingebunden: gepackt sind das 146 KB, und auf
+     dem Handy soll sie nur laden, wenn jemand den Rundgang wirklich startet.
+     Das Nachladen steuert assets/js/index.js (ladeTHREE). -->
+<script src="assets/js/formular.js?v=18"></script>
+<script src="assets/js/index.js?v=18"></script>
 </body>
 </html>

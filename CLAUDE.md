@@ -623,3 +623,32 @@ erweitern statt parallele bauen → 4. Desktop+Mobile im selben Schritt → 5. B
   Triggers immer einen echten Datensatz durchschicken, nicht nur die Existenz prüfen.
   **Offen für den Betreiber:** ein Befehl, `supabase secrets set SMTP_USER=… SMTP_PASS=…`.
   Die Postfach-Zugangsdaten habe ich bewusst nicht angefasst.
+
+- **2026-07-31 · Handy-Regie überarbeitet (Nutzerbefund an Screenshots).**
+  **Menü:** Das Overlay (`z-index:45`) verdeckte die Kopfzeile (`40`) — es gab weder Logo noch
+  Rückweg, und bei 868 px Inhalt in 844 px Fenster rutschten Anfrage-Knopf und Telefonnummer
+  unten raus. Jetzt eigene Kopfleiste im Overlay (Logo links, ✕ rechts), deckender Hintergrund
+  und **drei Zonen**: fester Kopf, scrollbare Mitte, fester Fuß. Zweitrangige Seiten
+  zweispaltig. 844 px ohne Scrollen, alle elf Seiten erreichbar.
+  **Fußzeile:** 1216 → 762 px (32 → 23 % der Seite). Die gezeichnete Gartenszene (230-px-
+  Blumenband + 104-px-Band) fällt unter 760 px weg. **Falle:** Das Design setzt sämtliche
+  Abstände als **Inline-Style** — ohne `!important` greift keine einzige Regel aus dem
+  Stylesheet. Erst gemessen (185 px Kopfpolster blieben stehen), dann verstanden.
+  **Ablauf-Abschnitt war defekt, nicht nur unschön:** vier gestapelte Karten (1108 px) in
+  einer Box mit `sticky` + `height:100vh` + `overflow:hidden` → abgeschnitten, während der
+  Container 300 vh hoch blieb. 1400 px Leerlauf, Laufleiste zählte 01→03 durch, obwohl
+  dieselbe Karte im Bild stand, Karte 04 nie erreichbar. Auf Mobil jetzt normaler Fluss ohne
+  `sticky`, Laufleiste aus, `padding-top:120px` des Filmstreifens entfernt.
+  **Merke:** `offsetTop` ist relativ zum `offsetParent`. Bei der ersten Diagnose lagen alle
+  Scrollpositionen noch im Rundgang, und der Abschnitt wirkte fälschlich in Ordnung. Für
+  absolute Positionen `getBoundingClientRect().top + scrollY` nehmen.
+  **three.js wird nachgeladen statt fest eingebunden.** Gepackt 146 KB — 85 % des
+  Ladegewichts der Startseite. Am Desktop sofort, auf dem Handy erst auf „Rundgang starten".
+  Vorher steht ein Standbild (Foto + die vorhandene Begrüßungstafel des Entwurfs, **kein
+  zweiter eigener Text** — der lag unter der Tafel und war unleserlich), die Bahn ist nur
+  112 vh statt 1000. Nach dem Start 400 vh statt 1000 — vier Bildschirmhöhen statt zehn.
+  Belegt: vor dem Tippen **null** Aufrufe von `three.min.js`, Seite 15432 statt 22557 px.
+  **Merke:** an `body` angehängte Elemente erben die Schriftfamilie nicht — die sitzt am
+  inneren Container, sonst fällt alles auf die Serifenschrift zurück.
+  **Mailziel** vorübergehend auf eine Abnahmeadresse, zentral in `formular.js` (`EMPFAENGER`)
+  und als Secret `MAIL_TO`. Angezeigte Adressen unverändert. **Vor dem Livegang zurückstellen.**

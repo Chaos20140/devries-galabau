@@ -32,7 +32,9 @@ class Component extends DCLogic {
     this.onResize = () => { this.resizeGL(); this.applyMobile(); this.measureFlowLen(); };
     window.addEventListener('mousemove', this.onMouse, { passive: true });
     window.addEventListener('resize', this.onResize);
-    this.waitTHREE().then(() => { if (this.alive) this.initScene(); })
+    /* Am Desktop sofort, auf dem Handy erst auf Tippen. */
+    if (window.innerWidth < 820) this.zeigeStandbild();
+    else this.ladeTHREE().then(() => { if (this.alive) this.initScene(); })
       .catch(e => console.error('Rundgang:', e));
     this.raf = requestAnimationFrame(this.tick);
   }
@@ -91,14 +93,112 @@ class Component extends DCLogic {
     if (this.io) this.io.disconnect();
   }
 
-  waitTHREE() {
-    return new Promise((res, rej) => {
-      let n = 0;
-      const t = setInterval(() => {
-        if (window.THREE) { clearInterval(t); res(); }
-        else if (++n > 150) { clearInterval(t); rej(new Error('three fehlt')); }
-      }, 60);
+  /* three.js wird nachgeladen statt fest eingebunden. Gepackt sind das
+     146 KB — 85 Prozent des Ladegewichts der Startseite. Am Desktop passiert
+     das sofort, auf dem Handy erst, wenn jemand den Rundgang wirklich
+     startet. Wer nur die Leistungen sucht, zahlt es nie. */
+  ladeTHREE() {
+    if (this.threeLaedt) return this.threeLaedt;
+    this.threeLaedt = new Promise((res, rej) => {
+      if (window.THREE) return res();
+      const s = document.createElement('script');
+      s.src = 'assets/js/three.min.js?v=18';
+      s.async = true;
+      s.onload = () => (window.THREE ? res() : rej(new Error('three geladen, aber nicht da')));
+      s.onerror = () => rej(new Error('three konnte nicht geladen werden'));
+      document.head.appendChild(s);
     });
+    return this.threeLaedt;
+  }
+
+  /* Standbild statt Szene: zeigt, was einen erwartet, und startet den
+     Rundgang erst auf Tippen. Wer nicht tippt, scrollt eine Bildschirmhoehe
+     weiter und ist bei den Leistungen — ohne 146 KB geladen zu haben. */
+  zeigeStandbild() {
+    if (this.standbild || !this.walk) return;
+
+    /* Nur Hintergrund und Knopf — den Begruessungstext liefert die erste
+       Station des Entwurfs. Ein zweiter eigener Text lag frueher darunter
+       und war unleserlich, weil die Tafel (z-index 20) darueber liegt. */
+    const bg = document.createElement('div');
+    bg.id = 'rg-standbild';
+    bg.style.cssText = 'position:fixed;inset:0;z-index:2;pointer-events:none;' +
+      "background-image:linear-gradient(180deg,rgba(246,249,244,.28),rgba(246,249,244,.72))," +
+      "url('assets/img/rg-header-800.webp');background-size:cover;background-position:center";
+
+    const leiste = document.createElement('div');
+    leiste.id = 'rg-startknopf';
+    /* An body angehaengt — die Schriftfamilie sitzt am inneren Container,
+       ohne diese Zeile faellt der Knopf auf die Serifenschrift zurueck. */
+    leiste.style.cssText = 'position:fixed;left:0;right:0;bottom:calc(20px + env(safe-area-inset-bottom));' +
+      'z-index:30;display:flex;flex-direction:column;align-items:center;gap:8px;padding:0 24px;' +
+      'font-family:Outfit,Helvetica,Arial,sans-serif';
+    leiste.innerHTML =
+      '<button type="button" data-start style="min-height:54px;padding:0 30px;border:none;' +
+      'border-radius:999px;background:linear-gradient(140deg,#2A6E42,#123324);color:#F4F9F0;' +
+      'font:inherit;font-size:16px;font-weight:700;cursor:pointer;' +
+      'box-shadow:0 18px 40px -16px rgba(18,51,36,.8)">Rundgang starten</button>' +
+      '<p data-hinweis style="margin:0;font-size:12.5px;color:#3C5145;text-align:center">' +
+      'Lädt einmalig die 3D-Szene · oder einfach weiterscrollen</p>';
+
+    document.body.appendChild(bg);
+    document.body.appendChild(leiste);
+    this.standbild = bg;
+    this.startLeiste = leiste;
+
+    /* Nur die Begruessung zeigen, die uebrigen Tafeln gehoeren zur Fahrt. */
+    if (this.panels) this.panels.forEach((el, i) => {
+      el.style.opacity = i === 0 ? '1' : '0';
+      el.style.visibility = i === 0 ? 'visible' : 'hidden';
+    });
+    /* "Scrollen, um loszugehen" stimmt hier nicht mehr — das tut der Knopf. */
+    const hinweis = document.querySelector('[data-scrollhinweis]');
+    if (hinweis) hinweis.style.display = 'none';
+
+    this.walk.style.height = this.bahnHoehe();
+    leiste.querySelector('[data-start]').addEventListener('click', () => this.starteRundgang());
+  }
+
+  entferneStandbild() {
+    if (this.standbild) { this.standbild.remove(); this.standbild = null; }
+    if (this.startLeiste) { this.startLeiste.remove(); this.startLeiste = null; }
+    const hinweis = document.querySelector('[data-scrollhinweis]');
+    if (hinweis) hinweis.style.display = '';
+    /* Sichtbarkeit wieder der Bildschleife ueberlassen. */
+    if (this.panels) this.panels.forEach(el => { el.style.visibility = ''; });
+  }
+
+  starteRundgang() {
+    if (this.rundgangAn) return;
+    const knopf = this.startLeiste && this.startLeiste.querySelector('[data-start]');
+    const hinweis = this.startLeiste && this.startLeiste.querySelector('[data-hinweis]');
+    if (knopf) { knopf.disabled = true; knopf.textContent = 'Wird geladen …'; }
+    this.ladeTHREE().then(() => {
+      if (!this.alive) return;
+      this.rundgangAn = true;
+      this.initScene();
+      if (this.renderer) this.resizeGL();
+      if (this.walk) this.walk.style.height = this.bahnHoehe();
+      this.entferneStandbild();
+      /* An den Anfang der Bahn, damit die erste Station auch kommt. */
+      const y = this.walk.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }).catch((e) => {
+      console.error('Rundgang:', e);
+      /* Fehlschlag darf die Seite nicht blockieren — Standbild bleibt stehen. */
+      this.threeLaedt = null;
+      if (knopf) { knopf.disabled = false; knopf.textContent = 'Nochmal versuchen'; }
+      if (hinweis) hinweis.textContent = 'Der Rundgang lässt sich gerade nicht laden.';
+    });
+  }
+
+  /* Wie hoch die Scrollbahn ist. Am Desktop wie gehabt. Auf dem Handy
+     nur gut eine Bildschirmhoehe, solange das Standbild steht — sonst
+     scrollte man an einer leeren Leinwand vorbei. Nach dem Start vier
+     Bildschirmhoehen statt der frueheren zehn. */
+  bahnHoehe() {
+    if (!this.isMobile) return '1800vh';
+    return this.rundgangAn ? '400vh' : '112vh';
   }
 
   setupExtras() {
@@ -495,7 +595,13 @@ class Component extends DCLogic {
     if (this.headCta) this.headCta.style.display = m ? 'none' : 'inline-flex';
     if (!m && this.menu) { this.menu.style.display = 'none'; this.menu.style.opacity = '0'; this.menuOpen = false; document.documentElement.style.overflow = ''; }
     if (this.rail) this.rail.style.display = m ? 'none' : 'flex';
-    if (this.walk) this.walk.style.height = m ? '1000vh' : '1800vh';
+    if (this.walk) this.walk.style.height = this.bahnHoehe();
+    /* Beim Wechsel aufs Breitbild ohne geladene Szene nachziehen. */
+    if (!m && !this.threeLaedt) {
+      this.ladeTHREE().then(() => { if (this.alive) this.initScene(); })
+        .catch(e => console.error('Rundgang:', e));
+      this.entferneStandbild();
+    }
 
 
     if (this.panels) this.panels.forEach(p => {
