@@ -30,6 +30,15 @@
      Kachel beim Ruecksprung aus einer Liste hart "0 neu" an, obwohl dort
      ungelesene Eintraege liegen. */
   var serverNeu = { anfragen: 0, bewerbungen: 0 };
+  /* Zuletzt geloeschter Eintrag, damit "Rueckgaengig" ihn zurueckholen
+     kann. Bewusst nur im Speicher dieser Seite: "endgueltig loeschen"
+     soll auch endgueltig heissen — nach dem Verlassen der Seite ist der
+     Eintrag wirklich fort, es gibt keinen Papierkorb in der Datenbank. */
+  var papierkorb = null;
+  /* Waehrend eines Sprungs ueber die Zurueck-Taste keinen neuen
+     Verlaufseintrag anlegen, sonst kaeme man nie rueckwaerts heraus. */
+  var verlaufAus = false;
+  var gekappt = { anfragen: false, bewerbungen: false };
   /* Was gerade im Notizfeld steht, aber noch nicht gespeichert ist. Ohne
      das war jede getippte Notiz weg, sobald man Status oder Archiv
      anklickte — die Detailansicht wird dabei komplett neu gezeichnet. */
@@ -50,7 +59,25 @@
       body: JSON.stringify(auftrag)
     }).then(function (r) {
       return r.json().then(function (j) {
-        if (!r.ok) throw new Error(j && j.fehler ? j.fehler : 'Fehler ' + r.status);
+        if (!r.ok) {
+          var f = new Error(j && j.fehler ? j.fehler : 'Fehler ' + r.status);
+          /* 401 MITTEN IN DER SITZUNG heisst: das Passwort gilt nicht mehr
+             (geaendert, oder die Seite lag lange offen). Vorher stand dann
+             nur "Passwort falsch" an einer Karte, waehrend die Oberflaeche
+             weiter so tat, als sei man angemeldet.
+             Bei der Anmeldung selbst ist 401 dagegen der Normalfall einer
+             Falscheingabe — dort NICHT abmelden, sonst ueberschreibt die
+             Meldung die eigentliche Fehlermeldung. */
+          if (r.status === 401 && auftrag.was !== 'anmelden') {
+            f.abgemeldet = true;
+            pw = '';
+            daten = { anfragen: null, bewerbungen: null };
+            offen = null; notizEntwurf = null; papierkorb = null;
+            zeigePapierkorb();
+            zeigeAnmeldung('Die Anmeldung gilt nicht mehr. Bitte melden Sie sich erneut an.');
+          }
+          throw f;
+        }
         return j;
       });
     });
@@ -77,6 +104,48 @@
     } catch (e) { return String(s || ''); }
   }
 
+  /* ---------- Verlauf ----------
+     Ohne das fuehrt die Zurueck-Taste aus der Verwaltung heraus — und weil
+     das Passwort nur im Speicher liegt, bedeutet ein Zurueck-und-wieder-vor
+     eine vollstaendige Neuanmeldung. Die Ansichten bekommen deshalb eigene
+     Verlaufseintraege; die Zurueck-Knoepfe in der Seite loesen dieselbe
+     Bewegung aus wie die des Browsers. */
+  function verlaufSetz(z, ersetzen) {
+    if (verlaufAus) return;
+    try {
+      if (ersetzen) history.replaceState(z, '');
+      else history.pushState(z, '');
+    } catch (e) { /* ohne Verlauf funktioniert alles weiter */ }
+  }
+
+  window.addEventListener('popstate', function (e) {
+    if (!pw) return;                       // nicht angemeldet: nichts zu tun
+    var z = e.state || { ansicht: 'uebersicht' };
+    verlaufAus = true;
+    try {
+      if (z.ansicht === 'detail' && z.bereich) {
+        bereich = z.bereich;
+        var f = (daten[bereich] || []).filter(function (r) { return r.id === z.id; })[0];
+        notizEntwurf = null;
+        if (f) { offen = f; zeigeDetail(); } else { offen = null; zeigeListe(false); }
+      } else if (z.ansicht === 'liste' && z.bereich) {
+        bereich = z.bereich; offen = null; notizEntwurf = null; zeigeListe(false);
+      } else {
+        offen = null; notizEntwurf = null; zeigeUebersicht(zaehleNeu());
+      }
+    } finally { verlaufAus = false; }
+  });
+
+  /* Nach jedem Ansichtswechsel den Einstiegspunkt setzen. Ohne das landet
+     die Tastaturbedienung wieder ganz oben am Seitenanfang, und ein
+     Screenreader liest nicht vor, wo man gelandet ist. */
+  function fokusAufUeberschrift() {
+    var h = $('#vw-app h1');
+    if (!h) return;
+    h.setAttribute('tabindex', '-1');
+    try { h.focus({ preventScroll: true }); } catch (e) { h.focus(); }
+  }
+
   /* ---------- Anmeldung ---------- */
   function zeigeAnmeldung(meldung) {
     $('#vw-app').innerHTML =
@@ -99,7 +168,7 @@
       knopf.disabled = true; knopf.textContent = 'Prüfe …';
       pw = $('#vw-pw').value;
       ruf({ was: 'anmelden' })
-        .then(function (a) { serverNeu = a.neu || serverNeu; zeigeUebersicht(a.neu); })
+        .then(function (a) { serverNeu = a.neu || serverNeu; verlaufSetz({ ansicht: 'uebersicht' }, true); zeigeUebersicht(a.neu); })
         .catch(function (f) { pw = ''; zeigeAnmeldung(verstaendlich(f)); });
     });
     $('#vw-pw').focus();
@@ -129,9 +198,11 @@
           'sehen Sie Anfragen und Bewerbungen, können Status und Notiz aber nicht ändern.</p>' +
       '</div>';
     $('#vw-abmelden').addEventListener('click', abmelden);
+    fokusAufUeberschrift();
     Array.prototype.forEach.call(document.querySelectorAll('[data-geh]'), function (b) {
       b.addEventListener('click', function () {
         bereich = b.getAttribute('data-geh'); filter = 'alle'; suche = ''; offen = null;
+        verlaufSetz({ ansicht: 'liste', bereich: bereich });
         zeigeListe(true);
       });
     });
@@ -155,8 +226,9 @@
     if (neuLaden || !daten[bereich]) {
       $('#vw-app').innerHTML = '<div class="vw-mitte"><p class="vw-hint">lädt …</p></div>';
       ruf({ was: 'liste', bereich: bereich })
-        .then(function (a) { daten[bereich] = a.zeilen || []; zeichneListe(); })
+        .then(function (a) { daten[bereich] = a.zeilen || []; gekappt[bereich] = !!a.gekappt; zeichneListe(); })
         .catch(function (f) {
+          if (f && f.abgemeldet) return;
           /* Vorher ersetzte der Fehler die gesamte Oberflaeche durch eine
              Zeile — ohne Rueckweg, ohne zweiten Versuch. Der einzige
              Ausweg war Neuladen, und weil das Passwort nur im Speicher
@@ -223,8 +295,12 @@
             filterKnopf('archiviert', 'Archiv') + '</div>' +
         '</div>' +
         '<div class="vw-karte vw-karte--liste" id="vw-listenkoerper">' + koerper(zeilen, eintrag) + '</div>' +
+        (gekappt[bereich]
+          ? '<p class="vw-hint" style="margin-top:14px">Es werden die neuesten 500 Einträge angezeigt. ' +
+            'Ältere sind über den CSV-Export erreichbar.</p>'
+          : '') +
       '</div>';
-    $('#vw-zurueck').addEventListener('click', function () { zeigeUebersicht(zaehleNeu()); });
+    $('#vw-zurueck').addEventListener('click', function () { history.back(); });
     $('#vw-csv').addEventListener('click', csv);
 
     /* Nur den Listenkoerper neu zeichnen, nicht die ganze Ansicht. Vorher
@@ -246,6 +322,7 @@
       });
     });
     bindeZeilen();
+    fokusAufUeberschrift();
   }
 
   function koerper(zeilen, eintrag) {
@@ -258,7 +335,11 @@
     Array.prototype.forEach.call(document.querySelectorAll('[data-id]'), function (b) {
       b.addEventListener('click', function () {
         offen = (daten[bereich] || []).filter(function (z) { return z.id === b.getAttribute('data-id'); })[0];
-        if (offen) { notizEntwurf = null; zeigeDetail(); }
+        if (offen) {
+          notizEntwurf = null;
+          verlaufSetz({ ansicht: 'detail', bereich: bereich, id: offen.id });
+          zeigeDetail();
+        }
       });
     });
   }
@@ -317,7 +398,8 @@
               '</div>') +
         '</div>' +
       '</div>';
-    $('#vw-zurueck').addEventListener('click', function () { offen = null; notizEntwurf = null; zeichneListe(); });
+    $('#vw-zurueck').addEventListener('click', function () { history.back(); });
+    fokusAufUeberschrift();
 
     /* Die Grenze haengt an der Fensterbreite, nicht am Geraet — am Rechner
        ist sie bei schmalem Fenster oder 150 % Vergroesserung ebenfalls
@@ -388,19 +470,85 @@
       var knopf = this;
       if (!window.confirm('Diesen Eintrag endgültig löschen? Das lässt sich nicht rückgängig machen.')) return;
       laeuft(knopf, true, 'löscht …');
+      var weg = bereich;
       ruf({ was: 'loeschen', bereich: bereich, id: z.id })
         .then(function () {
-          daten[bereich] = (daten[bereich] || []).filter(function (r) { return r.id !== z.id; });
-          offen = null; notizEntwurf = null; zeichneListe();
+          daten[weg] = (daten[weg] || []).filter(function (r) { return r.id !== z.id; });
+          /* Vollstaendige Kopie merken, damit "Rueckgaengig" den Eintrag
+             mit derselben Kennung zurueckschreiben kann — Notiz, Status
+             und Eingangszeit bleiben so erhalten. */
+          papierkorb = { bereich: weg, zeile: z, beschriftung: z.name || 'Eintrag' };
+          offen = null; notizEntwurf = null;
+          zeichneListe();
+          zeigePapierkorb();
         })
-        .catch(function (f) { laeuft(knopf, false); melde(verstaendlich(f), true); });
+        .catch(function (f) {
+          if (f && f.abgemeldet) return;
+          laeuft(knopf, false); melde(verstaendlich(f), true);
+        });
+    });
+  }
+
+  /* ---------- Papierkorb: Rueckgaengig nach dem Loeschen ----------
+     Loeschen ist die einzige Handlung hier, die sich nicht durch eine
+     zweite Handlung aufheben laesst. Ein Bestaetigungsdialog hilft nur
+     gegen Unachtsamkeit, nicht gegen Irrtum: wer den falschen Eintrag
+     offen hat, bestaetigt ihn genauso ueberzeugt. Deshalb dieser
+     Streifen — er sagt zugleich ehrlich, wie lange das Zurueckholen
+     moeglich ist. */
+  function zeigePapierkorb() {
+    var alt = $('#vw-papierkorb');
+    if (alt) alt.remove();
+    if (!papierkorb) return;
+    var s = document.createElement('div');
+    s.id = 'vw-papierkorb';
+    s.className = 'vw-papierkorb';
+    s.setAttribute('role', 'status');
+    s.innerHTML =
+      '<span class="vw-papierkorb__text">' + esc(papierkorb.beschriftung) +
+        ' gelöscht <span class="vw-papierkorb__zusatz">· nur solange diese Seite offen ist wiederherstellbar</span></span>' +
+      '<button class="vw-papierkorb__knopf" id="vw-zurueckholen">Rückgängig</button>' +
+      '<button class="vw-papierkorb__zu" id="vw-pk-zu" aria-label="Hinweis schließen">✕</button>';
+    document.body.appendChild(s);
+    $('#vw-pk-zu').addEventListener('click', function () { papierkorb = null; zeigePapierkorb(); });
+    $('#vw-zurueckholen').addEventListener('click', function () {
+      var knopf = this;
+      var p = papierkorb;
+      knopf.disabled = true; knopf.textContent = 'holt zurück …';
+      ruf({ was: 'zurueckholen', bereich: p.bereich, satz: p.zeile })
+        .then(function () {
+          if (!daten[p.bereich]) daten[p.bereich] = [];
+          daten[p.bereich].push(p.zeile);
+          daten[p.bereich].sort(function (a, b) {
+            return String(b.eingegangen_am).localeCompare(String(a.eingegangen_am));
+          });
+          papierkorb = null;
+          zeigePapierkorb();
+          if (bereich === p.bereich && !offen) zeichneListe();
+        })
+        .catch(function (f) {
+          if (f && f.abgemeldet) return;
+          knopf.disabled = false; knopf.textContent = 'Rückgängig';
+          var t = s.querySelector('.vw-papierkorb__text');
+          if (t) t.textContent = 'Zurückholen fehlgeschlagen: ' + verstaendlich(f);
+        });
     });
   }
 
   /* ---------- CSV ---------- */
   function csv() {
     var zeilen = gefiltert();
-    if (!zeilen.length) return;
+    /* Vorher passierte hier kommentarlos nichts — der Betreiber haette
+       auf einen kaputten Knopf getippt statt auf eine leere Auswahl. */
+    if (!zeilen.length) {
+      var k = $('#vw-csv');
+      if (k) {
+        var alt = k.textContent;
+        k.textContent = 'Nichts zu exportieren';
+        setTimeout(function () { k.textContent = alt; }, 2200);
+      }
+      return;
+    }
     var spalten = ['eingegangen_am', 'status', 'archiviert'].concat(FELDER[bereich].map(function (p) { return p[0]; })).concat(['notiz']);
     /* Anfuehrungszeichen allein genuegen NICHT. Excel und LibreOffice
        werten den ausgepackten Inhalt aus, sobald er mit = + - oder @

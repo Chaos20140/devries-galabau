@@ -24,6 +24,24 @@ const TABELLEN: Record<string, string> = {
   bewerbungen: "galabau_bewerbungen",
 };
 
+/* Welche Spalten beim Wiederherstellen eines geloeschten Eintrags
+   uebernommen werden duerfen. Ohne diese Liste koennte ueber den
+   Wiederherstellen-Weg jede beliebige Spalte gesetzt werden — der
+   Browser schickt den Datensatz, und was der Browser schickt, ist
+   niemals vertrauenswuerdig. Alles ausserhalb der Liste wird verworfen. */
+const SPALTEN: Record<string, string[]> = {
+  anfragen: [
+    "id", "eingegangen_am", "quelle", "betreff", "name", "email", "telefon",
+    "ort", "art", "bereich", "zeitraum", "nachricht", "status", "notiz", "archiviert",
+  ],
+  bewerbungen: [
+    "id", "eingegangen_am", "quelle", "betreff", "name", "email", "telefon",
+    "stelle", "verfuegbar_ab", "nachricht", "status", "notiz", "archiviert",
+  ],
+};
+
+const LISTE_MAX = 500;
+
 const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
@@ -244,8 +262,16 @@ Deno.serve(async (req: Request) => {
     if (!tabelle) return json({ fehler: "unbekannter Bereich" }, 400);
 
     if (was === "liste") {
-      const zeilen = await db(tabelle + "?select=*&order=eingegangen_am.desc&limit=500");
-      return json({ ok: true, zeilen });
+      /* Eine mehr holen als angezeigt wird: nur so laesst sich sagen, ob
+         es noch weitere gibt. Eine stillschweigende Kappung sieht aus wie
+         Vollstaendigkeit — der Betreiber wuerde nie erfahren, dass er
+         nicht alles sieht. */
+      const zeilen = await db(
+        tabelle + "?select=*&order=eingegangen_am.desc&limit=" + (LISTE_MAX + 1),
+      );
+      const alle = Array.isArray(zeilen) ? zeilen : [];
+      const gekappt = alle.length > LISTE_MAX;
+      return json({ ok: true, zeilen: alle.slice(0, LISTE_MAX), gekappt, grenze: LISTE_MAX });
     }
 
     if (was === "aendern") {
@@ -274,6 +300,33 @@ Deno.serve(async (req: Request) => {
       if (!id) return json({ fehler: "keine Kennung" }, 400);
       await db(tabelle + "?id=eq." + encodeURIComponent(id), {
         method: "DELETE",
+        headers: { Prefer: "return=minimal" },
+      });
+      return json({ ok: true });
+    }
+
+    /* Zurueckholen eines gerade geloeschten Eintrags. Der Browser hat ihn
+       noch im Speicher und schickt ihn zurueck; die Kennung bleibt
+       dieselbe, damit Notiz, Status und Eingangszeit erhalten bleiben.
+
+       Bewusst KEIN Papierkorb in der Datenbank: "endgueltig loeschen"
+       soll auch endgueltig heissen. Zurueckholen geht deshalb nur, solange
+       die Seite offen ist — danach ist der Eintrag wirklich fort. */
+    if (was === "zurueckholen") {
+      const roh = körper.satz;
+      if (!roh || typeof roh !== "object" || Array.isArray(roh)) {
+        return json({ fehler: "kein Datensatz" }, 400);
+      }
+      const erlaubt = SPALTEN[bereich] ?? [];
+      const satz: Record<string, unknown> = {};
+      for (const s of erlaubt) {
+        const w = (roh as Record<string, unknown>)[s];
+        if (w !== undefined) satz[s] = w;
+      }
+      if (!satz.id) return json({ fehler: "keine Kennung" }, 400);
+      await db(tabelle, {
+        method: "POST",
+        body: JSON.stringify(satz),
         headers: { Prefer: "return=minimal" },
       });
       return json({ ok: true });

@@ -802,3 +802,40 @@ erweitern statt parallele bauen → 4. Desktop+Mobile im selben Schritt → 5. B
   **Ladefehler war eine Sackgasse** ohne Rückweg, mit englischer Rohmeldung · **fehlgeschlagenes
   Speichern sah aus wie erfolgreiches** (gleiche graue Schrift, kein `role`) · **„nur am
   Rechner"** hing an der Fensterbreite und wurde bei Größenänderung nie neu geprüft.
+
+- **2026-07-31 · Verwaltung ausgebaut (v29).** Abgleich mit der CuraDoma-Verwaltung, an der sich
+  der Aufbau orientieren sollte: strukturell haben wir dasselbe (Anmeldung, Kacheln, Liste mit
+  Suche und Filtern, Detail, CSV). Drei Dinge fehlten, eines davon wichtig.
+  **1. Rückgängig nach dem Löschen.** Löschen war die einzige Handlung, die sich nicht durch eine
+  zweite aufheben lässt. Ein Bestätigungsdialog hilft gegen Unachtsamkeit, aber nicht gegen
+  Irrtum: wer den falschen Eintrag offen hat, bestätigt ihn genauso überzeugt. Jetzt erscheint
+  nach dem Löschen ein Streifen am unteren Rand mit „Rückgängig" — wie bei CuraDoma, aber in
+  unserer Palette. **Bewusst KEIN Papierkorb in der Datenbank:** „endgültig löschen" soll auch
+  endgültig heißen, sonst stimmt der Bestätigungstext nicht mehr und es lägen gelöschte
+  Kundendaten weiter herum. Der Eintrag liegt nur im Speicher der offenen Seite; der Streifen
+  sagt das ausdrücklich. Zurückgeschrieben wird mit **derselben Kennung**, damit Notiz, Status
+  und Eingangszeit erhalten bleiben (nachgemessen).
+  **Serverseitig eine Spalten-Erlaubnisliste**, denn der Browser schickt den Datensatz zurück —
+  und was der Browser schickt, ist nie vertrauenswürdig. Geprüft: ein untergeschobenes
+  `boese_spalte` wird verworfen (Antwort 200), dieselbe Nutzlast direkt an PostgREST scheitert
+  mit `PGRST204`. Ohne Kennung 400, unbekannter Bereich 400, ohne Passwort 401.
+  **2. Zurück-Taste.** Vorher führte sie aus der Verwaltung heraus — und weil das Passwort nur
+  im Speicher liegt, bedeutete das eine vollständige Neuanmeldung. Jetzt haben Übersicht, Liste
+  und Detail eigene Verlaufseinträge; die Zurück-Knöpfe in der Seite lösen dieselbe Bewegung aus
+  wie die des Browsers. Geprüft: Detail → Liste → Übersicht.
+  **3. Abgelaufene Anmeldung.** Eine 401 mitten in der Sitzung stand vorher nur als „Passwort
+  falsch" an einer Karte, während die Oberfläche weiter so tat, als sei man angemeldet. Jetzt
+  sauber zurück zur Anmeldung mit Begründung. **Wichtig dabei:** bei der Anmeldung selbst ist
+  401 der Normalfall einer Falscheingabe — dort darf der Weg nicht greifen, sonst überschreibt
+  er die eigentliche Fehlermeldung.
+  **Kleinere Stille beseitigt:** die Liste war stillschweigend auf 500 Zeilen gekappt (der
+  Server holt jetzt eine mehr, um es überhaupt zu merken, und die Seite sagt es) · der
+  CSV-Knopf tat bei leerer Auswahl kommentarlos nichts (jetzt „Nichts zu exportieren") · nach
+  jedem Ansichtswechsel bekommt die Überschrift den Fokus, sonst landet die Tastaturbedienung
+  wieder am Seitenanfang.
+  **Falle beim Einbauen:** Im 401-Zweig hatte ich `verlaufAus = true` gesetzt und nicht
+  zurückgenommen — der Verlauf wäre nach einer Neuanmeldung tot gewesen. Solche Schalter immer
+  im `finally` oder gar nicht.
+  **Geprüft, 1280 px und 390 px:** Verlauf über drei Ebenen, Löschen mit Zurückholen (Zeile
+  vollständig zurück, gleiche Eingangszeit), Streifen 367 px breit bei 390 px Fenster ohne
+  Überlauf, Bedienelemente 44 px hoch, Handy-Detail weiterhin nur lesend.
