@@ -978,3 +978,30 @@ erweitern statt parallele bauen → 4. Desktop+Mobile im selben Schritt → 5. B
   **Merke:** `[id^="rg-vorspann"]` traf auch den Stilblock des Standbilds, der zufällig
   ähnlich hieß — beim Prüfen sah das nach einem Überbleibsel aus. Der Block heißt jetzt
   `rg-standbild-stil`.
+
+- **2026-07-31 · Vorspann wieder entfernt, Startbild durch ein echtes Foto ersetzt (v34).**
+  **Ladeschirm raus** — auf Zuruf am selben Tag wieder rückgängig gemacht, samt Kopf-Skript
+  und Stilblock. Rückstände geprüft: 0 Treffer für `rg-vorspann`/`dvg-vorspann`.
+  **Das eigentliche Problem war das Bild.** `rg-start` ist ein **Abzug der 3D-Szene** im
+  Hochformat (800 × 1731). Auf einem breiten Bildschirm wurde daraus ein beschnittener,
+  unscharfer Ausschnitt — und inhaltlich zeigte die Startseite eines Gartenbaubetriebs eine
+  Zeichentrickgrafik statt seiner Arbeit. Jetzt `hero-header` (1920 × 1080): echtes
+  Projektfoto, Holzsteg am Teich, Terrakotta — dasselbe Bild, mit dem der Betrieb bisher
+  schon aufgemacht hat.
+  **Zwei Fehler, die ich mir dabei selbst gebaut und gemessen behoben habe:**
+  1. Erst `image-set` mit `1x`/`2x` benutzt. Das wählt nach **Pixeldichte**, nicht nach
+     Fensterbreite — auf einem 1280 px breiten Schirm mit einfacher Dichte nahm es die 800er
+     Datei und zog sie auf 1280. Also **wieder unscharf**, genau das Problem von vorher.
+     Die Größe gehört über eine **Medienabfrage** gewählt; das geht nur im Stilblock, nicht
+     im Inline-Stil.
+  2. Dann `(min-resolution:1.5dppx)` allein — zu grob: ein 390-px-Telefon mit doppelter
+     Dichte hat 780 echte Bildpunkte, dort passt die 800er Datei genau, geladen wurde aber
+     die 329-KB-Datei. Jetzt zweistufig:
+     `(min-width:800px), (min-width:500px) and (min-resolution:1.5dppx)`.
+     Gemessen: 390 px bei Dichte 2 → 85 KB · 1280 px bei Dichte 1 → 329 KB.
+  **Kontrast über dem Foto nachgerechnet**, nicht geschätzt: Bild in eine Leinwand gezeichnet,
+  den Schleier wie im CSS darübergelegt, 27 Punkte hinter der Überschrift abgetastet —
+  schlechtester Wert 9,67 : 1, Median 12,27 : 1.
+  **Merke:** `image-set` ist für Pixeldichte da, nicht für Bildgrößen nach Viewport. Wer
+  Dateigrößen nach der Fensterbreite staffeln will, braucht Medienabfragen — und muss dabei
+  Breite **mal** Dichte rechnen, nicht eines von beidem.

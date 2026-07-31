@@ -48,7 +48,6 @@ class Component extends DCLogic {
        Jetzt steht sofort das Standbild da — echtes Foto, echter Text.
        Der Rundgang startet am Rechner von selbst, sobald die Seite
        gezeichnet ist und feststeht, dass die Grafik ihn auch tragen kann. */
-    this.vorspannBegleiten();
     this.zeigeStandbild();
     if (window.innerWidth >= 820) this.planeAutostart();
     this.raf = requestAnimationFrame(this.tick);
@@ -117,49 +116,13 @@ class Component extends DCLogic {
     this.threeLaedt = new Promise((res, rej) => {
       if (window.THREE) return res();
       const s = document.createElement('script');
-      s.src = 'assets/js/three.min.js?v=33';
+      s.src = 'assets/js/three.min.js?v=34';
       s.async = true;
       s.onload = () => (window.THREE ? res() : rej(new Error('three geladen, aber nicht da')));
       s.onerror = () => rej(new Error('three konnte nicht geladen werden'));
       document.head.appendChild(s);
     });
     return this.threeLaedt;
-  }
-
-  /* Der Vorspann steht im HTML und loest sich per CSS von selbst auf
-     (siehe index.html). Hier passiert nur noch das Beiwerk:
-
-     · die Ziffern hochzaehlen,
-     · den Knoten hinterher aus dem Baum nehmen, damit er nicht als
-       unsichtbare Schicht ueber der Seite liegen bleibt,
-     · vermerken, dass er in dieser Sitzung gelaufen ist.
-
-     Bewusst wird hier NICHTS eingeblendet oder verzoegert. Faellt dieses
-     Skript aus, verschwindet der Vorspann trotzdem — das erledigt die
-     Animation. Die Notbremse unten greift nur, falls die Animation selbst
-     nicht laeuft (etwa in einem Reiter, der im Hintergrund geladen wird:
-     dort stehen Animationen still). */
-  vorspannBegleiten() {
-    const v = document.getElementById('rg-vorspann');
-    if (!v) return;
-    try { sessionStorage.setItem('dvg-vorspann', '1'); } catch (e) { /* ohne Speicher halt jedes Mal */ }
-
-    const zahl = document.getElementById('rg-vorspann__zahl');
-    if (zahl) {
-      const start = performance.now();
-      const dauer = 900;
-      const tick = () => {
-        const p = Math.min(1, (performance.now() - start) / dauer);
-        zahl.textContent = String(Math.round(p * 100)).padStart(3, '0');
-        if (p < 1 && document.getElementById('rg-vorspann')) requestAnimationFrame(tick);
-      };
-      requestAnimationFrame(tick);
-    }
-
-    const weg = () => { if (v.parentNode) v.remove(); };
-    v.addEventListener('animationend', (e) => { if (e.animationName === 'rgVorspannWeg') weg(); });
-    /* Notbremse: steht die Animation still, waere die Seite sonst zu. */
-    setTimeout(weg, 2600);
   }
 
   /* Kann diese Maschine den Rundgang ueberhaupt tragen?
@@ -252,8 +215,10 @@ class Component extends DCLogic {
       'display:flex;flex-direction:column;align-items:center;justify-content:center;' +
       'gap:16px;text-align:center;padding:76px 26px 34px;' +
       'font-family:Outfit,Helvetica,Arial,sans-serif;' +
-      "background-image:linear-gradient(180deg,rgba(246,249,244,.16),rgba(246,249,244,.62) 62%,rgba(246,249,244,.88))," +
-      "url('assets/img/rg-start-800.webp');background-size:cover;background-position:center bottom";
+      /* Das Foto steht im Stilblock weiter unten, nicht hier: nur dort
+         lassen sich Medienabfragen benutzen, und die Groesse muss nach
+         der FENSTERBREITE gewaehlt werden. */
+      'background-size:cover;background-position:center 42%';
     const amRechner = window.innerWidth >= 820;
 
     /* Der Vorspann liegt AUF dem Standbild, nicht davor. Ein vorgeschalteter
@@ -276,7 +241,30 @@ class Component extends DCLogic {
 
          Nur das Logo blendet auf: es ist Schmuck (alt=""), seine
          Sichtbarkeit entscheidet nichts. */
+      /* Ein ECHTES Projektfoto, kein Abzug der 3D-Szene. Vorher lag hier
+         rg-start — ein hochkantes Standbild (800 x 1731) aus dem
+         Rundgang. Auf einem breiten Bildschirm wurde daraus ein
+         beschnittener, unscharfer Ausschnitt, und inhaltlich zeigte die
+         Startseite eines Gartenbaubetriebs eine Zeichentrickgrafik statt
+         seiner Arbeit.
+
+         Die Groesse waehlt eine MEDIENABFRAGE, nicht image-set: image-set
+         entscheidet nach Pixeldichte. Auf einem 1280 px breiten Schirm mit
+         einfacher Dichte haette es die 800er Datei genommen und auf 1280
+         gezogen — also wieder unscharf. */
+      const SCHLEIER = 'linear-gradient(180deg,rgba(246,249,244,.34),' +
+        'rgba(246,249,244,.76) 46%,rgba(246,249,244,.94))';
       stil.textContent =
+        '#rg-standbild{background-image:' + SCHLEIER +
+          ",url('assets/img/hero-header-800.webp')}" +
+        /* Zwei Stufen, nicht eine. "min-resolution" allein ist zu grob:
+           ein 390-px-Telefon mit doppelter Dichte hat 780 echte
+           Bildpunkte — dort passt die 800er Datei genau, und die 329-KB-
+           Datei waere Verschwendung auf der Mobilverbindung. Erst ab
+           500 CSS-Punkten bei hoher Dichte lohnt die grosse Fassung. */
+        '@media (min-width:800px),(min-width:500px) and (min-resolution:1.5dppx){' +
+          '#rg-standbild{background-image:' + SCHLEIER +
+          ",url('assets/img/hero-header-1600.webp')}}" +
         '@keyframes rgHoch{from{transform:translateY(14px)}to{transform:none}}' +
         '@keyframes rgLogo{from{opacity:0;transform:scale(.86)}to{opacity:1;transform:none}}' +
         '#rg-standbild>*{animation:rgHoch .66s cubic-bezier(.22,.61,.36,1) both}' +
