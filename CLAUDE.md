@@ -753,3 +753,52 @@ erweitern statt parallele bauen → 4. Desktop+Mobile im selben Schritt → 5. B
   Umlauten, `<b>` in der Nachricht erscheint in der Verwaltung als Text (0 gerenderte
   Elemente). Bei künstlich blockierter CSP erscheint der Hinweis und es wird nichts
   gespeichert. Kontaktformular nach dem Umbau von `senden()` unverändert in Ordnung.
+
+- **2026-07-31 · Gegenprüfung mit vier Blickwinkeln: 11 Befunde behoben (v28).**
+  56 Prüfagenten über Mail-Vorlagen, Edge Functions und Verwaltung; jeder Befund von zwei
+  Gegeninstanzen auf Widerlegung geprüft. 11 bestätigt, 15 widerlegt. Der CSP-Fehler auf
+  `stellenangebote.html` wurde dabei unabhängig noch einmal gefunden — er steht unter
+  „widerlegt", weil er zwischenzeitlich behoben war.
+  **Der schwerste Befund — die Anmeldebremse war keine.** Sie ließ nur die *Antwort* langsamer
+  werden. Ein `setTimeout` innerhalb einer Anfrage blockiert keine andere: bei 200 parallelen
+  Verbindungen und 8 s Obergrenze waren das rund 25 Rateversuche je Sekunde, also 90 000 pro
+  Stunde. Gegen ein Passwort aus Firmenname und Jahreszahl reicht das in Minuten. Meine
+  dokumentierte Begründung („keine harte Sperre, sonst sperrt man den Betreiber aus") deckte
+  nur eine **globale** Sperre ab — pro Anschluss besteht das Problem nicht.
+  **Behoben in drei Anläufen, jeder gemessen:**
+  1. Grenze je Anschluss, oberhalb davon 429 **ohne Passwortvergleich**. Sequentiell wirksam
+     (ab dem 13. Versuch 429 in 0,28 s), aber bei 30 gleichzeitigen kamen 22 durch.
+  2. Zusätzlicher Zähler im Arbeitsspeicher, der **ohne `await`** hochläuft. Besser, aber von
+     40 gleichzeitigen kamen 26 durch: Supabase startet unter Last **mehrere Instanzen**, jede
+     mit eigenem Speicher — die Grenze vervielfacht sich mit ihrer Zahl.
+  3. **Richtig:** Eintragen und Zählen in *einem* SQL-Aufruf mit `pg_advisory_xact_lock` auf
+     dem Anschluss (`public.verwaltung_versuch`). Damit ist die Reihenfolge dort seriell, wo
+     sie es wirklich ist. Gemessen: **genau 12 von 40** gleichzeitigen Versuchen erreichen den
+     Vergleich. Statt 90 000 Rateversuchen je Stunde sind es 48.
+  **Merke: eine Wartezeit ist keine Begrenzung.** Wer nebenläufig arbeitet, wartet parallel.
+  Und ein Zähler im Arbeitsspeicher einer Funktion, die mehrfach gestartet wird, zählt
+  mehrfach. Serialisieren muss man dort, wo es genau eine Instanz gibt — in der Datenbank.
+  **Ehrlich zum Preis:** oberhalb der Grenze kommt auch das *richtige* Passwort nicht durch,
+  weil es nicht mehr verglichen wird. Beides zusammen geht nicht. Getroffen wird nur der
+  eigene Anschluss, die Sperre läuft nach 15 Minuten ab, und wer nicht warten will, löscht die
+  Zeilen in `verwaltung_versuche`. Nachgewiesen: Sperre → richtiges Passwort 429 → Zeilen
+  gelöscht → sofort wieder 200. Normales Arbeiten bleibt unbeeinträchtigt, weil **jede**
+  erfolgreiche Anfrage die Zählung löscht (20 Aktionen nacheinander ohne Sperre).
+  **Weitere behobene Befunde:** Zählabfrage holte ALLE Zeilen des Zeitfensters statt nur der
+  Anzahl (`count=exact` + `Range: 0-0`) — unter Last richtete sich die Bremse gegen die eigene
+  Datenbank · alte Zeilen wurden nur bei erfolgreicher Anmeldung aufgeräumt, also nie während
+  eines Angriffs · ein `catch {}` setzte die Wartezeit bei Zählfehlern auf den Anfangswert
+  **zurück**, die Abwehr wurde also unter genau der Last schwächer, die ein Angreifer erzeugt
+  (jetzt: Zählfehler → abweisen) · **CSV-Export** entschärft führende `= + - @` (ein Name wie
+  `=HYPERLINK(…)` wurde beim Öffnen in Excel zur Formel; Anführungszeichen schützen davor
+  nicht) · **Betreff mit Umlaut** war nicht regelkonform: denomailer packt den *ganzen*
+  Betreff samt Leerzeichen in ein `=?utf-8?Q?…?=`, was RFC 2047 verbietet — jetzt eigene
+  Kodierung in mehrere kurze Wörter, 5/5 Fälle rundlaufend geprüft · **Eingangszeit** stand
+  als roher UTC-Zeitstempel in der Mail, im Sommer zwei Stunden daneben · getippte **Notiz
+  ging beim Statusklick verloren**, weil die Ansicht neu gezeichnet wurde · **Kachel zeigte
+  „0 neu"** für einen Bereich, der in der Sitzung noch nicht geladen war, und überschrieb
+  damit die Zahl vom Server · **Schreibmarke sprang** bei jedem Tastendruck ans Ende des
+  Suchfelds, weil die ganze Ansicht neu gebaut wurde (jetzt nur der Listenkörper) ·
+  **Ladefehler war eine Sackgasse** ohne Rückweg, mit englischer Rohmeldung · **fehlgeschlagenes
+  Speichern sah aus wie erfolgreiches** (gleiche graue Schrift, kein `role`) · **„nur am
+  Rechner"** hing an der Fensterbreite und wurde bei Größenänderung nie neu geprüft.

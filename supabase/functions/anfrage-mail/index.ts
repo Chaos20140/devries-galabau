@@ -46,6 +46,60 @@ function textsicher(wert: unknown, max = 5000): string {
   return String(wert ?? "").replace(/\r\n?/g, "\n").trim().slice(0, max);
 }
 
+/* Betreffzeilen mit Umlaut regelkonform kodieren (RFC 2047).
+
+   denomailer packt bei einem einzigen Zeichen ausserhalb von ASCII den
+   GESAMTEN Betreff samt Leerzeichen in EIN =?utf-8?Q?...?=. Ein
+   encoded-word darf aber kein Leerzeichen enthalten; strenge Empfaenger
+   zeigen dann den Rohtext ("=?utf-8?Q?Anfrage_Gartenpflege..."). Ausserdem
+   bricht denomailer ab 74 Zeichen mitten im encoded-word um.
+
+   Deshalb kodieren wir selbst: mehrere encoded-words, jedes kurz genug,
+   getrennt durch ein Leerzeichen. Nach RFC 2047 werden benachbarte
+   encoded-words ohne das trennende Leerzeichen zusammengesetzt. Ist der
+   Text reines ASCII, bleibt er unangetastet — dann sieht denomailer
+   nichts zu kodieren und reicht ihn durch. */
+function betreffKodiert(text: string): string {
+  if (!/[^\x20-\x7E]/.test(text)) return text;
+  const enc = new TextEncoder();
+  const teile: string[] = [];
+  let zeichen: string[] = [];
+  let bytes = 0;
+  const abschliessen = () => {
+    if (!zeichen.length) return;
+    const b64 = btoa(String.fromCharCode(...enc.encode(zeichen.join(""))));
+    teile.push("=?UTF-8?B?" + b64 + "?=");
+    zeichen = [];
+    bytes = 0;
+  };
+  /* 45 Bytes ergeben 60 Base64-Zeichen; mit "=?UTF-8?B?" und "?=" bleibt
+     das encoded-word unter den erlaubten 75 Zeichen. Getrennt wird an
+     Zeichengrenzen, damit kein Mehrbyte-Zeichen zerrissen wird. */
+  for (const z of text) {
+    const n = enc.encode(z).length;
+    if (bytes + n > 45) abschliessen();
+    zeichen.push(z);
+    bytes += n;
+  }
+  abschliessen();
+  return teile.join(" ");
+}
+
+/* Zeitpunkt in der Schreibweise, die der Empfaenger erwartet. Vorher stand
+   der rohe UTC-Zeitstempel aus der Datenbank in der Mail
+   ("2026-07-31T08:14:22.517+00:00") — im Sommer zwei Stunden daneben. */
+function zeitpunkt(wert: unknown): string {
+  const s = String(wert ?? "").trim();
+  if (!s) return "";
+  const d = new Date(s);
+  if (isNaN(d.getTime())) return s.slice(0, 40);
+  return new Intl.DateTimeFormat("de-DE", {
+    timeZone: "Europe/Berlin",
+    day: "2-digit", month: "2-digit", year: "numeric",
+    hour: "2-digit", minute: "2-digit",
+  }).format(d) + " Uhr";
+}
+
 /* Vergleich ohne fruehen Abbruch, damit die Laufzeit nichts verraet. */
 function gleich(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
@@ -109,7 +163,7 @@ Deno.serve(async (req: Request) => {
   const vorspann = quelleTab === "bewerbung"
     ? "Über das Bewerbungsformular auf der Website ist eine Bewerbung eingegangen."
     : "Über das Formular auf der Website ist eine neue Anfrage eingegangen.";
-  const eingegangen = kopfsicher(satz.eingegangen_am, 40);
+  const eingegangen = zeitpunkt(satz.eingegangen_am);
   const nachricht = textsicher(satz.nachricht);
 
   const koerperHtml = html({
@@ -133,7 +187,10 @@ Deno.serve(async (req: Request) => {
       to: MAIL_TO,
       replyTo: antwortAn || undefined,
       /* Betreff des Absenders bevorzugen, er ist aussagekraeftiger. */
-      subject: `${betreff || titel}: ${name || "ohne Namen"}`,
+      /* Selbst kodiert — siehe betreffKodiert(). Ohne das macht
+         denomailer aus einem Betreff mit Umlaut ein einziges
+         encoded-word samt Leerzeichen, was nicht regelkonform ist. */
+      subject: betreffKodiert(`${betreff || titel}: ${name || "ohne Namen"}`),
       /* Beides mitschicken: wer HTML abgeschaltet hat, bekommt den Text. */
       content: koerperText,
       html: koerperHtml,
