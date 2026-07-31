@@ -374,6 +374,14 @@
           '<p class="vw-eyebrow">' + esc(datum(z.eingegangen_am)) + '</p>' +
           '<h1 class="vw-h1 vw-h1--klein">' + esc(z.name || '(ohne Namen)') + '</h1>' +
           '<div class="vw-felder">' + FELDER[bereich].map(zeile).join('') + '</div>' +
+          (bereich === 'bewerbungen'
+            ? '<div class="vw-feld"><div class="vw-feld__label">Lebenslauf</div><div class="vw-feld__wert">' +
+                (z.datei
+                  ? '<button class="vw-btn vw-btn--leer" id="vw-datei" style="min-height:40px">' +
+                      esc(z.datei_name || 'Lebenslauf.pdf') + ' öffnen</button>'
+                  : '<span class="vw-hint">Keine Datei mitgeschickt.</span>') +
+              '</div></div>'
+            : '') +
           '<div class="vw-aktionen">' +
             '<a class="vw-btn vw-btn--voll" href="mailto:' + esc(z.email) + '">Antworten</a>' +
             (z.telefon ? '<a class="vw-btn vw-btn--leer" href="tel:' + esc(String(z.telefon).replace(/\s/g, '')) + '">Anrufen</a>' : '') +
@@ -400,6 +408,28 @@
       '</div>';
     $('#vw-zurueck').addEventListener('click', function () { history.back(); });
     fokusAufUeberschrift();
+
+    /* Der Link wird bei jedem Klick neu geholt und gilt nur zwei Minuten.
+       Er steht deshalb nirgends im Markup und landet nicht im Verlauf. */
+    var dateiKnopf = $('#vw-datei');
+    if (dateiKnopf) {
+      dateiKnopf.addEventListener('click', function () {
+        var k = this, alt = k.textContent;
+        k.disabled = true; k.textContent = 'öffnet …';
+        ruf({ was: 'dateilink', bereich: bereich, id: z.id })
+          .then(function (a) {
+            k.disabled = false; k.textContent = alt;
+            var w = window.open(a.link, '_blank', 'noopener');
+            if (!w) k.textContent = 'Bitte Pop-ups erlauben';
+          })
+          .catch(function (f) {
+            if (f && f.abgemeldet) return;
+            k.disabled = false;
+            k.textContent = f && /kein Anhang/.test(f.message)
+              ? 'Datei nicht mehr vorhanden' : 'Fehler: ' + verstaendlich(f);
+          });
+      });
+    }
 
     /* Die Grenze haengt an der Fensterbreite, nicht am Geraet — am Rechner
        ist sie bei schmalem Fenster oder 150 % Vergroesserung ebenfalls
@@ -516,8 +546,11 @@
       var p = papierkorb;
       knopf.disabled = true; knopf.textContent = 'holt zurück …';
       ruf({ was: 'zurueckholen', bereich: p.bereich, satz: p.zeile })
-        .then(function () {
+        .then(function (a) {
           if (!daten[p.bereich]) daten[p.bereich] = [];
+          /* Kam der Lebenslauf nicht mit zurueck, den Verweis entfernen —
+             sonst boete die Verwaltung einen Knopf an, der ins Leere geht. */
+          if (a && a.anhang === false) { p.zeile.datei = null; }
           daten[p.bereich].push(p.zeile);
           daten[p.bereich].sort(function (a, b) {
             return String(b.eingegangen_am).localeCompare(String(a.eingegangen_am));
@@ -549,7 +582,10 @@
       }
       return;
     }
-    var spalten = ['eingegangen_am', 'status', 'archiviert'].concat(FELDER[bereich].map(function (p) { return p[0]; })).concat(['notiz']);
+    var spalten = ['eingegangen_am', 'status', 'archiviert']
+      .concat(FELDER[bereich].map(function (p) { return p[0]; }))
+      .concat(bereich === 'bewerbungen' ? ['datei_name'] : [])
+      .concat(['notiz']);
     /* Anfuehrungszeichen allein genuegen NICHT. Excel und LibreOffice
        werten den ausgepackten Inhalt aus, sobald er mit = + - oder @
        beginnt — und alle Werte hier stammen aus dem oeffentlichen
