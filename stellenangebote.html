@@ -23,7 +23,7 @@
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png?v=1">
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/outfit-600-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/outfit-400-latin.woff2" crossorigin>
-<link rel="stylesheet" href="assets/css/base.css?v=25">
+<link rel="stylesheet" href="assets/css/base.css?v=26">
 <style>
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;background:#EDF3E8;color:#12261A}
@@ -89,6 +89,50 @@
     </div>
   </section>
 
+  <section id="bewerbung" data-screen-label="Bewerbungsformular" style="position:relative;z-index:2;padding:0 clamp(20px,5vw,68px) clamp(40px,6vh,90px)">
+    <div style="max-width:1240px;margin:0 auto;border-radius:clamp(24px,3vw,34px);padding:clamp(26px,4vw,56px);position:relative;overflow:hidden;background:linear-gradient(150deg,#1B4332,#245239 58%,#2C6E49);box-shadow:0 34px 70px -44px rgba(12,29,20,.55)">
+      <div style="position:absolute;right:-110px;top:-110px;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(142,207,79,.4),transparent 68%);pointer-events:none"></div>
+      <div style="position:relative">
+        <p style="margin:0 0 14px;font-size:12px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:#8ECF4F">Initiativbewerbung</p>
+        <h2 style="margin:0;font-size:clamp(26px,3.6vw,52px);line-height:1.02;letter-spacing:-.035em;font-weight:600;color:#F3F7F0;max-width:22ch;text-wrap:pretty">Schreiben Sie uns.</h2>
+        <p style="margin:18px 0 30px;max-width:52ch;font-size:17px;line-height:1.56;color:rgba(243,247,240,.8);text-wrap:pretty">Ein paar Zeilen genügen. Zeugnisse und Lebenslauf können Sie später nachreichen — melden Sie sich einfach.</p>
+        <form data-bewerbung style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:16px">
+          <input type="text" name="hinweisfeld" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
+          <div style="grid-column:1/-1">
+          <label style="display:block">
+            <span style="display:block;margin-bottom:8px;font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#8ECF4F">Ihr Name *</span>
+            <input name="name" required style="width:100%;padding:14px 16px;border-radius:14px;border:1px solid rgba(243,247,240,.24);background:rgba(255,255,255,.1);color:#F3F7F0;font:inherit;font-size:15px">
+          </label>
+          </div>
+          <label style="display:block">
+            <span style="display:block;margin-bottom:8px;font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#8ECF4F">E-Mail *</span>
+            <input name="email" type="email" required style="width:100%;padding:14px 16px;border-radius:14px;border:1px solid rgba(243,247,240,.24);background:rgba(255,255,255,.1);color:#F3F7F0;font:inherit;font-size:15px">
+          </label>
+          <label style="display:block">
+            <span style="display:block;margin-bottom:8px;font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#8ECF4F">Telefon</span>
+            <input name="telefon" type="tel" style="width:100%;padding:14px 16px;border-radius:14px;border:1px solid rgba(243,247,240,.24);background:rgba(255,255,255,.1);color:#F3F7F0;font:inherit;font-size:15px">
+          </label>
+          <label style="display:block">
+            <span style="display:block;margin-bottom:8px;font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#8ECF4F">Wofür bewerben Sie sich?</span>
+            <input name="stelle" placeholder="z. B. Landschaftsgärtner" style="width:100%;padding:14px 16px;border-radius:14px;border:1px solid rgba(243,247,240,.24);background:rgba(255,255,255,.1);color:#F3F7F0;font:inherit;font-size:15px">
+          </label>
+          <label style="display:block">
+            <span style="display:block;margin-bottom:8px;font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#8ECF4F">Verfügbar ab</span>
+            <input name="verfuegbar_ab" placeholder="z. B. sofort" style="width:100%;padding:14px 16px;border-radius:14px;border:1px solid rgba(243,247,240,.24);background:rgba(255,255,255,.1);color:#F3F7F0;font:inherit;font-size:15px">
+          </label>
+          <div style="grid-column:1/-1">
+          <label style="display:block">
+            <span style="display:block;margin-bottom:8px;font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#8ECF4F">Über Sie</span>
+            <textarea name="nachricht" rows="5" placeholder="Was Sie mitbringen und was Sie suchen." style="width:100%;padding:14px 16px;border-radius:14px;border:1px solid rgba(243,247,240,.24);background:rgba(255,255,255,.1);color:#F3F7F0;font:inherit;font-size:15px;resize:vertical"></textarea>
+          </label>
+          </div>
+          <button type="submit" style="grid-column:1/-1;padding:16px 24px;border:none;border-radius:999px;background:#8ECF4F;color:#0F2318;font:inherit;font-size:15px;font-weight:700;cursor:pointer">Bewerbung senden →</button>
+          <p style="grid-column:1/-1;margin:0;font-size:12.5px;line-height:1.5;color:rgba(243,247,240,.74)">Hinweise zur Verarbeitung Ihrer Daten finden Sie in der <a href="datenschutz.html" style="color:#8ECF4F;font-weight:600">Datenschutzerklärung</a>.</p>
+        </form>
+      </div>
+    </div>
+  </section>
+
   <section data-screen-label="Interesse" style="position:relative;z-index:2;padding:0 clamp(20px,5vw,68px) clamp(40px,6vh,90px)">
     <div style="max-width:1240px;margin:0 auto;border-radius:clamp(24px,3vw,34px);padding:clamp(26px,4vw,56px);position:relative;overflow:hidden;background:linear-gradient(150deg,#1B4332,#245239 58%,#2C6E49);box-shadow:0 34px 70px -44px rgba(12,29,20,.55)">
       <div style="position:absolute;right:-110px;top:-110px;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(142,207,79,.4),transparent 68%);pointer-events:none"></div>
@@ -106,8 +150,10 @@
 
   <garden-footer active="Stellenangebote"></garden-footer>
 </div>
-<script src="assets/js/garden-header.js?v=25"></script>
-<script src="assets/js/garden-footer.js?v=25"></script>
-<script src="assets/js/stellenangebote.js?v=25"></script>
+<script src="assets/js/garden-header.js?v=26"></script>
+<script src="assets/js/garden-footer.js?v=26"></script>
+<script src="assets/js/formular.js?v=26"></script>
+<script src="assets/js/stellenangebote.js?v=26"></script>
+<script src="assets/js/stellen-form.js?v=26"></script>
 </body>
 </html>

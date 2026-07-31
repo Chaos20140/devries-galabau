@@ -2,5 +2,6 @@ User-agent: *
 Allow: /
 Disallow: /assets/img/raw/
 Disallow: /.planning/
+Disallow: /verwaltung.html
 
 Sitemap: https://devries-galabau.de/sitemap.xml

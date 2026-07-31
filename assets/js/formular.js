@@ -21,9 +21,10 @@
   "use strict";
 
   var CFG = {
-    url: '',            // z. B. 'https://abcdefghijkl.supabase.co' (ohne Schraegstrich am Ende)
-    key: '',            // anon / publishable key
-    tabelle: 'galabau_anfragen'
+    url: 'https://pvcbgwzqjnzzpehwuywi.supabase.co',
+    key: 'sb_publishable_mOml55je_orXhUm5ltVnQg_xHRVi1MV',
+    tabelle: 'galabau_anfragen',
+    tabelleBewerbung: 'galabau_bewerbungen'
   };
 
   /* ⚠ VORUEBERGEHEND: Formularpost geht NICHT an die Adresse aus dem
@@ -41,7 +42,8 @@
      verbindliche Pruefung macht die Datenbank. */
   var MAX = {
     quelle: 60, betreff: 160, name: 120, email: 200, telefon: 60,
-    ort: 120, art: 40, bereich: 60, zeitraum: 120, nachricht: 5000
+    ort: 120, art: 40, bereich: 60, zeitraum: 120, nachricht: 5000,
+    stelle: 80, verfuegbar_ab: 60
   };
 
   var geladenUm = Date.now();
@@ -97,7 +99,8 @@
     var steuer = { abgebrochen: false };
     var abbruch = setTimeout(function () { steuer.abgebrochen = true; o.mailto(); }, 8000);
 
-    fetch(CFG.url + '/rest/v1/' + encodeURIComponent(CFG.tabelle), {
+    var ziel = o.tabelle === 'bewerbung' ? CFG.tabelleBewerbung : CFG.tabelle;
+    fetch(CFG.url + '/rest/v1/' + encodeURIComponent(ziel), {
       method: 'POST',
       headers: {
         'apikey': CFG.key,
