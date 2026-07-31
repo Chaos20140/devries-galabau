@@ -1005,3 +1005,29 @@ erweitern statt parallele bauen → 4. Desktop+Mobile im selben Schritt → 5. B
   **Merke:** `image-set` ist für Pixeldichte da, nicht für Bildgrößen nach Viewport. Wer
   Dateigrößen nach der Fensterbreite staffeln will, braucht Medienabfragen — und muss dabei
   Breite **mal** Dichte rechnen, nicht eines von beidem.
+
+- **2026-07-31 · Standbild blendet aus statt zu verschwinden; Schleier neu aufgebaut (v35).**
+  Nutzerbefund am Screenshot: der Wechsel zum Rundgang war ein harter Schnitt, und das Foto
+  verschwand nach unten ins Weiße.
+  **1. Übergang.** Vorher entfernte `entferneStandbild()` das Standbild schlagartig — auf
+  schneller Leitung war es nach Sekundenbruchteilen weg. Jetzt: **Mindeststandzeit 2,4 s** ab
+  dem Zeitpunkt, an dem es steht (`standbildSeit`), danach 0,9 s Blende über
+  Deckkraft, leichten Zoom und Weichzeichner. Zwei Bedingungen dabei: die Szene läuft
+  **vorher** schon (sonst blendet man auf eine leere Leinwand), und die Stationstafeln kommen
+  erst am **Ende** der Blende zurück, sonst lägen zwei Textebenen übereinander. Während der
+  Blende `pointer-events:none` — sonst startet ein Klick auf den halb durchsichtigen Knopf
+  noch einmal. `prefers-reduced-motion`: 0,6 s stehen, 0,26 s Blende, ohne Zoom und Weichzeichner.
+  **2. Der Schleier war falsch gebaut.** Ein *gleichmäßiger* Schleier muss so dicht sein, wie
+  es der **schwächste** Punkt verlangt — und der liegt hinter dem 12-px-Kleinlabel. Deckt man
+  damit das ganze Bild ab, verschwindet das Foto. Gemessen: bei .24/.62/.80 kam das Kleinlabel
+  auf **2,31 : 1**. Jetzt zwei Schichten: ein weicher heller Fleck **nur hinter der Textsäule**
+  (Radialverlauf) über einem sehr zurückhaltenden Gesamtschleier (.20/.34/.56). Am Rand bleibt
+  das Foto kräftig.
+  **Alle vier Textgrößen nachgemessen** (Bild in eine Leinwand gezeichnet, beide Schichten wie
+  im CSS darübergelegt, punktweise abgetastet) — erst da fiel auf, dass die Hinweiszeile
+  seitlich aus dem hellen Fleck ragte. Nach Weitung des Flecks und Abdunkeln der Zeile
+  (`#3C5145` → `#26382E`): Kleinlabel 4,97 · Überschrift 13,1 · Fließtext 9,52 ·
+  Hinweiszeile 7,0 — schlechtester Punkt je Element, alle bestanden.
+  **Merke zum Prüfen:** Der Werkzeugaufruf setzt in dieser Umgebung erst **55 s** nach
+  Seitenstart an — ein Zeitfenster von drei Sekunden ist so nie zu beobachten. Lösung: eine
+  Testfassung, die im `<head>` selbst mitschreibt und deren Protokoll man hinterher ausliest.
