@@ -689,3 +689,40 @@ erweitern statt parallele bauen → 4. Desktop+Mobile im selben Schritt → 5. B
   **Bewusst KEINE harte Sperre:** die liesse sich von aussen ausloesen, um den Betreiber
   auszusperren. Ein richtiges Passwort kommt sofort durch und setzt die Zaehlung zurueck.
   Gemessen: 1,6 → 1,8 → 2,6 → 4,1 → 6,2 s bei fuenf Fehlversuchen, richtiges Passwort 0,38 s.
+
+- **2026-07-31 · Mailkette geprüft, Bewerbungen waren stumm, Logo in die Vorlagen.**
+  **1. SMTP:** Secrets sind gesetzt, die Kette läuft bis zum letzten Schritt, dort weist
+  Strato ab: `535 5.7.8 Authentication failed [MSG0037]`. Bevor das dem Passwort
+  zugeschrieben wurde, sind die Alternativen ausgeschlossen worden — MX der Domain ist
+  `smtpin.rzone.de` (also wirklich Strato), Benutzername ist die vollständige Adresse ohne
+  Randleerzeichen, Absenderdomain passt. Bleibt der Passwortwert; das ist Sache des
+  Betreibers. **Merke:** Diese CLI-Fassung hat keinen `functions logs`-Befehl. Den Grund
+  bekommt man, indem die Funktion ihn im `502` zurückgibt — das landet nur in
+  `net._http_response` und die ist ausschließlich über `service_role` lesbar.
+  **Falle dabei:** ein zusätzlicher Verbindungsversuch auf Port 587 in der Diagnose ließ
+  die Funktion in die Zeitgrenze laufen; die Plattform antwortete dann mit `503` **ohne
+  Inhalt**, was wie „SMTP-Secrets fehlen" aussah. Diagnosen schlank halten.
+  **2. Bewerbungen wurden nie gespeichert.** `galabau_bewerbungen` kannte weder `quelle`
+  noch `betreff`, `formular.js` schickt beide bei **jedem** Versand mit → PostgREST
+  `PGRST204`, HTTP 400, stiller Rückfall auf `mailto`. Aufgefallen erst, weil ein Testlauf
+  denselben Datensatz wie das echte Formular schickte. **Merke: mit dem echten Datensatz
+  testen, nicht mit einem selbst gebauten Mindestbeispiel.** Zusätzlich baut die Mail-
+  Funktion den Betreff aus `betreff` — ohne die Spalte trüge jede Bewerbungsmail
+  „Neue Anfrage über die Website". Beide Spalten ergänzt, mit nachziehendem `ALTER`, weil
+  `create table if not exists` eine vorhandene Tabelle unberührt lässt.
+  **3. Markenlogo in beiden Mail-Vorlagen**, als **CID-Anhang**: entfernte Bilder sind in
+  Mailprogrammen standardmäßig blockiert (leerer Kasten bis zum Klick), jeder Abruf verrät
+  den Lesezeitpunkt, und ein Verweis auf die Website bräche beim Domainwechsel. **PNG statt
+  WebP** (versteht kaum ein Mailprogramm), runder Ausschnitt und weißer Ring **ins Bild
+  gebacken**, weil Outlook mit der Word-Engine rendert und `border-radius` ignoriert.
+  Kopfbalken als Tabelle mit zwei Spalten, aus demselben Grund. 128 × 128 für 58 px
+  Anzeige, 2610 Bytes.
+  **Nebenbefund:** eine lange E-Mail-Adresse zwang die Mailkarte auf 347 px Mindestbreite —
+  auf einem 320-px-Telefon stand sie schief. Mit Umbruch im Wort sind es 224 px. **Der
+  zuerst vermutete Grund war falsch:** die 150 px breite Beschriftungsspalte wurde ohnehin
+  auf 109 px gestaucht und war nie die Ursache. Erst messen, dann behaupten.
+  **4. „Verwaltung nicht erreichbar"** war kein Fehler: Seite (200), Skript (200) und
+  Anmeldung (200) arbeiten einwandfrei unter
+  `https://chaos20140.github.io/devries-galabau/verwaltung.html`. Versucht worden war
+  offenbar `devries-galabau.de/verwaltung.html` — diese Domain liefert weiterhin die alte
+  WordPress-Seite aus (Apache/PHP, Elementor), daher 404. Adresse steht jetzt im README.
