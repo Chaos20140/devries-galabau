@@ -116,7 +116,7 @@ class Component extends DCLogic {
     this.threeLaedt = new Promise((res, rej) => {
       if (window.THREE) return res();
       const s = document.createElement('script');
-      s.src = 'assets/js/three.min.js?v=36';
+      s.src = 'assets/js/three.min.js?v=37';
       s.async = true;
       s.onload = () => (window.THREE ? res() : rej(new Error('three geladen, aber nicht da')));
       s.onerror = () => rej(new Error('three konnte nicht geladen werden'));
@@ -175,7 +175,11 @@ class Component extends DCLogic {
          auf 1800vh unter dem Text aufziehen und ihn mitten in eine leere
          Szene schieben. Das Standbild und sein Knopf bleiben stehen; wer
          zurueck nach oben geht, kann von Hand starten. */
-      if (window.scrollY > window.innerHeight * 0.3) return;
+      if (window.scrollY > window.innerHeight * 0.3) {
+        /* Die Zeile "startet jetzt" waere ab hier unwahr. */
+        this.zeigeStartknopf('Rundgang starten', 'Oder einfach weiterlesen.');
+        return;
+      }
       this.starteRundgang(true);
     };
     const nachDemZeichnen = () => {
@@ -186,17 +190,26 @@ class Component extends DCLogic {
     else window.addEventListener('load', nachDemZeichnen, { once: true });
   }
 
-  /* Wenn der Rundgang nicht laufen kann, soll das Standbild nicht so tun,
-     als warte es auf einen Klick. */
-  standbildOhneRundgang(grund) {
+  /* Der Startknopf ist am Rechner ausgeblendet, weil der Rundgang dort
+     von selbst laeuft. Ueberall dort, wo er das NICHT tut, muss er
+     wieder sichtbar werden — sonst kaeme niemand mehr hinein. */
+  zeigeStartknopf(knopfText, hinweisText) {
     if (!this.standbild) return;
     const knopf = this.standbild.querySelector('[data-start]');
     const hinweis = this.standbild.querySelector('[data-hinweis]');
-    if (knopf) knopf.textContent = 'Rundgang trotzdem starten';
-    if (hinweis) {
-      hinweis.textContent = grund +
-        ' Alle Inhalte finden Sie auch weiter unten auf dieser Seite.';
+    if (knopf) {
+      knopf.style.display = 'inline-flex';
+      knopf.disabled = false;
+      if (knopfText) knopf.textContent = knopfText;
     }
+    if (hinweis && hinweisText) hinweis.textContent = hinweisText;
+  }
+
+  /* Wenn der Rundgang nicht laufen kann, soll das Standbild nicht so tun,
+     als warte es auf einen Klick. */
+  standbildOhneRundgang(grund) {
+    this.zeigeStartknopf('Rundgang trotzdem starten',
+      grund + ' Alle Inhalte finden Sie auch weiter unten auf dieser Seite.');
   }
 
   /* Standbild statt Szene: zeigt, was einen erwartet, und startet den
@@ -301,26 +314,32 @@ class Component extends DCLogic {
 
     /* Feste Vorlage, kein eingesetzter Wert. Wortlaut wie die
        Begruessungstafel des Entwurfs. */
+    /* Schlicht gehalten: Logo, Gruss, eine Zeile darunter. Der Knopf
+       steht im Markup, ist aber im Normalfall am Rechner ausgeblendet —
+       dort startet der Rundgang von selbst, und ein Knopf, den niemand
+       druecken muss, lenkt nur ab.
+       Er wird eingeblendet, wo er WIRKLICH gebraucht wird: auf dem Handy
+       (dort laedt die Szene erst auf Tippen), ohne Grafikbeschleunigung
+       und wenn der Selbststart uebersprungen wurde. */
     hero.innerHTML =
-      '<img src="assets/img/rg-logo.webp" alt="" width="72" height="72" decoding="async" ' +
-      'style="width:72px;height:72px;border-radius:50%;object-fit:cover;display:block;' +
-      'box-shadow:0 0 0 3px rgba(255,255,255,.96), 0 14px 34px -12px rgba(9,26,17,.55)">' +
-      '<p style="margin:0;font-size:12px;font-weight:700;letter-spacing:.22em;' +
-      'text-transform:uppercase;color:#2C6E49">Salzhemmendorf · seit 1998</p>' +
-      '<h2 style="margin:0;font-size:clamp(30px,9vw,44px);line-height:1.02;letter-spacing:-.04em;' +
-      'font-weight:600;color:#0F2318">Herzlich <span style="font-family:&quot;Instrument Serif&quot;,Georgia,serif;' +
+      '<img src="assets/img/rg-logo.webp" alt="" width="104" height="104" decoding="async" ' +
+      'style="width:clamp(84px,11vw,116px);height:clamp(84px,11vw,116px);border-radius:50%;' +
+      'object-fit:cover;display:block;' +
+      'box-shadow:0 0 0 4px rgba(255,255,255,.96), 0 18px 42px -14px rgba(9,26,17,.55)">' +
+      '<h2 style="margin:6px 0 0;font-size:clamp(36px,7vw,76px);line-height:1.02;' +
+      'letter-spacing:-.04em;font-weight:600;color:#0F2318">Herzlich ' +
+      '<span style="font-family:&quot;Instrument Serif&quot;,Georgia,serif;' +
       'font-style:italic;font-weight:400;color:#1F5637">Willkommen</span></h2>' +
-      '<p style="margin:0;max-width:32ch;font-size:16px;line-height:1.55;color:#26382E">' +
-      'Seit 1998 Ihr Partner für Gartengestaltung, Bepflanzung, Pflasterarbeiten und Pflege. ' +
-      'Gehen Sie hindurch — der Weg führt an jeder unserer Leistungen vorbei.</p>' +
-      '<button type="button" data-start style="margin-top:10px;min-height:54px;padding:0 30px;' +
+      '<button type="button" data-start style="display:' + (amRechner ? 'none' : 'inline-flex') +
+      ';align-items:center;justify-content:center;margin-top:6px;min-height:54px;padding:0 30px;' +
       'border:none;border-radius:999px;background:linear-gradient(140deg,#2A6E42,#123324);' +
       'color:#F4F9F0;font:inherit;font-size:16px;font-weight:700;cursor:pointer;' +
       'box-shadow:0 18px 40px -16px rgba(18,51,36,.8)">Rundgang starten</button>' +
-      '<p data-hinweis style="margin:0;font-size:12.5px;color:#26382E">' +
+      '<p data-hinweis style="margin:2px 0 0;font-size:clamp(15px,1.5vw,18px);line-height:1.5;' +
+      'color:#26382E">' +
       (amRechner
-        ? 'Der Rundgang startet gleich von selbst · oder einfach weiterscrollen'
-        : 'Lädt einmalig die 3D-Szene · oder einfach weiterscrollen') + '</p>';
+        ? 'Unser Rundgang startet jetzt&nbsp;: )'
+        : 'Tippen Sie, um den Rundgang zu starten') + '</p>';
 
     wurzel.appendChild(hero);
     this.standbild = hero;
@@ -380,7 +399,6 @@ class Component extends DCLogic {
   starteRundgang(automatisch) {
     if (this.rundgangAn) return;
     const knopf = this.startLeiste && this.startLeiste.querySelector('[data-start]');
-    const hinweis = this.startLeiste && this.startLeiste.querySelector('[data-hinweis]');
     if (knopf && !automatisch) { knopf.disabled = true; knopf.textContent = 'Wird geladen …'; }
     this.ladeTHREE().then(() => {
       if (!this.alive) return;
@@ -404,9 +422,9 @@ class Component extends DCLogic {
       this.threeLaedt = null;
       this.dreiDAus = true;
       if (this.walk) this.walk.style.height = this.bahnHoehe();
-      if (knopf) { knopf.disabled = false; knopf.textContent = 'Nochmal versuchen'; }
-      if (hinweis) hinweis.textContent = 'Der Rundgang lässt sich gerade nicht laden. ' +
-        'Alle Inhalte finden Sie auch weiter unten auf dieser Seite.';
+      this.zeigeStartknopf('Nochmal versuchen',
+        'Der Rundgang lässt sich gerade nicht laden. ' +
+        'Alle Inhalte finden Sie auch weiter unten auf dieser Seite.');
     });
   }
 
