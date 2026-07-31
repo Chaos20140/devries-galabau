@@ -9,7 +9,7 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32.png?v=1">
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png?v=1">
-<link rel="stylesheet" href="assets/css/base.css?v=28">
+<link rel="stylesheet" href="assets/css/base.css?v=29">
 <style>
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;background:#EDF3E8;color:#12261A;
@@ -99,6 +99,36 @@
   .vw-aktionen{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
   .vw-bearbeiten{margin-top:26px;padding-top:22px;border-top:1px solid rgba(16,35,26,.12)}
 
+  /* Papierkorb-Streifen: erscheint nach dem Loeschen und bietet
+     "Rueckgaengig" an. Loeschen ist die einzige Handlung hier, die sich
+     nicht durch eine zweite aufheben laesst — ein Bestaetigungsdialog
+     hilft gegen Unachtsamkeit, aber nicht gegen Irrtum. */
+  .vw-papierkorb{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:200;
+    width:min(94vw,470px);display:flex;align-items:center;gap:14px;
+    padding:13px 16px;border-radius:18px;background:#12261A;color:#F4F9F0;
+    box-shadow:0 22px 60px -22px rgba(9,26,17,.75);font-size:14.5px}
+  @media (prefers-reduced-motion: no-preference){
+    .vw-papierkorb{animation:vwHoch .22s ease-out}
+    @keyframes vwHoch{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
+  }
+  .vw-papierkorb__text{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .vw-papierkorb__zusatz{color:rgba(244,249,240,.55)}
+  .vw-papierkorb__knopf{flex:none;min-height:44px;padding:0 6px;background:none;border:none;
+    font:inherit;font-weight:600;color:#A9E06B;cursor:pointer}
+  .vw-papierkorb__knopf:hover{color:#F4F9F0}
+  .vw-papierkorb__knopf[disabled]{opacity:.6;cursor:default}
+  .vw-papierkorb__zu{flex:none;width:44px;height:44px;background:none;border:none;
+    color:rgba(244,249,240,.6);font-size:15px;cursor:pointer}
+  .vw-papierkorb__zu:hover{color:#F4F9F0}
+  /* Der Fokusring aus base.css bleibt sichtbar — dunkler Grund, heller Ring. */
+  .vw-papierkorb :focus-visible{outline:3px solid #A9E06B;outline-offset:2px;border-radius:10px}
+
+  /* Ueberschriften bekommen beim Ansichtswechsel den Fokus. Ohne das
+     Ausblenden zeichnete der Browser dort einen Ring, obwohl niemand
+     mit der Tastatur navigiert. */
+  #vw-app h1:focus{outline:none}
+  #vw-app h1:focus-visible{outline:3px solid #2C6E49;outline-offset:3px;border-radius:6px}
+
   /* Auf dem Telefon nur ansehen: Anfragen und Bewerbungen lesen, aber
      nicht bearbeiten. Die Felder stehen dort untereinander, sonst bricht
      jeder Wert einzeln um. */
@@ -112,6 +142,6 @@
 <body>
 <a class="skip" href="#vw-app">Zum Inhalt springen</a>
 <main id="vw-app"></main>
-<script src="assets/js/verwaltung.js?v=28"></script>
+<script src="assets/js/verwaltung.js?v=29"></script>
 </body>
 </html>
