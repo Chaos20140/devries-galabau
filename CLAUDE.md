@@ -839,3 +839,36 @@ erweitern statt parallele bauen → 4. Desktop+Mobile im selben Schritt → 5. B
   **Geprüft, 1280 px und 390 px:** Verlauf über drei Ebenen, Löschen mit Zurückholen (Zeile
   vollständig zurück, gleiche Eingangszeit), Streifen 367 px breit bei 390 px Fenster ohne
   Überlauf, Bedienelemente 44 px hoch, Handy-Detail weiterhin nur lesend.
+
+- **2026-07-31 · Testdurchlauf beider Formulare, dabei Lebenslauf-Upload gebaut (v30).**
+  Aufgabe war, je eine Kontaktanfrage und eine Bewerbung mit PDF über die Live-Seite zu
+  schicken. Der zweite Teil ging nicht: **das Bewerbungsformular hatte kein Dateifeld**,
+  und Supabase Storage war gar nicht eingerichtet. Nach Rückfrage gebaut.
+  **Rechtelage — der Kern der Sache.** Der öffentliche Schlüssel steht im Quelltext jeder
+  ausgelieferten Seite. Er darf im Speicherbereich deshalb **genau eines**: unter `eingang/`
+  ablegen. Sieben Sonden von außen: hochladen 200 · herunterladen 400 · auflisten `[]`
+  **obwohl die Datei nachweislich daliegt** (die Zeilenrechte filtern sie weg) · öffentlicher
+  Pfad 400 · löschen 400 · Ablegen außerhalb von `eingang/` 400 · andere Dateiart 400.
+  Heruntergeladen wird nur aus der Verwaltung über einen Link, der **zwei Minuten** gilt und
+  bei jedem Klick neu erzeugt wird; ohne Unterschrift 400.
+  **Der Dateiname aus dem Netz wird nie als Pfad benutzt** — gespeichert wird unter einer
+  erzeugten Kennung, der Originalname steht getrennt als reiner Anzeigewert daneben.
+  Größen- und Typgrenze (5 MB, nur PDF) setzt **Supabase selbst** durch, nicht der Browser:
+  eine Prüfung im Browser lässt sich umgehen, die dort nicht.
+  **Löschen und Rückgängig zusammengedacht:** Beim Löschen wandert die Datei nach
+  `papierkorb/`, damit „Rückgängig" auch den Lebenslauf zurückholt — sonst wäre die Zusage
+  nur halb wahr. Aufgeräumt wird bei jeder Anmeldung, alles älter als 24 Stunden. Kommt die
+  Datei nicht mit zurück, wird der Verweis entfernt statt ein toter Knopf angeboten.
+  **Merke (zum zweiten Mal dieselbe Falle beinahe):** `datei` und `datei_name` mussten in
+  `MAX` von `formular.js` eingetragen werden — `kuerzen()` übernimmt **nur** bekannte
+  Schlüssel. Genau daran ist `quelle`/`betreff` schon einmal gescheitert.
+  **Datenschutzabsatz** ergänzt: Freiwilligkeit, Bitte um Verzicht auf entbehrliche Angaben
+  (Gesundheit, Religion, Foto), § 26 Abs. 1 BDSG, technische Beschränkung, Löschung samt
+  24-Stunden-Zwischenbereich und Sechsmonatsfrist.
+  **Ende zu Ende live geprüft:** Kontaktanfrage → `danke.html`, Zeile vollständig mit
+  Umlauten · Bewerbung mit PDF → `danke.html`, Datensatz mit Pfad und Anzeigename, Datei
+  1981 Bytes im Speicher · Verwaltung zeigt „Lebenslauf … öffnen", Link liefert 200,
+  `application/pdf`, beginnt mit `%PDF` · Löschen verschiebt die Datei, Zurückholen bringt
+  sie samt funktionierendem Link wieder. **Merke:** Dateien nie per `delete from
+  storage.objects` entfernen — das löscht nur den Verweis, nicht die Datei. Über die
+  Speicher-Schnittstelle gehen.
