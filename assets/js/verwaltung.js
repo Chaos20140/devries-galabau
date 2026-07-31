@@ -25,6 +25,15 @@
   var filter = 'alle';
   var suche = '';
   var offen = null;
+  /* Zahlen vom Server (Antwort auf "anmelden"). Sie gelten fuer Bereiche,
+     die in dieser Sitzung noch nicht geladen wurden — sonst zeigte die
+     Kachel beim Ruecksprung aus einer Liste hart "0 neu" an, obwohl dort
+     ungelesene Eintraege liegen. */
+  var serverNeu = { anfragen: 0, bewerbungen: 0 };
+  /* Was gerade im Notizfeld steht, aber noch nicht gespeichert ist. Ohne
+     das war jede getippte Notiz weg, sobald man Status oder Archiv
+     anklickte — die Detailansicht wird dabei komplett neu gezeichnet. */
+  var notizEntwurf = null;
 
   var $ = function (s) { return document.querySelector(s); };
   var esc = function (t) {
@@ -90,8 +99,8 @@
       knopf.disabled = true; knopf.textContent = 'Prüfe …';
       pw = $('#vw-pw').value;
       ruf({ was: 'anmelden' })
-        .then(function (a) { zeigeUebersicht(a.neu); })
-        .catch(function (f) { pw = ''; zeigeAnmeldung(f.message); });
+        .then(function (a) { serverNeu = a.neu || serverNeu; zeigeUebersicht(a.neu); })
+        .catch(function (f) { pw = ''; zeigeAnmeldung(verstaendlich(f)); });
     });
     $('#vw-pw').focus();
   }
@@ -128,7 +137,18 @@
     });
   }
 
-  function abmelden() { pw = ''; daten = { anfragen: null, bewerbungen: null }; zeigeAnmeldung(''); }
+  function abmelden() { pw = ''; daten = { anfragen: null, bewerbungen: null }; notizEntwurf = null; zeigeAnmeldung(''); }
+
+  /* Die Meldungen von fetch sind englisch und sagen dem Betreiber nichts
+     ("Failed to fetch", "Load failed"). Die Meldungen der Funktion selbst
+     sind bereits deutsch und werden durchgereicht. */
+  function verstaendlich(f) {
+    var m = (f && f.message) || '';
+    if (/failed to fetch|load failed|networkerror/i.test(m)) {
+      return 'Keine Verbindung zum Server. Bitte Internetverbindung prüfen und es noch einmal versuchen.';
+    }
+    return m || 'Unbekannter Fehler.';
+  }
 
   /* ---------- Liste ---------- */
   function zeigeListe(neuLaden) {
@@ -137,7 +157,21 @@
       ruf({ was: 'liste', bereich: bereich })
         .then(function (a) { daten[bereich] = a.zeilen || []; zeichneListe(); })
         .catch(function (f) {
-          $('#vw-app').innerHTML = '<div class="vw-mitte"><p class="vw-fehler">' + esc(f.message) + '</p></div>';
+          /* Vorher ersetzte der Fehler die gesamte Oberflaeche durch eine
+             Zeile — ohne Rueckweg, ohne zweiten Versuch. Der einzige
+             Ausweg war Neuladen, und weil das Passwort nur im Speicher
+             liegt, hiess das: komplett neu anmelden. */
+          $('#vw-app').innerHTML =
+            '<div class="vw-mitte"><div class="vw-karte">' +
+              '<h1 class="vw-h1 vw-h1--klein">Liste konnte nicht geladen werden</h1>' +
+              '<p class="vw-fehler" role="alert">' + esc(verstaendlich(f)) + '</p>' +
+              '<div class="vw-aktionen">' +
+                '<button class="vw-btn vw-btn--voll" id="vw-nochmal">Erneut versuchen</button>' +
+                '<button class="vw-btn vw-btn--leer" id="vw-zurueck">← Übersicht</button>' +
+              '</div>' +
+            '</div></div>';
+          $('#vw-nochmal').addEventListener('click', function () { zeigeListe(true); });
+          $('#vw-zurueck').addEventListener('click', function () { zeigeUebersicht(zaehleNeu()); });
         });
       return;
     }
@@ -188,30 +222,58 @@
             filterKnopf('in_arbeit', 'In Arbeit') + filterKnopf('erledigt', 'Erledigt') +
             filterKnopf('archiviert', 'Archiv') + '</div>' +
         '</div>' +
-        '<div class="vw-karte vw-karte--liste">' +
-          (zeilen.length ? '<ul class="vw-liste">' + zeilen.map(eintrag).join('') + '</ul>'
-            : '<p class="vw-hint" style="padding:22px">Keine Einträge.</p>') +
-        '</div>' +
+        '<div class="vw-karte vw-karte--liste" id="vw-listenkoerper">' + koerper(zeilen, eintrag) + '</div>' +
       '</div>';
     $('#vw-zurueck').addEventListener('click', function () { zeigeUebersicht(zaehleNeu()); });
     $('#vw-csv').addEventListener('click', csv);
-    $('#vw-suche').addEventListener('input', function (e) { suche = e.target.value; zeichneListe(); $('#vw-suche').focus(); });
+
+    /* Nur den Listenkoerper neu zeichnen, nicht die ganze Ansicht. Vorher
+       wurde bei jedem Tastendruck auch das Suchfeld neu erzeugt — die
+       Schreibmarke sprang damit ans Ende und eine Korrektur mitten im
+       Wort war unmoeglich. */
+    var neuZeichnen = function () {
+      $('#vw-listenkoerper').innerHTML = koerper(gefiltert(), eintrag);
+      bindeZeilen();
+    };
+    $('#vw-suche').addEventListener('input', function (e) { suche = e.target.value; neuZeichnen(); });
     Array.prototype.forEach.call(document.querySelectorAll('[data-filter]'), function (b) {
-      b.addEventListener('click', function () { filter = b.getAttribute('data-filter'); zeichneListe(); });
+      b.addEventListener('click', function () {
+        filter = b.getAttribute('data-filter');
+        Array.prototype.forEach.call(document.querySelectorAll('[data-filter]'), function (x) {
+          x.classList.toggle('vw-chip--an', x.getAttribute('data-filter') === filter);
+        });
+        neuZeichnen();
+      });
     });
+    bindeZeilen();
+  }
+
+  function koerper(zeilen, eintrag) {
+    return zeilen.length
+      ? '<ul class="vw-liste">' + zeilen.map(eintrag).join('') + '</ul>'
+      : '<p class="vw-hint" style="padding:22px">Keine Einträge.</p>';
+  }
+
+  function bindeZeilen() {
     Array.prototype.forEach.call(document.querySelectorAll('[data-id]'), function (b) {
       b.addEventListener('click', function () {
         offen = (daten[bereich] || []).filter(function (z) { return z.id === b.getAttribute('data-id'); })[0];
-        if (offen) zeigeDetail();
+        if (offen) { notizEntwurf = null; zeigeDetail(); }
       });
     });
   }
 
+  /* Fuer geladene Bereiche aus dem Zwischenspeicher rechnen — dort ist die
+     Zahl aktueller als die vom Anmelden. Fuer noch nicht geladene die
+     Server-Zahl behalten, NICHT null zu 0 machen. */
   function zaehleNeu() {
     var z = function (b) {
       return (daten[b] || []).filter(function (r) { return (r.status || 'neu') === 'neu' && !r.archiviert; }).length;
     };
-    return { anfragen: daten.anfragen ? z('anfragen') : 0, bewerbungen: daten.bewerbungen ? z('bewerbungen') : 0 };
+    return {
+      anfragen: daten.anfragen ? z('anfragen') : (serverNeu.anfragen || 0),
+      bewerbungen: daten.bewerbungen ? z('bewerbungen') : (serverNeu.bewerbungen || 0)
+    };
   }
 
   /* ---------- Detail ---------- */
@@ -244,48 +306,94 @@
                     '" data-status="' + s[0] + '">' + s[1] + '</button>';
                 }).join('') + '</div>' +
                 '<label class="vw-feld__label" for="vw-notiz" style="margin-top:16px;display:block">Interne Notiz</label>' +
-                '<textarea class="vw-input" id="vw-notiz" rows="3">' + esc(z.notiz || '') + '</textarea>' +
+                '<textarea class="vw-input" id="vw-notiz" rows="3">' +
+                  esc(notizEntwurf !== null ? notizEntwurf : (z.notiz || '')) + '</textarea>' +
                 '<div class="vw-aktionen" style="margin-top:12px">' +
                   '<button class="vw-btn vw-btn--leer" id="vw-notiz-speichern">Notiz speichern</button>' +
                   '<button class="vw-btn vw-btn--leer" id="vw-archiv">' + (z.archiviert ? 'Aus dem Archiv holen' : 'Archivieren') + '</button>' +
                   '<button class="vw-btn vw-btn--warnung" id="vw-loeschen">Löschen</button>' +
                 '</div>' +
-                '<p class="vw-hint" id="vw-status-meldung" style="margin-top:10px"></p>' +
+                '<p class="vw-hint" id="vw-status-meldung" role="status" aria-live="polite" style="margin-top:10px"></p>' +
               '</div>') +
         '</div>' +
       '</div>';
-    $('#vw-zurueck').addEventListener('click', function () { offen = null; zeichneListe(); });
+    $('#vw-zurueck').addEventListener('click', function () { offen = null; notizEntwurf = null; zeichneListe(); });
+
+    /* Die Grenze haengt an der Fensterbreite, nicht am Geraet — am Rechner
+       ist sie bei schmalem Fenster oder 150 % Vergroesserung ebenfalls
+       unterschritten. Wird die Breite geaendert, muss die Ansicht deshalb
+       nachziehen; vorher blieb der einmal gewaehlte Zustand stehen.
+       Das ist reine Ergonomie, KEINE Schutzmassnahme: die Funktion nimmt
+       Aenderungen von jedem Geraet an, denn es ist dasselbe Passwort. */
+    if (!zeigeDetail._beobachtet) {
+      var mq = window.matchMedia('(max-width: 860px)');
+      var reagiere = function () { if (offen) zeigeDetail(); };
+      if (mq.addEventListener) mq.addEventListener('change', reagiere);
+      else if (mq.addListener) mq.addListener(reagiere);
+      zeigeDetail._beobachtet = true;
+    }
     if (klein) return;
 
-    var melde = function (t) { $('#vw-status-meldung').textContent = t; };
+    var feld = $('#vw-status-meldung');
+    var melde = function (t, istFehler) {
+      feld.textContent = t;
+      feld.className = istFehler ? 'vw-fehler' : 'vw-hint';
+      feld.setAttribute('role', istFehler ? 'alert' : 'status');
+    };
+    /* Waehrend des Speicherns passierte sichtbar nichts — bei einem
+       Kaltstart der Funktion ein bis drei Sekunden lang. */
+    var laeuft = function (knopf, an, text) {
+      if (!knopf) return;
+      knopf.disabled = an;
+      if (an) { knopf.dataset.alt = knopf.textContent; knopf.textContent = text; }
+      else if (knopf.dataset.alt) { knopf.textContent = knopf.dataset.alt; }
+    };
+
+    $('#vw-notiz').addEventListener('input', function (e) { notizEntwurf = e.target.value; });
+
     Array.prototype.forEach.call(document.querySelectorAll('[data-status]'), function (b) {
       b.addEventListener('click', function () {
         var s = b.getAttribute('data-status');
+        /* Was im Notizfeld steht, vor dem Neuzeichnen sichern. */
+        var stand = $('#vw-notiz');
+        if (stand) notizEntwurf = stand.value;
+        laeuft(b, true, 'ändert …');
         ruf({ was: 'aendern', bereich: bereich, id: z.id, status: s })
           .then(function () { z.status = s; zeigeDetail(); })
-          .catch(function (f) { melde(f.message); });
+          .catch(function (f) { laeuft(b, false); melde(verstaendlich(f), true); });
       });
     });
     $('#vw-notiz-speichern').addEventListener('click', function () {
+      var knopf = this;
       var n = $('#vw-notiz').value;
+      laeuft(knopf, true, 'speichert …');
       ruf({ was: 'aendern', bereich: bereich, id: z.id, notiz: n })
-        .then(function () { z.notiz = n; melde('Notiz gespeichert.'); })
-        .catch(function (f) { melde(f.message); });
+        .then(function () {
+          z.notiz = n; notizEntwurf = null;
+          laeuft(knopf, false); melde('Notiz gespeichert.', false);
+        })
+        .catch(function (f) { laeuft(knopf, false); melde(verstaendlich(f), true); });
     });
     $('#vw-archiv').addEventListener('click', function () {
+      var knopf = this;
       var neu = !z.archiviert;
+      var stand = $('#vw-notiz');
+      if (stand) notizEntwurf = stand.value;
+      laeuft(knopf, true, 'ändert …');
       ruf({ was: 'aendern', bereich: bereich, id: z.id, archiviert: neu })
         .then(function () { z.archiviert = neu; zeigeDetail(); })
-        .catch(function (f) { melde(f.message); });
+        .catch(function (f) { laeuft(knopf, false); melde(verstaendlich(f), true); });
     });
     $('#vw-loeschen').addEventListener('click', function () {
+      var knopf = this;
       if (!window.confirm('Diesen Eintrag endgültig löschen? Das lässt sich nicht rückgängig machen.')) return;
+      laeuft(knopf, true, 'löscht …');
       ruf({ was: 'loeschen', bereich: bereich, id: z.id })
         .then(function () {
           daten[bereich] = (daten[bereich] || []).filter(function (r) { return r.id !== z.id; });
-          offen = null; zeichneListe();
+          offen = null; notizEntwurf = null; zeichneListe();
         })
-        .catch(function (f) { melde(f.message); });
+        .catch(function (f) { laeuft(knopf, false); melde(verstaendlich(f), true); });
     });
   }
 
@@ -294,7 +402,17 @@
     var zeilen = gefiltert();
     if (!zeilen.length) return;
     var spalten = ['eingegangen_am', 'status', 'archiviert'].concat(FELDER[bereich].map(function (p) { return p[0]; })).concat(['notiz']);
-    var zelle = function (w) { return '"' + String(w == null ? '' : w).replace(/"/g, '""') + '"'; };
+    /* Anfuehrungszeichen allein genuegen NICHT. Excel und LibreOffice
+       werten den ausgepackten Inhalt aus, sobald er mit = + - oder @
+       beginnt — und alle Werte hier stammen aus dem oeffentlichen
+       Formular. Ein Name wie =HYPERLINK("http://…";"Rechnung") wuerde
+       beim Oeffnen der Datei zu einem anklickbaren Link. Das vorangestellte
+       Apostroph macht daraus wieder Text; Excel zeigt es nicht an. */
+    var zelle = function (w) {
+      var s = String(w == null ? '' : w);
+      if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+      return '"' + s.replace(/"/g, '""') + '"';
+    };
     var text = '﻿' + spalten.join(';') + '\n' +
       zeilen.map(function (z) { return spalten.map(function (s) { return zelle(z[s]); }).join(';'); }).join('\n');
     var a = document.createElement('a');
