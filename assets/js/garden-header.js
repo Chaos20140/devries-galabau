@@ -51,9 +51,12 @@
         'a{text-decoration:none}' +
         '@keyframes ghHalo{0%,100%{transform:scale(.9);opacity:.5}50%{transform:scale(1.1);opacity:.95}}' +
         '@keyframes ghBreathe{0%,100%{transform:scale(.85);opacity:.75}50%{transform:scale(1.2);opacity:1}}' +
+        /* Kopfzeile bewusst fast deckend: ueber der 3D-Szene liess die
+           fruehere Deckung von .7 bis .86 den blauen Himmel durch, die
+           Logokachel wirkte dann selbst blau. */
         '.gh-head{position:fixed;top:0;left:0;right:0;z-index:40;display:flex;align-items:center;gap:clamp(10px,2vw,26px);padding:14px clamp(14px,3vw,34px);transition:padding .5s cubic-bezier(.16,1,.3,1)}' +
         '.gh-head.gh-tight{padding:8px clamp(12px,2.4vw,26px)}' +
-        '.gh-brand{flex:none;display:flex;align-items:center;gap:13px;color:#0B1A11;padding:9px 20px 9px 9px;border-radius:999px;background:linear-gradient(150deg,rgba(255,255,255,.9),rgba(255,255,255,.7));backdrop-filter:blur(22px) saturate(1.8);border:1px solid rgba(255,255,255,.9);box-shadow:0 12px 34px -14px rgba(9,26,17,.55), inset 0 1px 0 rgba(255,255,255,1)}' +
+        '.gh-brand{flex:none;display:flex;align-items:center;gap:13px;color:#0B1A11;padding:9px 20px 9px 9px;border-radius:999px;background:linear-gradient(150deg,rgba(255,255,255,.985),rgba(255,255,255,.94));backdrop-filter:blur(22px) saturate(1.8);border:1px solid rgba(255,255,255,.9);box-shadow:0 12px 34px -14px rgba(9,26,17,.55), inset 0 1px 0 rgba(255,255,255,1)}' +
         '.gh-mark{position:relative;width:40px;height:40px;display:block;flex:none}' +
         '.gh-mark i{position:absolute;left:-6px;top:-6px;width:52px;height:52px;border-radius:50%;background:radial-gradient(circle,rgba(142,207,79,.5),rgba(142,207,79,0) 70%);animation:ghHalo 3.2s ease-in-out infinite}' +
         '.gh-mark img{position:relative;width:40px;height:40px;border-radius:50%;object-fit:cover;display:block;box-shadow:0 0 0 2px rgba(255,255,255,.95), 0 4px 14px -4px rgba(9,26,17,.5)}' +
@@ -76,7 +79,7 @@
         '.gh-item{color:#0F2418;font-size:14.5px;font-weight:500;padding:11px 15px;border-radius:13px;transition:background .25s ease,color .25s ease;white-space:nowrap}' +
         '.gh-item:hover{background:rgba(31,86,55,.1);color:#1B4332}' +
         '.gh-on2{background:rgba(31,86,55,.12);font-weight:600;color:#1B4332}' +
-        '.gh-burger{display:none;flex:none;align-items:center;justify-content:center;width:48px;height:48px;border-radius:999px;border:1px solid rgba(255,255,255,.9);background:rgba(255,255,255,.86);box-shadow:0 12px 34px -14px rgba(9,26,17,.5);cursor:pointer;padding:0}' +
+        '.gh-burger{display:none;flex:none;align-items:center;justify-content:center;width:48px;height:48px;border-radius:999px;border:1px solid rgba(255,255,255,.9);background:rgba(255,255,255,.97);box-shadow:0 12px 34px -14px rgba(9,26,17,.5);cursor:pointer;padding:0}' +
         '.gh-burger i{display:flex;flex-direction:column;gap:5px;align-items:center}' +
         '.gh-burger b{display:block;width:20px;height:2px;border-radius:2px;background:#0F2418;transition:transform .4s ease,opacity .3s ease}' +
         '.gh-cta{flex:none;position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:10px;background:linear-gradient(140deg,#2A6E42,#123324);color:#F4F9F0;font-size:15px;font-weight:700;padding:15px 26px;border-radius:999px;border:1px solid rgba(255,255,255,.2);box-shadow:0 16px 38px -14px rgba(18,51,36,.85), inset 0 1px 0 rgba(255,255,255,.28);white-space:nowrap}' +
