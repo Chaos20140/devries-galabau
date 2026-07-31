@@ -77,6 +77,38 @@
     return Date.now() - geladenUm < 2500;          // zu schnell abgeschickt
   }
 
+  /* Der Rueckfall auf mailto war bisher voellig stumm: schlaegt der Aufruf
+     fehl, setzt formular.js window.location.href auf eine mailto-Adresse.
+     Ist kein E-Mail-Programm hinterlegt — auf vielen Rechnern und in jedem
+     Testbrowser der Fall — passiert daraufhin sichtbar NICHTS. Der Besucher
+     steht vor einem Formular, das auf den Knopfdruck nicht reagiert.
+     Genau so blieb unbemerkt, dass auf stellenangebote.html die CSP den
+     Aufruf zu Supabase blockierte: kein Fehler, keine Meldung, keine Zeile
+     in der Datenbank. Deshalb sagt der Rueckfall jetzt Bescheid. */
+  var HINWEIS_ADRESSE = 'info@devries-galabau.de';   // immer die des Betriebs
+
+  function rueckfall(o, grund) {
+    if (grund && window.console && console.warn) {
+      console.warn('[Formular] Direktversand nicht moeglich (' + grund + '), es wird das E-Mail-Programm geoeffnet.');
+    }
+    o.mailto();
+    if (!o.form) return;
+    /* Kurz warten: hat sich ein Mailprogramm geoeffnet, ist das in Ordnung —
+       der Hinweis stoert dann nicht, er bestaetigt nur. Tut sich nichts, ist
+       er die einzige Rueckmeldung, die der Besucher bekommt. */
+    setTimeout(function () {
+      if (o.form.querySelector('[data-versandhinweis]')) return;
+      var p = document.createElement('p');
+      p.setAttribute('data-versandhinweis', '');
+      p.setAttribute('role', 'status');
+      p.style.cssText = 'margin:14px 0 0;font-size:14.5px;line-height:1.55;color:#4A5F52';
+      p.textContent = 'Ihr E-Mail-Programm sollte sich mit der fertigen Nachricht geöffnet haben. '
+        + 'Falls sich nichts tut, schreiben Sie uns bitte direkt an ' + HINWEIS_ADRESSE
+        + ' oder rufen Sie an: 05153 1552.';
+      o.form.appendChild(p);
+    }, 1200);
+  }
+
   /**
    * @param {Object}   o
    * @param {HTMLFormElement} o.form     Formular (fuer den Honigtopf)
@@ -93,11 +125,18 @@
        Ein Roboter folgt keinem mailto — ein zu Unrecht verdaechtigter
        Mensch bekommt seine Nachricht so trotzdem los. Stillschweigend
        verwerfen waere schlimmer als jeder Spam. */
-    if (verdaechtig(o.form) || !konfiguriert()) { o.mailto(); return; }
+    if (verdaechtig(o.form) || !konfiguriert()) {
+      /* Ohne Grund im Protokoll: das ist der geplante Weg, kein Fehler. */
+      rueckfall(o, konfiguriert() ? null : 'nicht eingerichtet');
+      return;
+    }
 
     /* Reihenfolge: steuer muss vor dem Zeitgeber stehen. */
     var steuer = { abgebrochen: false };
-    var abbruch = setTimeout(function () { steuer.abgebrochen = true; o.mailto(); }, 8000);
+    var abbruch = setTimeout(function () {
+      steuer.abgebrochen = true;
+      rueckfall(o, 'Zeitueberschreitung nach 8 s');
+    }, 8000);
 
     var ziel = o.tabelle === 'bewerbung' ? CFG.tabelleBewerbung : CFG.tabelle;
     fetch(CFG.url + '/rest/v1/' + encodeURIComponent(ziel), {
@@ -114,10 +153,14 @@
       clearTimeout(abbruch);
       if (steuer.abgebrochen) return;
       if (r.ok) { if (o.danach) o.danach(); else window.location.href = 'danke.html'; }
-      else o.mailto();
-    }).catch(function () {
+      else rueckfall(o, 'Server antwortete ' + r.status);
+    }).catch(function (f) {
       clearTimeout(abbruch);
-      if (!steuer.abgebrochen) o.mailto();
+      /* Hier landet auch eine von der CSP blockierte Verbindung. Der Browser
+         nennt den Grund nicht — deshalb steht er im Protokoll unter dem, was
+         wir wissen. Erste Anlaufstelle bei "Formular tut nichts": ob
+         connect-src dieser Seite die Supabase-Adresse enthaelt. */
+      if (!steuer.abgebrochen) rueckfall(o, 'Verbindung fehlgeschlagen — CSP oder Netz? ' + (f && f.message));
     });
   }
 
