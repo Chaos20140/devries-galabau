@@ -102,7 +102,7 @@ class Component extends DCLogic {
     this.threeLaedt = new Promise((res, rej) => {
       if (window.THREE) return res();
       const s = document.createElement('script');
-      s.src = 'assets/js/three.min.js?v=22';
+      s.src = 'assets/js/three.min.js?v=24';
       s.async = true;
       s.onload = () => (window.THREE ? res() : rej(new Error('three geladen, aber nicht da')));
       s.onerror = () => rej(new Error('three konnte nicht geladen werden'));
@@ -114,77 +114,60 @@ class Component extends DCLogic {
   /* Standbild statt Szene: zeigt, was einen erwartet, und startet den
      Rundgang erst auf Tippen. Wer nicht tippt, scrollt eine Bildschirmhoehe
      weiter und ist bei den Leistungen — ohne 146 KB geladen zu haben. */
-  /* Muss VOR dem fruehen Ausstieg von tick laufen. Der greift, sobald
-     #rg-content oben ankommt — bei einer nur 112vh kurzen Bahn also
-     sofort. Zuerst stand dieser Block dahinter und wurde nie erreicht:
-     Startknopf und Begruessungstafel folgten die ganze Seite hinunter,
-     weil beide fest im Bild liegen. */
-  standbildPflegen() {
-    if (!this.standbild || !this.walk) return;
-    const rb = this.walk.getBoundingClientRect();
-    const drin = rb.bottom > window.innerHeight * 0.55;
-    if (drin === this.standbildAn) return;
-    this.standbildAn = drin;
-    this.standbild.style.display = drin ? 'block' : 'none';
-    if (this.startLeiste) this.startLeiste.style.display = drin ? 'flex' : 'none';
-    if (this.panels && this.panels[0]) {
-      this.panels[0].style.opacity = drin ? '1' : '0';
-      this.panels[0].style.visibility = drin ? 'visible' : 'hidden';
-    }
-  }
-
   zeigeStandbild() {
     if (this.standbild || !this.walk) return;
+    const wurzel = this.walk.parentElement;
+    if (!wurzel) return;
 
-    /* Nur Hintergrund und Knopf — den Begruessungstext liefert die erste
-       Station des Entwurfs. Ein zweiter eigener Text lag frueher darunter
-       und war unleserlich, weil die Tafel (z-index 20) darueber liegt. */
-    const bg = document.createElement('div');
-    bg.id = 'rg-standbild';
-    bg.style.cssText = 'position:fixed;inset:0;z-index:2;pointer-events:none;' +
-      "background-image:linear-gradient(180deg,rgba(246,249,244,.28),rgba(246,249,244,.72))," +
+    /* EIN eigenstaendiger Block, absolut im Seitenfluss verankert. Er
+       scrollt weg wie jeder andere Abschnitt — kein Nachfuehren per
+       Skript, kein Auftauchen an falscher Stelle.
+       Die Tafelschicht des Entwurfs (#rg-stations) wird solange ganz
+       ausgeblendet: sie liegt fest im Bild, und ein Umhaengen auf
+       absolute erwies sich als unzuverlaessig (Hoehe blieb 0). So kann
+       auch kein spaeter feuernder Zeitgeber Stationstexte ueber fremde
+       Abschnitte legen. */
+    const hero = document.createElement('div');
+    hero.id = 'rg-standbild';
+    hero.style.cssText = 'position:absolute;left:0;right:0;top:0;height:100vh;z-index:16;' +
+      'display:flex;flex-direction:column;align-items:center;justify-content:center;' +
+      'gap:16px;text-align:center;padding:76px 26px 34px;' +
+      'font-family:Outfit,Helvetica,Arial,sans-serif;' +
+      "background-image:linear-gradient(180deg,rgba(246,249,244,.3),rgba(246,249,244,.78))," +
       "url('assets/img/rg-header-800.webp');background-size:cover;background-position:center";
-
-    const leiste = document.createElement('div');
-    leiste.id = 'rg-startknopf';
-    /* An body angehaengt — die Schriftfamilie sitzt am inneren Container,
-       ohne diese Zeile faellt der Knopf auf die Serifenschrift zurueck. */
-    leiste.style.cssText = 'position:fixed;left:0;right:0;bottom:calc(20px + env(safe-area-inset-bottom));' +
-      'z-index:30;display:flex;flex-direction:column;align-items:center;gap:8px;padding:0 24px;' +
-      'font-family:Outfit,Helvetica,Arial,sans-serif';
-    leiste.innerHTML =
-      '<button type="button" data-start style="min-height:54px;padding:0 30px;border:none;' +
-      'border-radius:999px;background:linear-gradient(140deg,#2A6E42,#123324);color:#F4F9F0;' +
-      'font:inherit;font-size:16px;font-weight:700;cursor:pointer;' +
+    /* Feste Vorlage, kein eingesetzter Wert. Wortlaut wie die
+       Begruessungstafel des Entwurfs. */
+    hero.innerHTML =
+      '<p style="margin:0;font-size:12px;font-weight:700;letter-spacing:.22em;' +
+      'text-transform:uppercase;color:#2C6E49">Salzhemmendorf · seit 1998</p>' +
+      '<h2 style="margin:0;font-size:clamp(30px,9vw,44px);line-height:1.02;letter-spacing:-.04em;' +
+      'font-weight:600;color:#0F2318">Herzlich <span style="font-family:&quot;Instrument Serif&quot;,Georgia,serif;' +
+      'font-style:italic;font-weight:400;color:#1F5637">Willkommen</span></h2>' +
+      '<p style="margin:0;max-width:32ch;font-size:16px;line-height:1.55;color:#26382E">' +
+      'Seit 1998 Ihr Partner für Gartengestaltung, Bepflanzung, Pflasterarbeiten und Pflege. ' +
+      'Gehen Sie hindurch — der Weg führt an jeder unserer Leistungen vorbei.</p>' +
+      '<button type="button" data-start style="margin-top:10px;min-height:54px;padding:0 30px;' +
+      'border:none;border-radius:999px;background:linear-gradient(140deg,#2A6E42,#123324);' +
+      'color:#F4F9F0;font:inherit;font-size:16px;font-weight:700;cursor:pointer;' +
       'box-shadow:0 18px 40px -16px rgba(18,51,36,.8)">Rundgang starten</button>' +
-      '<p data-hinweis style="margin:0;font-size:12.5px;color:#3C5145;text-align:center">' +
+      '<p data-hinweis style="margin:0;font-size:12.5px;color:#3C5145">' +
       'Lädt einmalig die 3D-Szene · oder einfach weiterscrollen</p>';
 
-    document.body.appendChild(bg);
-    document.body.appendChild(leiste);
-    this.standbild = bg;
-    this.startLeiste = leiste;
+    wurzel.appendChild(hero);
+    this.standbild = hero;
+    this.startLeiste = hero;
 
-    /* Nur die Begruessung zeigen, die uebrigen Tafeln gehoeren zur Fahrt. */
-    if (this.panels) this.panels.forEach((el, i) => {
-      el.style.opacity = i === 0 ? '1' : '0';
-      el.style.visibility = i === 0 ? 'visible' : 'hidden';
-    });
-    /* "Scrollen, um loszugehen" stimmt hier nicht mehr — das tut der Knopf. */
-    const hinweis = document.querySelector('[data-scrollhinweis]');
-    if (hinweis) hinweis.style.display = 'none';
+    const schicht = document.getElementById('rg-stations');
+    if (schicht) schicht.style.display = 'none';
 
     this.walk.style.height = this.bahnHoehe();
-    leiste.querySelector('[data-start]').addEventListener('click', () => this.starteRundgang());
+    hero.querySelector('[data-start]').addEventListener('click', () => this.starteRundgang());
   }
 
   entferneStandbild() {
-    if (this.standbild) { this.standbild.remove(); this.standbild = null; }
-    if (this.startLeiste) { this.startLeiste.remove(); this.startLeiste = null; }
-    const hinweis = document.querySelector('[data-scrollhinweis]');
-    if (hinweis) hinweis.style.display = '';
-    /* Sichtbarkeit wieder der Bildschleife ueberlassen. */
-    if (this.panels) this.panels.forEach(el => { el.style.visibility = ''; });
+    if (this.standbild) { this.standbild.remove(); this.standbild = null; this.startLeiste = null; }
+    const schicht = document.getElementById('rg-stations');
+    if (schicht) schicht.style.display = '';
   }
 
   starteRundgang() {
@@ -961,8 +944,10 @@ class Component extends DCLogic {
     const seitlich = window.innerWidth < 820 && !__reduce;
     els.forEach((el, i) => {
       el.style.opacity = '0';
-      /* Bei reduzierter Bewegung nur blenden, nicht schieben. */
-      if (seitlich) el.style.transform = 'translateX(' + (i % 2 ? 28 : -28) + 'px)';
+      /* 44 statt 28 px: bei 28 war die Bewegung so klein, dass sie beim
+         Scrollen kaum auffiel. Mehr geht nicht, sonst wird bei 360 px
+         Breite trotz overflow-x:clip die Seite unruhig. */
+      if (seitlich) el.style.transform = 'translateX(' + (i % 2 ? 44 : -44) + 'px)';
       else if (!__reduce) el.style.transform = 'translateY(26px)';
       el.style.transition = __reduce
         ? 'opacity .35s ease'
@@ -975,7 +960,10 @@ class Component extends DCLogic {
         setTimeout(() => { el.style.opacity = '1'; el.style.transform = 'none'; }, i * 80);
         this.io.unobserve(el);
       });
-    }, { rootMargin: '0px 0px -10% 0px', threshold: 0.1 });
+    /* -22 statt -10 Prozent: so beginnt die Bewegung erst, wenn das
+       Element deutlich im Bild ist. Vorher war sie oft schon zu Ende,
+       bevor man es ueberhaupt gesehen hat. */
+    }, { rootMargin: '0px 0px -22% 0px', threshold: 0.05 });
     els.forEach(el => this.io.observe(el));
     setTimeout(() => els.forEach(el => { el.style.opacity = '1'; el.style.transform = 'none'; }), 8000);
   }
@@ -2980,7 +2968,6 @@ class Component extends DCLogic {
 
   tick = () => {
     this.raf = requestAnimationFrame(this.tick);
-    this.standbildPflegen();
     const canvas = document.getElementById('rg-canvas');
     if (!canvas) return;
     if (!this.walk || !this.walk.isConnected) {
@@ -3000,7 +2987,10 @@ class Component extends DCLogic {
       if (hide !== this.canvasHidden) {
         this.canvasHidden = hide;
         canvas.style.visibility = hide ? 'hidden' : 'visible';
-        if (this.stationsEl) this.stationsEl.style.display = hide ? 'none' : '';
+        /* Solange das Standbild steht, bleibt die Tafelschicht aus —
+           sonst schaltet diese Zeile sie wieder ein und die
+           Stationstexte liegen ueber der halben Seite. */
+        if (this.stationsEl) this.stationsEl.style.display = (hide || this.standbild) ? 'none' : '';
       }
       if (hide) {
         const nw = performance.now();

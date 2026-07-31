@@ -148,6 +148,46 @@
       if (mq.addEventListener) mq.addEventListener('change', falten);
       else if (mq.addListener) mq.addListener(falten);
 
+      /* <details> kann seine Hoehe nicht von allein animieren: beim
+         Schliessen ist der Inhalt sofort weg, beim Oeffnen sofort da.
+         Deshalb den Klick abfangen, die Hoehe selbst fahren und open
+         erst danach umsetzen. Bei reduzierter Bewegung ohne Animation. */
+      const RUHIG = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const falteAnimieren = (det) => {
+        const sub = det.querySelector('.gf-sub');
+        if (!sub) return;
+        const summary = det.querySelector('summary');
+        summary.addEventListener('click', (e) => {
+          if (RUHIG || det.__laeuft) return;
+          e.preventDefault();
+          det.__laeuft = true;
+          const auf = !det.open;
+          if (auf) det.open = true;
+          const ziel = sub.scrollHeight;
+          sub.style.overflow = 'hidden';
+          sub.style.height = (auf ? 0 : ziel) + 'px';
+          sub.style.opacity = auf ? '0' : '1';
+          /* Erzwingt einen Layout-Durchlauf, sonst springt es ohne Uebergang. */
+          void sub.offsetHeight;
+          sub.style.transition = 'height .34s cubic-bezier(.16,1,.3,1), opacity .28s ease';
+          sub.style.height = (auf ? ziel : 0) + 'px';
+          sub.style.opacity = auf ? '1' : '0';
+          const fertig = () => {
+            sub.style.transition = ''; sub.style.height = '';
+            sub.style.overflow = ''; sub.style.opacity = '';
+            if (!auf) det.open = false;
+            det.__laeuft = false;
+          };
+          sub.addEventListener('transitionend', function h(ev) {
+            if (ev.propertyName !== 'height') return;
+            sub.removeEventListener('transitionend', h); fertig();
+          });
+          /* Sicherheitsnetz, falls transitionend ausbleibt. */
+          setTimeout(() => { if (det.__laeuft) fertig(); }, 600);
+        });
+      };
+      Array.from(R.querySelectorAll('.gf-fold')).forEach(falteAnimieren);
+
       const mark = () => {
         Array.from(R.querySelectorAll('a')).forEach(a => {
           if ((a.textContent || '').trim() === active) {
