@@ -116,7 +116,7 @@ class Component extends DCLogic {
     this.threeLaedt = new Promise((res, rej) => {
       if (window.THREE) return res();
       const s = document.createElement('script');
-      s.src = 'assets/js/three.min.js?v=35';
+      s.src = 'assets/js/three.min.js?v=36';
       s.async = true;
       s.onload = () => (window.THREE ? res() : rej(new Error('three geladen, aber nicht da')));
       s.onerror = () => rej(new Error('three konnte nicht geladen werden'));
@@ -170,6 +170,12 @@ class Component extends DCLogic {
     }
     const los = () => {
       if (!this.alive || this.rundgangAn) return;
+      /* Wer in der Zwischenzeit weitergescrollt hat, liest — und will
+         keinen Rundgang. Ein Selbststart wuerde ihm die Bahn von 112vh
+         auf 1800vh unter dem Text aufziehen und ihn mitten in eine leere
+         Szene schieben. Das Standbild und sein Knopf bleiben stehen; wer
+         zurueck nach oben geht, kann von Hand starten. */
+      if (window.scrollY > window.innerHeight * 0.3) return;
       this.starteRundgang(true);
     };
     const nachDemZeichnen = () => {
@@ -412,10 +418,16 @@ class Component extends DCLogic {
     /* Steht fest, dass der Rundgang hier nicht laufen kann, waere eine
        lange Bahn nur leeres Scrollen an einer Flaeche vorbei. */
     if (this.dreiDAus) return '112vh';
-    if (!this.isMobile) return '1800vh';
+    /* Solange das Standbild steht, ist die Bahn kurz — auch am Rechner.
+       Vorher stand sie dort sofort auf 1800vh, also 14 400 px, obwohl die
+       Szene noch gar nicht lief. Wer in den zweieinhalb Sekunden bis zum
+       Selbststart scrollte, fiel in achtzehn Bildschirmhoehen Nichts.
+       Das war frueher nicht aufgefallen, weil das Standbild damals nach
+       Sekundenbruchteilen verschwand. */
+    if (!this.rundgangAn) return '112vh';
     /* Wieder die volle Laenge: bei 400vh lief der Rundgang zu schnell
      durch, die Stationen hatten keine Zeit zu wirken. */
-    return this.rundgangAn ? '1000vh' : '112vh';
+    return this.isMobile ? '1000vh' : '1800vh';
   }
 
   setupExtras() {

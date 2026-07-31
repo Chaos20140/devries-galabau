@@ -1031,3 +1031,22 @@ erweitern statt parallele bauen → 4. Desktop+Mobile im selben Schritt → 5. B
   **Merke zum Prüfen:** Der Werkzeugaufruf setzt in dieser Umgebung erst **55 s** nach
   Seitenstart an — ein Zeitfenster von drei Sekunden ist so nie zu beobachten. Lösung: eine
   Testfassung, die im `<head>` selbst mitschreibt und deren Protokoll man hinterher ausliest.
+
+- **2026-07-31 · Leere Fläche unter dem Standbild (v36).** Nutzerbefund am Screenshot: unter
+  dem Standbild eine große leere Fläche. Ursache war eine **Folge der Blende von v35**: Die
+  Scrollbahn stand am Rechner sofort auf `1800vh` — 14 400 px — obwohl die Szene noch gar
+  nicht lief. Solange das Standbild nur Sekundenbruchteile stand, fiel das niemandem auf;
+  mit der neuen Standzeit von 2,4 s hat der Besucher Zeit zu scrollen und fällt in achtzehn
+  Bildschirmhöhen Nichts.
+  **Zwei Änderungen, die zusammengehören:**
+  1. `bahnHoehe()` gibt jetzt **immer** `112vh` zurück, solange der Rundgang nicht läuft —
+     auch am Rechner, nicht nur auf dem Handy. Die Bahn wächst erst, wenn die Szene steht.
+  2. **Kein Selbststart, wenn schon gescrollt wurde** (> 0,3 Bildschirmhöhen). Sonst zöge der
+     Start die Bahn von 112vh auf 1800vh unter dem Text auf und schöbe den Lesenden mitten in
+     die Szene. Standbild und Knopf bleiben stehen; wer zurück nach oben geht, startet von Hand.
+  **Gemessen, beide Fälle:** früh gescrollt → Rundgang startet nicht, three.js wird **gar
+  nicht** geladen, Seite 13 519 px statt 27 023 px · nicht gescrollt → Szene läuft, Standbild
+  weg, Leinwand deckt das Fenster, Stationstafeln zurück, Seite 27 023 px.
+  **Merke:** Eine Änderung an der Anzeigedauer ändert, wie viel Zeit der Besucher zum Handeln
+  hat. Was vorher nur theoretisch erreichbar war, wird damit zum Normalfall — bei jeder
+  Verlängerung einer Einblendung durchgehen, was in dieser Zeit sonst noch passieren kann.
