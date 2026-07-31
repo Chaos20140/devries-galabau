@@ -139,6 +139,28 @@ Mail überhaupt versucht wird, und steht in `verwaltung.html`. Es fehlt nur die 
 Der Token in `supabase/webhook.sql` steht dort als Platzhalter. Wer die Datei erneut ausführt,
 muss ihn ersetzen — oder den Trigger einfach so lassen, er ist bereits eingerichtet.
 
+### Warum das Logo als Anhang mitreist und nicht verlinkt ist
+
+Im Kopfbalken beider Vorlagen steht das Markenlogo. Es hängt als CID-Anhang an der
+Nachricht (`supabase/functions/anfrage-mail/logo.ts`, 2,6 KB), nicht als
+`<img src="https://…">`. Drei Gründe:
+
+- Mailprogramme blockieren entfernte Bilder standardmäßig. Verlinkt wäre beim Öffnen erst
+  ein leerer Kasten zu sehen, bis der Empfänger „Bilder anzeigen" klickt.
+- Jeder Abruf eines verlinkten Bildes verrät dem Server, wann die Mail gelesen wurde — das
+  ist genau die Technik, die Newsletter zum Nachverfolgen nutzen. Hier unnötig.
+- Ein Verweis auf die Website bricht, sobald die Adresse wechselt. Die Domain zeigt derzeit
+  noch auf die alte Installation.
+
+**PNG, nicht das WebP der Website** — WebP versteht kaum ein Mailprogramm. Der runde
+Ausschnitt und der weiße Ring sind fest ins Bild gebacken, weil Outlook mit der Word-Engine
+rendert und `border-radius` ignoriert; sonst säße dort ein hellgrünes Quadrat auf dem
+dunkelgrünen Balken. Erzeugt aus `assets/img/logo-galabau.jpg` auf 128 × 128 (Anzeige 58 px,
+also doppelte Auflösung), Palette mit 64 Farben.
+
+Aus demselben Grund steht der Kopfbalken als **Tabelle mit zwei Spalten** da und nicht als
+Flexbox: Outlook kennt weder `flex` noch `grid`.
+
 ### Warum die Funktion die Kopfzeilen putzt
 
 Name und E-Mail des Absenders wandern in Betreff und `Reply-To`. Ohne Bereinigung könnte

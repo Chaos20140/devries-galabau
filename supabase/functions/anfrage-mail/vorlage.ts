@@ -14,6 +14,8 @@
    im Postfach manipulieren.
    ===================================================================== */
 
+import { LOGO_CID } from "./logo.ts";
+
 export type Feld = [string, unknown];
 
 const GRUEN_DUNKEL = "#1B4332";
@@ -34,11 +36,19 @@ function zeile([bez, wert]: Feld): string {
   if (!w) return "";
   return `
         <tr>
-          <td style="padding:11px 0;border-bottom:1px solid rgba(16,35,26,.09);vertical-align:top;width:150px;
+          <!-- 118 statt 150 px: die laengste Beschriftung ("Auftraggeber")
+               braucht rund 98 px, der Rest der Breite ist im Wertfeld
+               besser aufgehoben. -->
+          <td style="padding:11px 0;border-bottom:1px solid rgba(16,35,26,.09);vertical-align:top;width:118px;
               font:600 11px/1.4 Arial,Helvetica,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:${LABEL}">
             ${maskieren(bez)}
           </td>
+          <!-- Ohne Umbruch im Wort zwingt eine lange E-Mail-Adresse die
+               ganze Karte auf 347 px Mindestbreite; auf einem 320-px-Telefon
+               steht die Mail dann schief. "word-wrap" ist die Fassung, die
+               auch Outlook (Word-Engine) versteht. -->
           <td style="padding:11px 0;border-bottom:1px solid rgba(16,35,26,.09);vertical-align:top;
+              word-wrap:break-word;overflow-wrap:anywhere;
               font:400 15px/1.6 Arial,Helvetica,sans-serif;color:${TEXT}">
             ${maskieren(w).replace(/\n/g, "<br>")}
           </td>
@@ -85,11 +95,25 @@ export function html(o: {
              style="max-width:620px;background:#FFFFFF;border-radius:20px;overflow:hidden;
                     box-shadow:0 18px 44px -30px rgba(12,29,20,.4)">
 
-        <tr><td style="padding:26px 30px;background:linear-gradient(135deg,${GRUEN_DUNKEL},${GRUEN})">
-          <p style="margin:0 0 6px;font:700 11px/1.4 Arial,Helvetica,sans-serif;letter-spacing:.22em;
-                    text-transform:uppercase;color:${LIMETTE}">de Vries GaLa-Bau</p>
-          <h1 style="margin:0;font:600 24px/1.2 Arial,Helvetica,sans-serif;color:#F4F9F0">
-            ${maskieren(o.titel)}</h1>
+        <tr><td style="padding:24px 30px;background:${GRUEN_DUNKEL};
+                       background:linear-gradient(135deg,${GRUEN_DUNKEL},${GRUEN})">
+          <!-- Zwei Spalten statt Flexbox: Outlook rendert mit der Word-Engine
+               und kennt weder flex noch grid, Tabellen dagegen ueberall. -->
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td style="padding:0 15px 0 0;vertical-align:middle" width="58">
+                <img src="cid:${LOGO_CID}" alt="de Vries GaLa-Bau" width="58" height="58"
+                     style="display:block;width:58px;height:58px;border:0;outline:none;
+                            text-decoration:none;-ms-interpolation-mode:bicubic">
+              </td>
+              <td style="vertical-align:middle">
+                <p style="margin:0 0 5px;font:700 11px/1.4 Arial,Helvetica,sans-serif;letter-spacing:.22em;
+                          text-transform:uppercase;color:${LIMETTE}">de Vries GaLa-Bau</p>
+                <h1 style="margin:0;font:600 24px/1.2 Arial,Helvetica,sans-serif;color:#F4F9F0">
+                  ${maskieren(o.titel)}</h1>
+              </td>
+            </tr>
+          </table>
         </td></tr>
 
         <tr><td style="padding:26px 30px 4px">

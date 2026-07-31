@@ -18,6 +18,7 @@
    ===================================================================== */
 import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 import { html, text, type Feld } from "./vorlage.ts";
+import { LOGO_BASE64, LOGO_CID, LOGO_DATEI, LOGO_TYP } from "./logo.ts";
 
 const env = (k: string, fallback = "") => Deno.env.get(k) ?? fallback;
 
@@ -136,11 +137,20 @@ Deno.serve(async (req: Request) => {
       /* Beides mitschicken: wer HTML abgeschaltet hat, bekommt den Text. */
       content: koerperText,
       html: koerperHtml,
+      /* Das Logo reist als Teil der Nachricht mit und wird im HTML ueber
+         cid: angesprochen. Ein Verweis auf die Website waere in den
+         meisten Postfaechern zunaechst ein leerer Kasten — entfernte
+         Bilder sind dort standardmaessig blockiert. */
+      attachments: [{
+        contentType: LOGO_TYP,
+        filename: LOGO_DATEI,
+        encoding: "base64",
+        content: LOGO_BASE64,
+        contentID: LOGO_CID,
+      }],
     });
     return new Response("verschickt", { status: 200 });
   } catch (fehler) {
-    /* Der Datensatz liegt bereits in der Tabelle — die Anfrage ist also
-       nicht verloren, auch wenn der Versand scheitert. */
     /* Der Datensatz liegt bereits in der Tabelle — die Anfrage ist also
        nicht verloren, auch wenn der Versand scheitert. Sie taucht in der
        Verwaltung auf und kann von Hand beantwortet werden. */
