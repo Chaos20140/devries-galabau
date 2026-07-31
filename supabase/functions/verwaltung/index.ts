@@ -67,12 +67,28 @@ Deno.serve(async (req: Request) => {
   let körper: Record<string, unknown>;
   try { körper = await req.json(); } catch { return json({ fehler: "ungültig" }, 400); }
 
-  /* Kleine Bremse gegen Durchprobieren. Kein Ersatz fuer eine echte
-     Sperre, macht Rateversuche aber unattraktiv langsam. */
+  /* Bremse gegen Durchprobieren: die Wartezeit waechst mit der Zahl der
+     Fehlversuche der letzten 15 Minuten (0,9 s → bis 8 s). Bewusst KEINE
+     harte Sperre — die liesse sich von aussen ausloesen, um den Betreiber
+     auszusperren. Ein richtiges Passwort kommt sofort durch und setzt die
+     Zaehlung zurueck. */
   if (!gleich(String(körper.passwort ?? ""), PASSWORT)) {
-    await new Promise((r) => setTimeout(r, 900));
+    let warten = 900;
+    try {
+      await db("verwaltung_versuche", { method: "POST", body: "{}", headers: { Prefer: "return=minimal" } });
+      const seit = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+      const jüngste = await db("verwaltung_versuche?select=id&zeit=gte." + seit);
+      const n = Array.isArray(jüngste) ? jüngste.length : 0;
+      warten = Math.min(8000, 900 * Math.pow(1.6, Math.max(0, n - 1)));
+    } catch { /* Zaehlung darf die Abwehr nicht aushebeln */ }
+    await new Promise((r) => setTimeout(r, warten));
     return json({ fehler: "Passwort falsch" }, 401);
   }
+
+  /* Richtiges Passwort: Zaehlung aufraeumen. */
+  try {
+    await db("verwaltung_versuche?id=gt.0", { method: "DELETE", headers: { Prefer: "return=minimal" } });
+  } catch { /* nicht kritisch */ }
 
   const was = String(körper.was ?? "");
   const bereich = String(körper.bereich ?? "");

@@ -681,3 +681,11 @@ erweitern statt parallele bauen → 4. Desktop+Mobile im selben Schritt → 5. B
   Rechner. Nachgeprüft in beiden Breiten.
   **Merke:** Umlaute in `curl -d` werden von dieser Shell falsch kodiert und erzeugen ein
   irreführendes `PGRST102 Empty or invalid json`. Aus dem Browser geht dasselbe durch.
+
+- **2026-07-31 · Anmeldebremse fuer die Verwaltung.** Das gewuenschte Passwort ist Firmenname
+  plus Jahreszahl — genau das Muster, das beim Durchprobieren zuerst drankommt. Statt nur zu
+  warnen, waechst die Antwortzeit jetzt mit der Zahl der Fehlversuche der letzten 15 Minuten
+  (0,9 s → bis 8 s, Tabelle `verwaltung_versuche`, nur ueber `service_role` erreichbar).
+  **Bewusst KEINE harte Sperre:** die liesse sich von aussen ausloesen, um den Betreiber
+  auszusperren. Ein richtiges Passwort kommt sofort durch und setzt die Zaehlung zurueck.
+  Gemessen: 1,6 → 1,8 → 2,6 → 4,1 → 6,2 s bei fuenf Fehlversuchen, richtiges Passwort 0,38 s.
