@@ -23,7 +23,7 @@
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png?v=1">
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/outfit-600-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/outfit-400-latin.woff2" crossorigin>
-<link rel="stylesheet" href="assets/css/base.css?v=32">
+<link rel="stylesheet" href="assets/css/base.css?v=33">
 <style>
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;background:#EDF3E8;color:#10231A}
@@ -47,8 +47,72 @@
   .gradtext{padding:.12em .06em .18em;margin:-.12em -.06em -.18em}
   input::placeholder,textarea::placeholder{color:rgba(243,247,240,.72);opacity:1}
 </style>
+<script>
+/* Laeuft VOR dem ersten Bild: wer den Vorspann in dieser Sitzung schon
+   gesehen hat, bekommt ihn nicht noch einmal. Ohne diesen Vorgriff
+   blitzte er bei jeder Navigation erneut auf. */
+try { if (sessionStorage.getItem('dvg-vorspann')) document.documentElement.classList.add('vorspann-weg'); } catch (e) {}
+</script>
 </head>
 <body>
+<!-- =====================================================================
+     Vorspann ("Ladebalken") — steht bewusst IM HTML, nicht im Skript.
+
+     Zwei Gruende:
+     1. Die Skripte stehen am Seitenende. Ein per JavaScript erzeugter
+        Vorspann kaeme nach dem ersten Bild und wuerde aufblitzen.
+     2. So ist SEIN Text das erste Inhaltsbild — einfacher Text auf
+        einfarbigem Grund, schneller geht es nicht.
+
+     Er loest sich per CSS-Animation von selbst auf. Das ist die
+     entscheidende Absicherung: faellt das Skript aus, bleibt die Seite
+     trotzdem bedienbar. Das Skript zaehlt nur die Ziffern hoch und
+     raeumt den Knoten hinterher weg.
+
+     Unter 820 px ausgeblendet — auf dem Handy zaehlt jede Zehntelsekunde,
+     und dort fuehrt ohnehin das Standbild mit Tippen zum Rundgang.
+     ===================================================================== -->
+<style>
+  #rg-vorspann{position:fixed;inset:0;z-index:9999;background:#0B1A11;color:#F3F7F0;
+    font-family:Outfit,Helvetica,Arial,sans-serif;display:flex;flex-direction:column;
+    justify-content:flex-end;padding:0 clamp(20px,5vw,68px) clamp(40px,9vh,90px);
+    animation:rgVorspannWeg .42s ease-in .86s both}
+  #rg-vorspann__linie1,#rg-vorspann__linie2{height:1px;background:rgba(243,247,240,.18)}
+  #rg-vorspann__kopf{display:flex;align-items:baseline;justify-content:space-between;
+    gap:20px;padding:14px 0;font-size:clamp(10px,1vw,12.5px);font-weight:600;
+    letter-spacing:.28em;text-transform:uppercase;color:rgba(243,247,240,.62)}
+  #rg-vorspann__zahl{color:#8ECF4F;font-variant-numeric:tabular-nums;letter-spacing:.18em}
+  #rg-vorspann__marke{margin:clamp(18px,4vh,40px) 0 0;font-size:clamp(44px,10.5vw,168px);
+    line-height:.9;letter-spacing:-.045em;font-weight:700;color:#F3F7F0}
+  #rg-vorspann__marke i{font-family:"Instrument Serif",Georgia,serif;font-style:italic;
+    font-weight:400;letter-spacing:-.02em;
+    background:linear-gradient(120deg,#8ECF4F,#2C6E49);-webkit-background-clip:text;
+    background-clip:text;-webkit-text-fill-color:transparent}
+  #rg-vorspann__balken{position:relative;height:2px;margin-top:clamp(20px,4vh,40px);
+    background:rgba(243,247,240,.14);overflow:hidden}
+  #rg-vorspann__balken b{position:absolute;inset:0 100% 0 0;background:#8ECF4F;
+    animation:rgVorspannFuellen .92s cubic-bezier(.4,0,.2,1) both}
+  @keyframes rgVorspannFuellen{to{right:0}}
+  @keyframes rgVorspannWeg{to{opacity:0;visibility:hidden}}
+  /* Ohne die Klasse waere der Vorspann bei jedem Seitenwechsel wieder da. */
+  html.vorspann-weg #rg-vorspann{display:none}
+  @media (max-width:819px){#rg-vorspann{display:none}}
+  /* Wer wenig Bewegung wuenscht, bekommt ihn nur ganz kurz und ohne Lauf. */
+  @media (prefers-reduced-motion:reduce){
+    #rg-vorspann{animation-duration:.2s;animation-delay:.15s}
+    #rg-vorspann__balken b{animation:none;inset:0}
+  }
+</style>
+<div id="rg-vorspann" role="status" aria-label="Seite wird geladen">
+  <div id="rg-vorspann__linie1"></div>
+  <div id="rg-vorspann__kopf">
+    <span>Garten- und Landschaftsbau · Salzhemmendorf</span>
+    <span id="rg-vorspann__zahl">000</span>
+  </div>
+  <div id="rg-vorspann__linie2"></div>
+  <p id="rg-vorspann__marke">de Vries <i>GaLa-Bau</i></p>
+  <div id="rg-vorspann__balken"><b></b></div>
+</div>
 <div style="position:relative;background:#EDF3E8;color:#10231A;font-family:Outfit,Helvetica,Arial,sans-serif;overflow-x:clip">
 
   <canvas id="rg-canvas" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:1;display:block;pointer-events:none"></canvas>
@@ -823,12 +887,12 @@
     <garden-footer active="Rundgang"></garden-footer>
   </div>
 </div>
-<script src="assets/js/garden-header.js?v=32"></script>
-<script src="assets/js/garden-footer.js?v=32"></script>
+<script src="assets/js/garden-header.js?v=33"></script>
+<script src="assets/js/garden-footer.js?v=33"></script>
 <!-- three.js wird NICHT fest eingebunden: gepackt sind das 146 KB, und auf
      dem Handy soll sie nur laden, wenn jemand den Rundgang wirklich startet.
      Das Nachladen steuert assets/js/index.js (ladeTHREE). -->
-<script src="assets/js/formular.js?v=32"></script>
-<script src="assets/js/index.js?v=32"></script>
+<script src="assets/js/formular.js?v=33"></script>
+<script src="assets/js/index.js?v=33"></script>
 </body>
 </html>

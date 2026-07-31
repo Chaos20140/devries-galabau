@@ -949,3 +949,32 @@ erweitern statt parallele bauen → 4. Desktop+Mobile im selben Schritt → 5. B
   **Zweiter Einstieg nicht vergessen:** `applyMobile()` baute beim Wechsel aufs Breitbild die
   Szene direkt und entfernte das Standbild sofort — also am neuen Weg vorbei. Läuft jetzt
   ebenfalls über `planeAutostart()`.
+
+- **2026-07-31 · Vorspann im Stil eines Ladeschirms (v33).** Auf Wunsch nach einer
+  Referenzabbildung: dunkler Vollbildschirm, Haarlinie, Kleinlabel links, mitlaufende Ziffern
+  rechts, riesige Wortmarke, füllender Balken. In unseren Farben: Grund `#0B1A11`, Ziffern
+  und Balken in `#8ECF4F`, Wortmarke „de Vries" in Outfit 700 mit „GaLa-Bau" in der
+  Instrument-Serif-Kursiven mit Grünverlauf.
+  **Ich hatte davon abgeraten** (ein vorgeschalteter Schirm verdeckt das erste Inhaltsbild —
+  genau deshalb flog der Loader in v7 raus). Der Nutzer hat das gehört und ihn trotzdem
+  gewollt; damit ist es seine Entscheidung. Gebaut ist er deshalb so, dass er möglichst
+  wenig kostet:
+  **Er steht im HTML, nicht im Skript.** Die Skripte liegen am Seitenende — ein per
+  JavaScript erzeugter Schirm käme *nach* dem ersten Bild und würde aufblitzen. So ist
+  umgekehrt sein Text das erste Inhaltsbild: Text auf einfarbigem Grund, schneller geht es
+  nicht.
+  **Er löst sich per CSS-Animation von selbst auf** (0,86 s halten, 0,42 s ausblenden). Das
+  ist die entscheidende Absicherung: fällt das Skript aus, bleibt die Seite trotzdem
+  bedienbar. Das Skript zählt nur die Ziffern und räumt den Knoten weg — plus eine Notbremse
+  nach 2,6 s, falls die Animation selbst still steht (im Hintergrund geladene Reiter halten
+  Animationen an; genau das ist mir beim Prüfen begegnet).
+  **Nur einmal je Sitzung:** ein winziges Skript im `<head>` setzt vor dem ersten Bild eine
+  Klasse, wenn der Vorspann schon lief. Ohne diesen Vorgriff blitzte er bei jeder Navigation
+  erneut auf.
+  **Unter 820 px ausgeblendet** — auf dem Handy zählt jede Zehntelsekunde. `prefers-reduced-motion`
+  kürzt auf 0,2 s ohne Balkenlauf.
+  **Bewusst KEINE Scrollsperre** während des Vorspanns: eine hängengebliebene Sperre macht die
+  Seite unbedienbar. Der Preis ist ein 15 px schmaler Streifen an der Bildlaufleiste.
+  **Merke:** `[id^="rg-vorspann"]` traf auch den Stilblock des Standbilds, der zufällig
+  ähnlich hieß — beim Prüfen sah das nach einem Überbleibsel aus. Der Block heißt jetzt
+  `rg-standbild-stil`.
