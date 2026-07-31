@@ -40,11 +40,23 @@
   /* Laengen entsprechen den CHECK-Bedingungen in schema.sql. Hier wird
      nur gekuerzt, damit gar nicht erst Unsinn losgeschickt wird — die
      verbindliche Pruefung macht die Datenbank. */
+  /* ⚠ Jedes Feld, das gespeichert werden soll, MUSS hier stehen —
+     kuerzen() uebernimmt ausschliesslich diese Schluessel. Fehlt eines,
+     wird es stillschweigend verworfen. Genau daran ist das
+     Bewerbungsformular schon einmal gescheitert (quelle/betreff). */
   var MAX = {
     quelle: 60, betreff: 160, name: 120, email: 200, telefon: 60,
     ort: 120, art: 40, bereich: 60, zeitraum: 120, nachricht: 5000,
-    stelle: 80, verfuegbar_ab: 60
+    stelle: 80, verfuegbar_ab: 60, datei: 300, datei_name: 200
   };
+
+  /* Grenzen fuer den Lebenslauf. Sie stehen hier nur, damit der Besucher
+     eine verstaendliche Meldung bekommt statt einer Fehlermeldung vom
+     Server — verbindlich durchgesetzt werden sie im Speicherbereich
+     selbst (nur application/pdf, hoechstens 5 MB, siehe
+     supabase/bewerbungsdatei.sql). Eine Pruefung im Browser laesst sich
+     umgehen, die dort nicht. */
+  var DATEI = { max: 5 * 1024 * 1024, typ: 'application/pdf', eimer: 'bewerbungen' };
 
   var geladenUm = Date.now();
 
@@ -164,5 +176,76 @@
     });
   }
 
-  window.dvFormular = { senden: senden, konfiguriert: konfiguriert, empfaenger: EMPFAENGER };
+  /* ---------------------------------------------------------------
+     Lebenslauf ablegen.
+
+     Der oeffentliche Schluessel darf im Speicherbereich GENAU EINES:
+     etwas unter "eingang/" ablegen. Lesen, auflisten, aendern und
+     loeschen sind ihm verwehrt (geprueft: 400 bzw. leere Liste). Wer
+     eine Bewerbung herunterladen will, geht ueber die Verwaltung, die
+     serverseitig einen zeitlich begrenzten Link erzeugt.
+
+     Der Dateiname aus dem Netz wird NICHT als Pfad verwendet — er kaeme
+     ungeprueft vom Besucher. Gespeichert wird unter einem selbst
+     erzeugten Namen; der Originalname wandert als reiner Anzeigewert in
+     die Tabelle.
+     --------------------------------------------------------------- */
+  function zufallsname() {
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    return 'x' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+  }
+
+  function dateiPruefen(datei) {
+    if (!datei) return null;
+    if (datei.size > DATEI.max) {
+      return 'Die Datei ist größer als 5 MB. Bitte schicken Sie sie uns per E-Mail an ' + HINWEIS_ADRESSE + '.';
+    }
+    var name = String(datei.name || '');
+    var istPdf = datei.type === DATEI.typ || /\.pdf$/i.test(name);
+    if (!istPdf) return 'Bitte laden Sie den Lebenslauf als PDF hoch.';
+    return null;
+  }
+
+  function dateiHochladen(datei) {
+    if (!datei || !konfiguriert()) return Promise.resolve(null);
+    var pfad = 'eingang/' + zufallsname() + '.pdf';
+    var steuer = { abgebrochen: false };
+    return new Promise(function (fertig, daneben) {
+      var abbruch = setTimeout(function () {
+        steuer.abgebrochen = true;
+        daneben(new Error('Zeitüberschreitung beim Hochladen'));
+      }, 30000);
+      fetch(CFG.url + '/storage/v1/object/' + DATEI.eimer + '/' + pfad, {
+        method: 'POST',
+        headers: {
+          'apikey': CFG.key,
+          'Authorization': 'Bearer ' + CFG.key,
+          'Content-Type': DATEI.typ,
+          'x-upsert': 'false'
+        },
+        body: datei
+      }).then(function (r) {
+        clearTimeout(abbruch);
+        if (steuer.abgebrochen) return;
+        if (!r.ok) { daneben(new Error('Server antwortete ' + r.status)); return; }
+        fertig({
+          datei: pfad,
+          /* Nur Anzeigename: Pfadtrenner und Steuerzeichen raus. */
+          datei_name: String(datei.name || 'lebenslauf.pdf')
+            .replace(/[\\/\r\n\t]+/g, ' ').trim().slice(0, 200)
+        });
+      }).catch(function (f) {
+        clearTimeout(abbruch);
+        if (!steuer.abgebrochen) daneben(f);
+      });
+    });
+  }
+
+  window.dvFormular = {
+    senden: senden,
+    konfiguriert: konfiguriert,
+    empfaenger: EMPFAENGER,
+    dateiPruefen: dateiPruefen,
+    dateiHochladen: dateiHochladen
+  };
 })();

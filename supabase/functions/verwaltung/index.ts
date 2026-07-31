@@ -37,6 +37,7 @@ const SPALTEN: Record<string, string[]> = {
   bewerbungen: [
     "id", "eingegangen_am", "quelle", "betreff", "name", "email", "telefon",
     "stelle", "verfuegbar_ab", "nachricht", "status", "notiz", "archiviert",
+    "datei", "datei_name",
   ],
 };
 
@@ -166,6 +167,50 @@ async function db(pfad: string, init: RequestInit = {}) {
   return txt ? JSON.parse(txt) : null;
 }
 
+/* Zugriff auf den Speicherbereich. Laeuft ueber service_role und
+   umgeht damit die Zeilenrechte — der oeffentliche Schluessel darf dort
+   ausschliesslich ablegen, nie lesen. */
+const EIMER = "bewerbungen";
+
+async function speicher(pfad: string, init: RequestInit = {}) {
+  const r = await fetch(URL_ + "/storage/v1/" + pfad, {
+    ...init,
+    headers: {
+      apikey: DIENST,
+      Authorization: "Bearer " + DIENST,
+      "Content-Type": "application/json",
+      ...(init.headers ?? {}),
+    },
+  });
+  const txt = await r.text();
+  if (!r.ok) throw new Error("Speicher " + r.status + " " + txt.slice(0, 120));
+  return txt ? JSON.parse(txt) : null;
+}
+
+/* Beim Loeschen wandert die Datei in den Papierkorbbereich statt sofort
+   fort — sonst waere "Rueckgaengig" nur halb wahr: der Datensatz kaeme
+   zurueck, der Lebenslauf nicht. Aufgeraeumt wird bei jeder Anmeldung,
+   alles aelter als 24 Stunden. Damit liegt nichts unbegrenzt herum. */
+async function papierkorbAufraeumen(): Promise<void> {
+  const liste = await speicher("object/list/" + EIMER, {
+    method: "POST",
+    body: JSON.stringify({ prefix: "papierkorb/", limit: 1000 }),
+  });
+  if (!Array.isArray(liste) || !liste.length) return;
+  const grenze = Date.now() - 24 * 60 * 60 * 1000;
+  const alt = liste
+    .filter((o) => {
+      const t = Date.parse(o?.updated_at ?? o?.created_at ?? "");
+      return Number.isFinite(t) && t < grenze;
+    })
+    .map((o) => "papierkorb/" + o.name);
+  if (!alt.length) return;
+  await speicher("object/" + EIMER, {
+    method: "DELETE",
+    body: JSON.stringify({ prefixes: alt }),
+  });
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
   if (req.method !== "POST") return json({ fehler: "nur POST" }, 405);
@@ -253,6 +298,11 @@ Deno.serve(async (req: Request) => {
         const r = await db(t + "?select=id&status=eq.neu&archiviert=is.false");
         return Array.isArray(r) ? r.length : 0;
       };
+      /* Gelegenheit zum Aufraeumen. Scheitert es, ist das kein Grund,
+         die Anmeldung zu verweigern. */
+      try { await papierkorbAufraeumen(); } catch (e) {
+        console.error("Papierkorb:", e instanceof Error ? e.message : e);
+      }
       return json({
         ok: true,
         neu: { anfragen: await zaehl(TABELLEN.anfragen), bewerbungen: await zaehl(TABELLEN.bewerbungen) },
@@ -298,11 +348,61 @@ Deno.serve(async (req: Request) => {
     if (was === "loeschen") {
       const id = String(körper.id ?? "");
       if (!id) return json({ fehler: "keine Kennung" }, 400);
+
+      /* Den Dateipfad selbst nachschlagen statt ihn vom Browser
+         entgegenzunehmen — sonst liesse sich ueber diesen Weg eine
+         beliebige fremde Datei verschieben. */
+      let datei = "";
+      if (bereich === "bewerbungen") {
+        const treffer = await db(
+          tabelle + "?select=datei&id=eq." + encodeURIComponent(id) + "&limit=1",
+        );
+        if (Array.isArray(treffer) && treffer[0]?.datei) datei = String(treffer[0].datei);
+      }
+
       await db(tabelle + "?id=eq." + encodeURIComponent(id), {
         method: "DELETE",
         headers: { Prefer: "return=minimal" },
       });
+
+      /* Erst in den Papierkorbbereich, damit "Rueckgaengig" auch den
+         Lebenslauf zurueckholen kann. Scheitert das, ist der Datensatz
+         trotzdem fort — das ist der wichtigere Teil. */
+      if (datei.startsWith("eingang/")) {
+        try {
+          await speicher("object/move", {
+            method: "POST",
+            body: JSON.stringify({
+              bucketId: EIMER,
+              sourceKey: datei,
+              destinationKey: datei.replace(/^eingang\//, "papierkorb/"),
+            }),
+          });
+        } catch (e) {
+          console.error("Datei verschieben:", e instanceof Error ? e.message : e);
+        }
+      }
       return json({ ok: true });
+    }
+
+    /* Zeitlich begrenzter Link auf den Lebenslauf. Der Browser bekommt
+       nie dauerhaften Zugriff; der Link gilt zwei Minuten und wird bei
+       jedem Klick neu erzeugt. */
+    if (was === "dateilink") {
+      const id = String(körper.id ?? "");
+      if (!id || bereich !== "bewerbungen") return json({ fehler: "keine Kennung" }, 400);
+      const treffer = await db(
+        tabelle + "?select=datei,datei_name&id=eq." + encodeURIComponent(id) + "&limit=1",
+      );
+      const datei = Array.isArray(treffer) && treffer[0]?.datei ? String(treffer[0].datei) : "";
+      if (!datei.startsWith("eingang/")) return json({ fehler: "kein Anhang" }, 404);
+      const unterschrift = await speicher("object/sign/" + EIMER + "/" + datei, {
+        method: "POST",
+        body: JSON.stringify({ expiresIn: 120 }),
+      });
+      const pfad = String(unterschrift?.signedURL ?? "");
+      if (!pfad) return json({ fehler: "Link nicht erzeugt" }, 500);
+      return json({ ok: true, link: URL_ + "/storage/v1" + pfad });
     }
 
     /* Zurueckholen eines gerade geloeschten Eintrags. Der Browser hat ihn
@@ -329,7 +429,36 @@ Deno.serve(async (req: Request) => {
         body: JSON.stringify(satz),
         headers: { Prefer: "return=minimal" },
       });
-      return json({ ok: true });
+
+      /* Den Lebenslauf aus dem Papierkorbbereich zurueckschieben. Klappt
+         das nicht (etwa weil schon aufgeraeumt wurde), steht der
+         Datensatz trotzdem wieder da — der Anhang fehlt dann, und die
+         Verwaltung sagt das, statt einen toten Link anzubieten. */
+      let anhang = true;
+      const pfad = String(satz.datei ?? "");
+      if (pfad.startsWith("eingang/")) {
+        try {
+          await speicher("object/move", {
+            method: "POST",
+            body: JSON.stringify({
+              bucketId: EIMER,
+              sourceKey: pfad.replace(/^eingang\//, "papierkorb/"),
+              destinationKey: pfad,
+            }),
+          });
+        } catch (e) {
+          anhang = false;
+          console.error("Datei zurueckschieben:", e instanceof Error ? e.message : e);
+          try {
+            await db(tabelle + "?id=eq." + encodeURIComponent(String(satz.id)), {
+              method: "PATCH",
+              body: JSON.stringify({ datei: null }),
+              headers: { Prefer: "return=minimal" },
+            });
+          } catch { /* dann bleibt der Verweis stehen, der Link meldet 404 */ }
+        }
+      }
+      return json({ ok: true, anhang });
     }
 
     return json({ fehler: "unbekannter Auftrag" }, 400);
