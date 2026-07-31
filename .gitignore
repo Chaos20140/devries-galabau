@@ -10,3 +10,13 @@ Thumbs.db
 
 # Verknuepfungsdaten der Supabase-CLI (enthalten Verbindungszeichenfolgen)
 supabase/.temp/
+
+# Agentenwerkzeug, kein Bestandteil der Website.
+# Der Skills-Installer legt diese Ordner IM Projektordner an. Ohne diesen
+# Ausschluss wandern sie beim naechsten "git add -A" in ein oeffentliches
+# Repository und werden ueber GitHub Pages sogar ausgeliefert.
+# Das Higgsfield-Zugangstoken liegt NICHT hier, sondern unter
+# ~/.config/higgsfield/credentials.json — also ausserhalb des Projekts.
+.agents/
+.claude/skills/
+skills-lock.json
