@@ -1069,3 +1069,26 @@ erweitern statt parallele bauen → 4. Desktop+Mobile im selben Schritt → 5. B
   **Merke:** Wird ein Bedienelement ausgeblendet, weil es im Regelfall überflüssig ist, muss
   jeder Sonderfall einzeln durchgegangen werden — hier waren es vier. Sonst ist der einzige
   Weg in eine Funktion zugebaut.
+
+- **2026-07-31 · Galerie „Fünf Bereiche" war unsichtbar (v38).** Nutzerbefund: unter der
+  Überschrift nur leere Fläche. Gemessen: die Felder waren **0 px hoch**, die ganze Reihe
+  ebenso — deshalb war nichts zu sehen.
+  **Ursache: mein eigener Rückstellcode.** `galerieMobil()` setzte im Rechner-Zweig
+  `p.style.flex = ''` und `p.style.height = ''`. Das löscht aber nicht „die Handy-Werte",
+  sondern **die Werte aus dem `style`-Attribut der Seite** (`flex:1 1 0`,
+  `height:clamp(360px,58vh,560px)`). Da der Inhalt der Felder absolut positioniert ist, blieb
+  danach keine Höhe übrig. Dasselbe galt für `gap`, `padding` und `margin` der Reihe.
+  **Merke: `style.eigenschaft = ''` ist kein „Zurücksetzen".** Es entfernt die Deklaration —
+  und wenn der Ausgangswert im Markup steht statt in einer Stildatei, ist er damit weg. Wer
+  umschaltbare Zustände baut, muss die Ausgangswerte **sichern und zurückschreiben**
+  (`p.dataset.dFlex`), nicht leeren. Beim ersten Aufruf am Rechner gibt es nichts
+  zurückzusetzen — dann Finger weg.
+  **Gemessen nach der Korrektur:** Rechner 5 × 217 px, Felder 418 px hoch, kein Überlauf ·
+  Überfahren lässt ein Feld auf 494 px wachsen, die anderen auf 148 schrumpfen, danach zurück ·
+  Handy 5 × 998 px mit Wischband · Rückkehr an den Rechner exakt wiederhergestellt.
+  **Drei Messartefakte auf dem Weg, alle aus demselben Grund** (Vorschaureiter im
+  Hintergrund): `lazy`-Bilder werden dort gar nicht geladen — „NICHT GELADEN" war **kein**
+  Befund, derselbe Abruf einzeln klappte in 135 ms · CSS-Übergänge stehen still, deshalb
+  meldete `getComputedStyle` für das animierte `flex-grow` weiter `1`, obwohl inline `2.4`
+  stand · zum Messen musste ich `transition:none` setzen. **Vor jeder Aussage über Bilder,
+  Größen oder Farbwerte erst `document.hidden` prüfen.**
