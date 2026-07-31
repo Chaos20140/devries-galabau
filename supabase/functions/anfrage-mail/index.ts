@@ -141,8 +141,16 @@ Deno.serve(async (req: Request) => {
   } catch (fehler) {
     /* Der Datensatz liegt bereits in der Tabelle — die Anfrage ist also
        nicht verloren, auch wenn der Versand scheitert. */
-    console.error("Versand fehlgeschlagen:", fehler instanceof Error ? fehler.message : fehler);
-    return new Response("Versand fehlgeschlagen", { status: 502 });
+    /* Der Datensatz liegt bereits in der Tabelle — die Anfrage ist also
+       nicht verloren, auch wenn der Versand scheitert. Sie taucht in der
+       Verwaltung auf und kann von Hand beantwortet werden. */
+    const grund = fehler instanceof Error ? fehler.message : String(fehler);
+    console.error("Versand fehlgeschlagen:", grund);
+    /* Der Grund geht nur an den Aufrufer zurueck. Das ist der Trigger, und
+       dessen Antwort landet in net._http_response — ausschliesslich ueber
+       service_role lesbar. Deshalb darf hier die Serverantwort stehen: sie
+       ist bei der Fehlersuche das Einzige, was wirklich weiterhilft. */
+    return new Response("Versand fehlgeschlagen: " + grund.slice(0, 200), { status: 502 });
   } finally {
     try { await client.close(); } catch { /* Verbindung war schon zu */ }
   }

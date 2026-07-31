@@ -11,6 +11,15 @@ create table if not exists public.galabau_bewerbungen (
   id              uuid        primary key default gen_random_uuid(),
   eingegangen_am  timestamptz not null    default now(),
 
+  -- Beide Felder schickt formular.js bei JEDEM Versand mit, auch bei
+  -- Bewerbungen. Fehlen sie hier, lehnt PostgREST den ganzen Datensatz
+  -- mit PGRST204 ab und das Formular faellt auf mailto zurueck --
+  -- gespeichert wuerde dann nie etwas. Ausserdem baut die Edge Function
+  -- den Betreff der Benachrichtigung aus "betreff".
+  quelle          text        not null    default 'stellenangebote'
+                                          check (char_length(quelle)  between 1 and 60),
+  betreff         text                    check (char_length(betreff) <= 160),
+
   name            text        not null    check (char_length(name)  between 1 and 120),
   email           text        not null    check (char_length(email) between 3 and 200
                                                  and position('@' in email) > 1),
@@ -19,6 +28,29 @@ create table if not exists public.galabau_bewerbungen (
   verfuegbar_ab   text                    check (char_length(verfuegbar_ab) <= 60),
   nachricht       text                    check (char_length(nachricht) <= 5000)
 );
+
+-- Nachtrag fuer Datenbanken, in denen die Tabelle schon ohne diese beiden
+-- Spalten steht: "create table if not exists" laesst eine vorhandene
+-- Tabelle unberuehrt, aendert dort also nichts.
+alter table public.galabau_bewerbungen
+  add column if not exists quelle  text not null default 'stellenangebote',
+  add column if not exists betreff text;
+
+do $$
+begin
+  if not exists (select 1 from pg_constraint
+                 where conname = 'galabau_bewerbungen_quelle_check') then
+    alter table public.galabau_bewerbungen
+      add constraint galabau_bewerbungen_quelle_check
+      check (char_length(quelle) between 1 and 60);
+  end if;
+  if not exists (select 1 from pg_constraint
+                 where conname = 'galabau_bewerbungen_betreff_check') then
+    alter table public.galabau_bewerbungen
+      add constraint galabau_bewerbungen_betreff_check
+      check (char_length(betreff) <= 160);
+  end if;
+end $$;
 
 comment on table public.galabau_bewerbungen is
   'Bewerbungen ueber das Formular. Schreibzugriff oeffentlich (anon), Lesezugriff nur serverseitig.';

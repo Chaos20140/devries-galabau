@@ -94,7 +94,37 @@ select status_code, content from net._http_response order by created desc limit 
 delete from public.galabau_anfragen where quelle = 'pruefung';
 ```
 
-`200` = Mail ist raus · `401` = Token stimmt nicht · `503` = SMTP-Secrets fehlen noch.
+`200` = Mail ist raus · `401` = Token stimmt nicht · `503` = SMTP-Secrets fehlen noch ·
+`502` = Strato hat den Versand abgelehnt, der genaue Grund steht in `content`.
+
+### Stand 31.07.2026: Strato lehnt die Anmeldung ab
+
+Die Secrets sind gesetzt, die Kette läuft bis zum letzten Schritt. Der Server antwortet:
+
+```
+535 5.7.8 Authentication failed: wrong user/password [MSG0037]
+```
+
+Nachgeprüft und in Ordnung: `smtpin.rzone.de` als MX der Domain — das Postfach liegt
+tatsächlich bei Strato, `smtp.strato.de:465` ist der richtige Server. Benutzername ist die
+vollständige Adresse mit `@devries-galabau.de`, ohne überzählige Leerzeichen. Absenderdomain
+passt. Die **Form** stimmt also; abgelehnt wird der Passwortwert selbst.
+
+Zwei Ursachen kommen dafür in Frage, beide nur im Strato-Kundenbereich zu klären:
+
+1. **Verwechselte Passwörter.** Für SMTP gilt das *Postfach*-Passwort (Strato-Kundenbereich →
+   E-Mail → Passwort verwalten), nicht das Passwort des Kundenkontos. Das ist der mit Abstand
+   häufigste Fall.
+2. **Von der Shell verschluckte Sonderzeichen.** `$`, `!` oder ein Backtick werden ohne
+   einfache Anführungszeichen von der Kommandozeile ersetzt. Deshalb im Befehl oben
+   `SMTP_PASS='…'` mit einfachen Anführungszeichen — dann bleibt der Wert unangetastet.
+
+Wiederholen lässt sich der Versuch mit demselben Befehl; er überschreibt das Secret. Danach
+die Gegenprobe von oben. Falls Strato Port 465 sperrt, geht auch
+`supabase secrets set SMTP_PORT=587` (STARTTLS).
+
+**Was währenddessen passiert:** nichts geht verloren. Die Anfrage wird gespeichert, bevor die
+Mail überhaupt versucht wird, und steht in `verwaltung.html`. Es fehlt nur die Benachrichtigung.
 
 ### Was bereits läuft
 
