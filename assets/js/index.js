@@ -102,7 +102,7 @@ class Component extends DCLogic {
     this.threeLaedt = new Promise((res, rej) => {
       if (window.THREE) return res();
       const s = document.createElement('script');
-      s.src = 'assets/js/three.min.js?v=24';
+      s.src = 'assets/js/three.min.js?v=25';
       s.async = true;
       s.onload = () => (window.THREE ? res() : rej(new Error('three geladen, aber nicht da')));
       s.onerror = () => rej(new Error('three konnte nicht geladen werden'));
@@ -133,8 +133,8 @@ class Component extends DCLogic {
       'display:flex;flex-direction:column;align-items:center;justify-content:center;' +
       'gap:16px;text-align:center;padding:76px 26px 34px;' +
       'font-family:Outfit,Helvetica,Arial,sans-serif;' +
-      "background-image:linear-gradient(180deg,rgba(246,249,244,.3),rgba(246,249,244,.78))," +
-      "url('assets/img/rg-header-800.webp');background-size:cover;background-position:center";
+      "background-image:linear-gradient(180deg,rgba(246,249,244,.16),rgba(246,249,244,.62) 62%,rgba(246,249,244,.88))," +
+      "url('assets/img/rg-start-800.webp');background-size:cover;background-position:center bottom";
     /* Feste Vorlage, kein eingesetzter Wert. Wortlaut wie die
        Begruessungstafel des Entwurfs. */
     hero.innerHTML =
@@ -200,7 +200,9 @@ class Component extends DCLogic {
      Bildschirmhoehen statt der frueheren zehn. */
   bahnHoehe() {
     if (!this.isMobile) return '1800vh';
-    return this.rundgangAn ? '400vh' : '112vh';
+    /* Wieder die volle Laenge: bei 400vh lief der Rundgang zu schnell
+     durch, die Stationen hatten keine Zeit zu wirken. */
+    return this.rundgangAn ? '1000vh' : '112vh';
   }
 
   setupExtras() {
@@ -2996,7 +2998,16 @@ class Component extends DCLogic {
         const nw = performance.now();
         const d2 = Math.min(40, nw - (this.lastNow || nw));
         this.lastNow = nw;
-        this.scrollVel = (this.scrollVel || 0) * 0.9;
+        /* ⚠ Hier stand nur ein Abklingen: scrollVel = scrollVel * 0.9.
+           Dieser Zweig greift fuer den GANZEN flachen Seitenteil — also
+           dort, wo Laufband, Karte und Materialband sitzen. Ohne echten
+           Messwert blieb scrollVel bei 0, kinDir wurde nie gesetzt und
+           die Wortmarke stand fuer immer bei ihrem Startwert. Jetzt wird
+           die Scrollgeschwindigkeit auch hier gemessen. */
+        const sy2 = window.scrollY;
+        const roh = sy2 - (this.lastSy == null ? sy2 : this.lastSy);
+        this.lastSy = sy2;
+        this.scrollVel = (this.scrollVel || 0) + (roh - (this.scrollVel || 0)) * 0.22;
         this.updateExtras(nw * 0.001, d2);
         return;
       }

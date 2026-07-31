@@ -23,7 +23,7 @@
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png?v=1">
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/outfit-600-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/outfit-400-latin.woff2" crossorigin>
-<link rel="stylesheet" href="assets/css/base.css?v=24">
+<link rel="stylesheet" href="assets/css/base.css?v=25">
 <style>
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;background:#EDF3E8;color:#12261A}
@@ -31,6 +31,15 @@
   a{color:#2C6E49;text-decoration:none}
   a:hover{color:#46761F}
   ::selection{background:#8ECF4F;color:#0F2318}
+  /* Die Angabenliste steht als zweispaltiges Raster mit fester
+     Beschriftungsspalte. Bei 414 px bleiben der Wertespalte rund 150 px —
+     dort bricht dann jedes Wort einzeln um ("An den / Flachsrotten / 2")
+     und laeuft aus der Karte heraus. Auf dem Handy deshalb untereinander. */
+  @media (max-width: 640px) {
+    [data-angabe] { grid-template-columns: minmax(0,1fr) !important; gap: 4px !important; padding: 14px 0 !important; }
+    [data-angabe] > div:first-child { font-size: 11px !important; letter-spacing: .14em !important; }
+    [data-angabe] > div:last-child { font-size: 16px !important; line-height: 1.5 !important; }
+  }
 </style>
 </head>
 <body>
@@ -53,39 +62,39 @@
   <section data-screen-label="Angaben" style="position:relative;z-index:2;padding:clamp(20px,4vh,50px) clamp(20px,5vw,68px)">
     <div style="max-width:1240px;margin:0 auto">
       <div style="border-radius:26px;padding:clamp(24px,3vw,44px);background:linear-gradient(155deg,rgba(255,255,255,.72),rgba(255,255,255,.42));backdrop-filter:blur(26px) saturate(1.45);border:1px solid rgba(255,255,255,.6);box-shadow:0 26px 54px -38px rgba(12,29,20,.34)">
-        <div data-reveal style="display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr);gap:clamp(12px,2vw,32px);padding:18px 0;border-top:1px solid rgba(16,35,26,.1)">
+        <div data-reveal data-angabe style="display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr);gap:clamp(12px,2vw,32px);padding:18px 0;border-top:1px solid rgba(16,35,26,.1)">
           <div style="font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#46761F">Unternehmen</div>
           <div style="font-size:15.5px;line-height:1.6;color:#26382E">de Vries GaLa-Bau<br>Garten- und Landschaftsbau</div>
         </div>
-        <div data-reveal style="display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr);gap:clamp(12px,2vw,32px);padding:18px 0;border-top:1px solid rgba(16,35,26,.1)">
+        <div data-reveal data-angabe style="display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr);gap:clamp(12px,2vw,32px);padding:18px 0;border-top:1px solid rgba(16,35,26,.1)">
           <div style="font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#46761F">Anschrift</div>
           <div style="font-size:15.5px;line-height:1.6;color:#26382E">An den Flachsrotten 2<br>31020 Salzhemmendorf</div>
         </div>
-        <div data-reveal style="display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr);gap:clamp(12px,2vw,32px);padding:18px 0;border-top:1px solid rgba(16,35,26,.1)">
+        <div data-reveal data-angabe style="display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr);gap:clamp(12px,2vw,32px);padding:18px 0;border-top:1px solid rgba(16,35,26,.1)">
           <div style="font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#46761F">Vertreten durch</div>
           <div style="font-size:15.5px;line-height:1.6;color:#26382E">Andreas de Vries</div>
         </div>
-        <div data-reveal style="display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr);gap:clamp(12px,2vw,32px);padding:18px 0;border-top:1px solid rgba(16,35,26,.1)">
+        <div data-reveal data-angabe style="display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr);gap:clamp(12px,2vw,32px);padding:18px 0;border-top:1px solid rgba(16,35,26,.1)">
           <div style="font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#46761F">Telefon</div>
           <div style="font-size:15.5px;line-height:1.6;color:#26382E"><a href="tel:051531552" style="color:#1B4332;font-weight:600">05153 1552</a></div>
         </div>
-        <div data-reveal style="display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr);gap:clamp(12px,2vw,32px);padding:18px 0;border-top:1px solid rgba(16,35,26,.1)">
+        <div data-reveal data-angabe style="display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr);gap:clamp(12px,2vw,32px);padding:18px 0;border-top:1px solid rgba(16,35,26,.1)">
           <div style="font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#46761F">E-Mail</div>
           <div style="font-size:15.5px;line-height:1.6;color:#26382E"><a href="mailto:info@devries-galabau.de" style="color:#1B4332;font-weight:600">info@devries-galabau.de</a></div>
         </div>
-        <div data-reveal style="display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr);gap:clamp(12px,2vw,32px);padding:18px 0;border-top:1px solid rgba(16,35,26,.1)">
+        <div data-reveal data-angabe style="display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr);gap:clamp(12px,2vw,32px);padding:18px 0;border-top:1px solid rgba(16,35,26,.1)">
           <div style="font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#46761F">Bauhof</div>
           <div style="font-size:15.5px;line-height:1.6;color:#26382E">Salzhemmendorfer Straße 2<br>31020 Salzhemmendorf</div>
         </div>
-        <div data-reveal style="display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr);gap:clamp(12px,2vw,32px);padding:18px 0;border-top:1px solid rgba(16,35,26,.1)">
+        <div data-reveal data-angabe style="display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr);gap:clamp(12px,2vw,32px);padding:18px 0;border-top:1px solid rgba(16,35,26,.1)">
           <div style="font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#46761F">USt-IdNr.</div>
           <div style="font-size:15.5px;line-height:1.6;color:#26382E">DE192201141</div>
         </div>
-        <div data-reveal style="display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr);gap:clamp(12px,2vw,32px);padding:18px 0;border-top:1px solid rgba(16,35,26,.1)">
+        <div data-reveal data-angabe style="display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr);gap:clamp(12px,2vw,32px);padding:18px 0;border-top:1px solid rgba(16,35,26,.1)">
           <div style="font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#46761F">Verantwortlich für den Inhalt</div>
           <div style="font-size:15.5px;line-height:1.6;color:#26382E">Andreas de Vries<br>An den Flachsrotten 2<br>31020 Salzhemmendorf</div>
         </div>
-        <div data-reveal style="display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr);gap:clamp(12px,2vw,32px);padding:18px 0;border-top:1px solid rgba(16,35,26,.1)">
+        <div data-reveal data-angabe style="display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr);gap:clamp(12px,2vw,32px);padding:18px 0;border-top:1px solid rgba(16,35,26,.1)">
           <div style="font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#46761F">Öffnungszeiten</div>
           <div style="font-size:15.5px;line-height:1.6;color:#26382E">Montag bis Freitag, 8:00–16:00 Uhr</div>
         </div>
@@ -105,8 +114,8 @@
   </section>
   <garden-footer active="Impressum"></garden-footer>
 </div>
-<script src="assets/js/garden-header.js?v=24"></script>
-<script src="assets/js/garden-footer.js?v=24"></script>
-<script src="assets/js/impressum.js?v=24"></script>
+<script src="assets/js/garden-header.js?v=25"></script>
+<script src="assets/js/garden-footer.js?v=25"></script>
+<script src="assets/js/impressum.js?v=25"></script>
 </body>
 </html>
