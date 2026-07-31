@@ -48,6 +48,7 @@ class Component extends DCLogic {
        Jetzt steht sofort das Standbild da — echtes Foto, echter Text.
        Der Rundgang startet am Rechner von selbst, sobald die Seite
        gezeichnet ist und feststeht, dass die Grafik ihn auch tragen kann. */
+    this.vorspannBegleiten();
     this.zeigeStandbild();
     if (window.innerWidth >= 820) this.planeAutostart();
     this.raf = requestAnimationFrame(this.tick);
@@ -116,13 +117,49 @@ class Component extends DCLogic {
     this.threeLaedt = new Promise((res, rej) => {
       if (window.THREE) return res();
       const s = document.createElement('script');
-      s.src = 'assets/js/three.min.js?v=32';
+      s.src = 'assets/js/three.min.js?v=33';
       s.async = true;
       s.onload = () => (window.THREE ? res() : rej(new Error('three geladen, aber nicht da')));
       s.onerror = () => rej(new Error('three konnte nicht geladen werden'));
       document.head.appendChild(s);
     });
     return this.threeLaedt;
+  }
+
+  /* Der Vorspann steht im HTML und loest sich per CSS von selbst auf
+     (siehe index.html). Hier passiert nur noch das Beiwerk:
+
+     · die Ziffern hochzaehlen,
+     · den Knoten hinterher aus dem Baum nehmen, damit er nicht als
+       unsichtbare Schicht ueber der Seite liegen bleibt,
+     · vermerken, dass er in dieser Sitzung gelaufen ist.
+
+     Bewusst wird hier NICHTS eingeblendet oder verzoegert. Faellt dieses
+     Skript aus, verschwindet der Vorspann trotzdem — das erledigt die
+     Animation. Die Notbremse unten greift nur, falls die Animation selbst
+     nicht laeuft (etwa in einem Reiter, der im Hintergrund geladen wird:
+     dort stehen Animationen still). */
+  vorspannBegleiten() {
+    const v = document.getElementById('rg-vorspann');
+    if (!v) return;
+    try { sessionStorage.setItem('dvg-vorspann', '1'); } catch (e) { /* ohne Speicher halt jedes Mal */ }
+
+    const zahl = document.getElementById('rg-vorspann__zahl');
+    if (zahl) {
+      const start = performance.now();
+      const dauer = 900;
+      const tick = () => {
+        const p = Math.min(1, (performance.now() - start) / dauer);
+        zahl.textContent = String(Math.round(p * 100)).padStart(3, '0');
+        if (p < 1 && document.getElementById('rg-vorspann')) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    }
+
+    const weg = () => { if (v.parentNode) v.remove(); };
+    v.addEventListener('animationend', (e) => { if (e.animationName === 'rgVorspannWeg') weg(); });
+    /* Notbremse: steht die Animation still, waere die Seite sonst zu. */
+    setTimeout(weg, 2600);
   }
 
   /* Kann diese Maschine den Rundgang ueberhaupt tragen?
@@ -225,9 +262,9 @@ class Component extends DCLogic {
        jede Messung. Dieses Projekt hatte einmal einen (v7) und hat ihn aus
        genau diesem Grund wieder entfernt. Das Einblenden kostet nichts,
        weil es die Anzeige nicht aufhaelt. */
-    if (!document.getElementById('rg-vorspann-stil')) {
+    if (!document.getElementById('rg-standbild-stil')) {
       const stil = document.createElement('style');
-      stil.id = 'rg-vorspann-stil';
+      stil.id = 'rg-standbild-stil';
       /* WICHTIG: Der Text wird NICHT eingeblendet, sondern nur bewegt.
 
          Eine Einblendung faengt bei opacity 0 an. Laeuft die Animation aus
