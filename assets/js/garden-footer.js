@@ -42,10 +42,29 @@
           '[data-meadow],[data-band]{display:none !important}' +
           '.gf-card{border-radius:20px !important;padding:20px 18px !important;box-shadow:0 18px 40px -30px rgba(12,29,20,.35) !important}' +
           '.gf-name{font-size:24px !important}' +
+          /* Auf dem Handy sind die Linkspalten Ordner. <details> bringt das
+             Auf- und Zuklappen mit, ohne eigenes JavaScript und mit
+             Tastaturbedienung. */
+          '.gf-fold>summary{display:flex !important;align-items:center;justify-content:space-between;'
+            + 'gap:10px;min-height:44px;cursor:pointer;list-style:none;font-size:12px;font-weight:700;'
+            + 'letter-spacing:.18em;text-transform:uppercase;color:#46761F;'
+            + 'border-bottom:1px solid rgba(16,35,26,.1)}' +
+          '.gf-fold>summary::-webkit-details-marker{display:none}' +
+          '.gf-fold>summary i{font-style:normal;font-size:10px;transition:transform .3s ease}' +
+          '.gf-fold[open]>summary i{transform:rotate(180deg)}' +
+          '.gf-sub{display:flex;flex-direction:column;gap:2px;padding:6px 0 10px}' +
+          '.gf-sub a{min-height:40px;display:flex;align-items:center}' +
           '.gf-lead{display:none !important}' +
           '.gf-social{margin-top:14px !important}' +
         '}' +
         '.gf-wrap{container-type:inline-size}' +
+        '.gf-fold{min-width:0}' +
+        '.gf-fold>summary{display:block;font-size:11px;font-weight:600;letter-spacing:.2em;'
+          + 'text-transform:uppercase;color:#46761F;margin-bottom:11px;list-style:none}' +
+        '.gf-fold>summary::-webkit-details-marker{display:none}' +
+        '.gf-fold>summary i{display:none}' +
+        '.gf-sub{display:flex;flex-direction:column;gap:11px;min-width:0}' +
+        '.gf-fold>summary:focus-visible{outline:3px solid #1B4332;outline-offset:3px}' +
         '.gf-row{display:grid;grid-template-columns:minmax(min-content,2fr) repeat(3,minmax(min-content,.9fr));gap:clamp(14px,1.6vw,36px);align-items:start}' +
         '@container (max-width: 760px){.gf-row{grid-template-columns:repeat(2,minmax(min-content,1fr))}.gf-row>:first-child{grid-column:1/-1}}' +
         '@container (max-width: 430px){.gf-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 14px}.gf-row>:first-child{grid-column:1/-1}}' +
@@ -77,15 +96,13 @@
             '<a href="https://www.facebook.com/devriesdienstleistungen" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;padding:9px 16px;border-radius:999px;font-size:13px;font-weight:600;color:#1B4332;background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.7)">Facebook</a>' +
             '</div>' +
             '</div>' +
-            '<div style="display:flex;flex-direction:column;gap:11px;min-width:0">' +
-            '<div style="font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#46761F">Leistungen</div>' +
+            '<details class="gf-fold" open><summary>Leistungen<i aria-hidden="true">▾</i></summary><div class="gf-sub">' +
             '<a href="gartengestaltung.html" style="font-size:15px;color:#26382E;text-decoration:none">Gartengestaltung</a>' +
             '<a href="gartenplanung.html" style="font-size:15px;color:#26382E;text-decoration:none">Gartenplanung</a>' +
             '<a href="gartenpflege.html" style="font-size:15px;color:#26382E;text-decoration:none">Gartenpflege</a>' +
             '<a href="bepflanzung.html" style="font-size:15px;color:#26382E;text-decoration:none">Bepflanzung</a>' +
-            '</div>' +
-            '<div style="display:flex;flex-direction:column;gap:11px;min-width:0">' +
-            '<div style="font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#46761F">Ansichten</div>' +
+            '</div></details>' +
+            '<details class="gf-fold" open><summary>Ansichten<i aria-hidden="true">▾</i></summary><div class="gf-sub">' +
             '<a href="index.html" style="font-size:15px;color:#26382E;text-decoration:none">Rundgang</a>' +
             '<a href="ueber-uns.html" style="font-size:15px;color:#26382E;text-decoration:none">Über uns</a>' +
             '<a href="referenzen.html" style="font-size:15px;color:#26382E;text-decoration:none">Referenzen</a>' +
@@ -93,7 +110,7 @@
             '<a href="stellenangebote.html" style="font-size:15px;color:#26382E;text-decoration:none">Stellenangebote</a>' +
             '<a href="impressum.html" style="font-size:15px;color:#26382E;text-decoration:none">Impressum</a>' +
             '<a href="datenschutz.html" style="font-size:15px;color:#26382E;text-decoration:none">Datenschutz</a>' +
-            '</div>' +
+            '</div></details>' +
             '<div style="display:flex;flex-direction:column;gap:11px;min-width:0">' +
             '<div style="font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#46761F">Kontakt</div>' +
             '<a href="tel:051531552" style="font-size:19px;font-weight:600;color:#1B4332;letter-spacing:-.01em">05153 1552</a>' +
@@ -119,6 +136,17 @@
       this.$row = R.querySelector('.gf-row');
 
       Array.from(R.querySelectorAll('[data-year]')).forEach(el => { el.textContent = new Date().getFullYear(); });
+
+      /* Die Linkspalten sind <details>. Am Desktop stehen sie offen und
+         sehen aus wie zuvor; auf dem Handy sind sie zu, sonst waere die
+         Fusszeile laenger als vorher statt kuerzer. */
+      const mq = window.matchMedia('(max-width: 760px)');
+      const falten = () => {
+        Array.from(R.querySelectorAll('.gf-fold')).forEach(d => { d.open = !mq.matches; });
+      };
+      falten();
+      if (mq.addEventListener) mq.addEventListener('change', falten);
+      else if (mq.addListener) mq.addListener(falten);
 
       const mark = () => {
         Array.from(R.querySelectorAll('a')).forEach(a => {

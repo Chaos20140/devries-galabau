@@ -102,7 +102,7 @@ class Component extends DCLogic {
     this.threeLaedt = new Promise((res, rej) => {
       if (window.THREE) return res();
       const s = document.createElement('script');
-      s.src = 'assets/js/three.min.js?v=19';
+      s.src = 'assets/js/three.min.js?v=22';
       s.async = true;
       s.onload = () => (window.THREE ? res() : rej(new Error('three geladen, aber nicht da')));
       s.onerror = () => rej(new Error('three konnte nicht geladen werden'));
@@ -953,10 +953,17 @@ class Component extends DCLogic {
 
   setupReveals() {
     const els = Array.from(document.querySelectorAll('[data-reveal]'));
-    els.forEach(el => {
+    /* Auf dem Handy kommen die Elemente abwechselnd von links und rechts
+       herein statt alle von unten. Das gibt dem Durchscrollen einen
+       Rhythmus, ohne dass jede Karte gleich aussieht.
+       28 px sind bewusst wenig: mehr wuerde bei 360 px Breite trotz
+       overflow-x:clip auffallen und die Seite wackeln lassen. */
+    const seitlich = window.innerWidth < 820 && !__reduce;
+    els.forEach((el, i) => {
       el.style.opacity = '0';
       /* Bei reduzierter Bewegung nur blenden, nicht schieben. */
-      if (!__reduce) el.style.transform = 'translateY(26px)';
+      if (seitlich) el.style.transform = 'translateX(' + (i % 2 ? 28 : -28) + 'px)';
+      else if (!__reduce) el.style.transform = 'translateY(26px)';
       el.style.transition = __reduce
         ? 'opacity .35s ease'
         : 'opacity .9s cubic-bezier(.16,1,.3,1), transform .9s cubic-bezier(.16,1,.3,1)';

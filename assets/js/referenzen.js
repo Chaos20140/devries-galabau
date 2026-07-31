@@ -8,6 +8,7 @@
 
   /* Systemeinstellung "Bewegung reduzieren" — im Design nicht vorgesehen. */
   var __reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  var __seitlich = window.innerWidth < 820 && !__reduce;
 
 
   /* Minimale Nachbildung der Basisklasse der Design-Laufzeit. */
@@ -20,12 +21,15 @@ class Component extends DCLogic {
   renderVals() { return {}; }
   componentDidMount() {
     const els = Array.from(document.querySelectorAll('[data-reveal]'));
-    els.forEach(el => {
+    els.forEach((el, i) => {
       const r = el.getBoundingClientRect();
       if (r.top > window.innerHeight * 0.92) {
         el.style.opacity = '0';
-        /* Bei reduzierter Bewegung nur blenden, nicht schieben. */
-        if (!__reduce) el.style.transform = 'translateY(26px)';
+        /* Bei reduzierter Bewegung nur blenden, nicht schieben.
+           Auf dem Handy abwechselnd von links und rechts — gleicher
+           Rhythmus wie auf der Startseite. */
+        if (__seitlich) el.style.transform = 'translateX(' + (i % 2 ? 28 : -28) + 'px)';
+        else if (!__reduce) el.style.transform = 'translateY(26px)';
       }
       el.style.transition = __reduce
         ? 'opacity .35s ease'
