@@ -28,7 +28,7 @@ class Component extends DCLogic {
         /* Bei reduzierter Bewegung nur blenden, nicht schieben.
            Auf dem Handy abwechselnd von links und rechts — gleicher
            Rhythmus wie auf der Startseite. */
-        if (__seitlich) el.style.transform = 'translateX(' + (i % 2 ? 28 : -28) + 'px)';
+        if (__seitlich) el.style.transform = 'translateX(' + (i % 2 ? 44 : -44) + 'px)';
         else if (!__reduce) el.style.transform = 'translateY(26px)';
       }
       el.style.transition = __reduce
@@ -42,7 +42,7 @@ class Component extends DCLogic {
         setTimeout(() => { t.style.opacity = '1'; t.style.transform = 'none'; }, i * 70);
         this.io.unobserve(t);
       });
-    }, { rootMargin: '0px 0px -10% 0px', threshold: 0.12 });
+    }, { rootMargin: '0px 0px -22% 0px', threshold: 0.05 });
     els.forEach(el => this.io.observe(el));
     setTimeout(() => els.forEach(el => { el.style.opacity = '1'; el.style.transform = 'none'; }), 6000);
   }
