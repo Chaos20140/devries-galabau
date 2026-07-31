@@ -19,7 +19,27 @@
   "use strict";
 
   var BASIS = 'https://pvcbgwzqjnzzpehwuywi.supabase.co/functions/v1/verwaltung';
+  /* Das Passwort geht genau EINMAL ueber die Leitung — bei der Anmeldung.
+     Danach arbeitet die Seite mit einem Kennzeichen, das der Server
+     ausstellt und das nach acht Stunden verfaellt.
+
+     Abgelegt in sessionStorage, nicht in localStorage: ein Neuladen
+     behaelt die Anmeldung, das Schliessen des Reiters beendet sie. Genau
+     dieses Verhalten will man an einem Rechner, der auch anderen
+     zugaenglich ist. */
+  var SCHLUESSEL = 'dvg-verwaltung-sitzung';
   var pw = '';
+  var sitzung = '';
+
+  function sitzungLesen() {
+    try { return window.sessionStorage.getItem(SCHLUESSEL) || ''; } catch (e) { return ''; }
+  }
+  function sitzungMerken(wert) {
+    try {
+      if (wert) window.sessionStorage.setItem(SCHLUESSEL, wert);
+      else window.sessionStorage.removeItem(SCHLUESSEL);
+    } catch (e) { /* ohne Speicher laeuft alles weiter, nur ohne Merken */ }
+  }
   var daten = { anfragen: null, bewerbungen: null };
   var bereich = 'anfragen';
   var filter = 'alle';
@@ -30,6 +50,57 @@
      Kachel beim Ruecksprung aus einer Liste hart "0 neu" an, obwohl dort
      ungelesene Eintraege liegen. */
   var serverNeu = { anfragen: 0, bewerbungen: 0 };
+  /* Voller Stand vom Server: neu, gesamt und letzter Eingang je Bereich. */
+  var stand = { anfragen: null, bewerbungen: null };
+  var uhr = null;
+
+  function uebernehmeStand(s) {
+    if (!s) return;
+    stand = s;
+    serverNeu = { anfragen: (s.anfragen || {}).neu || 0, bewerbungen: (s.bewerbungen || {}).neu || 0 };
+  }
+
+  /* Solange die Seite offen ist, alle 60 s nachsehen, ob etwas
+     hinzugekommen ist. Das ersetzt keine Mail-Benachrichtigung, macht die
+     Verwaltung aber zu etwas, das man nebenher offen lassen kann.
+     Angehalten, wenn der Reiter im Hintergrund liegt — sonst laeuft die
+     Abfrage nachts durch, ohne dass jemand hinsieht. */
+  function startUhr() {
+    stopUhr();
+    uhr = window.setInterval(function () {
+      if (document.hidden || !sitzung && !pw) return;
+      ruf({ was: 'stand' })
+        .then(function (a) {
+          var vorher = serverNeu.anfragen + serverNeu.bewerbungen;
+          uebernehmeStand(a.stand);
+          var jetzt = serverNeu.anfragen + serverNeu.bewerbungen;
+          if (jetzt > vorher) zeigeNeuHinweis(jetzt - vorher);
+          if ($('.vw-kacheln')) zeigeUebersicht(zaehleNeu());
+        })
+        .catch(function () { /* stiller Fehlversuch, beim naechsten Mal wieder */ });
+    }, 60000);
+  }
+  function stopUhr() { if (uhr) { window.clearInterval(uhr); uhr = null; } }
+
+  function zeigeNeuHinweis(anzahl) {
+    var alt = $('#vw-neu');
+    if (alt) alt.remove();
+    var d = document.createElement('div');
+    d.id = 'vw-neu';
+    d.className = 'vw-neu';
+    d.setAttribute('role', 'status');
+    d.innerHTML = '<span>' + anzahl + (anzahl === 1 ? ' neuer Eintrag' : ' neue Einträge') +
+      ' eingegangen</span><button class="vw-neu__knopf" id="vw-neu-laden">Anzeigen</button>' +
+      '<button class="vw-neu__zu" aria-label="Hinweis schließen">✕</button>';
+    document.body.appendChild(d);
+    d.querySelector('.vw-neu__zu').addEventListener('click', function () { d.remove(); });
+    $('#vw-neu-laden').addEventListener('click', function () {
+      d.remove();
+      daten = { anfragen: null, bewerbungen: null };
+      offen = null;
+      zeigeUebersicht(zaehleNeu());
+    });
+  }
   /* Zuletzt geloeschter Eintrag, damit "Rueckgaengig" ihn zurueckholen
      kann. Bewusst nur im Speicher dieser Seite: "endgueltig loeschen"
      soll auch endgueltig heissen — nach dem Verlassen der Seite ist der
@@ -52,7 +123,8 @@
   };
 
   function ruf(auftrag) {
-    auftrag.passwort = pw;
+    /* Kennzeichen bevorzugen; das Passwort nur bei der Anmeldung. */
+    if (sitzung) auftrag.sitzung = sitzung; else auftrag.passwort = pw;
     return fetch(BASIS, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -70,7 +142,7 @@
              Meldung die eigentliche Fehlermeldung. */
           if (r.status === 401 && auftrag.was !== 'anmelden') {
             f.abgemeldet = true;
-            pw = '';
+            pw = ''; sitzung = ''; sitzungMerken('');
             daten = { anfragen: null, bewerbungen: null };
             offen = null; notizEntwurf = null; papierkorb = null;
             zeigePapierkorb();
@@ -119,7 +191,7 @@
   }
 
   window.addEventListener('popstate', function (e) {
-    if (!pw) return;                       // nicht angemeldet: nichts zu tun
+    if (!pw && !sitzung) return;            // nicht angemeldet: nichts zu tun
     var z = e.state || { ansicht: 'uebersicht' };
     verlaufAus = true;
     try {
@@ -168,7 +240,12 @@
       knopf.disabled = true; knopf.textContent = 'Prüfe …';
       pw = $('#vw-pw').value;
       ruf({ was: 'anmelden' })
-        .then(function (a) { serverNeu = a.neu || serverNeu; verlaufSetz({ ansicht: 'uebersicht' }, true); zeigeUebersicht(a.neu); })
+        .then(function (a) {
+          if (a.sitzung) { sitzung = a.sitzung; sitzungMerken(sitzung); pw = ''; }
+          uebernehmeStand(a.stand);
+          verlaufSetz({ ansicht: 'uebersicht' }, true);
+          zeigeUebersicht(zaehleNeu());
+        })
         .catch(function (f) { pw = ''; zeigeAnmeldung(verstaendlich(f)); });
     });
     $('#vw-pw').focus();
@@ -178,10 +255,16 @@
   function zeigeUebersicht(neu) {
     neu = neu || { anfragen: 0, bewerbungen: 0 };
     var kachel = function (schl, titel, symbol) {
+      var s = stand[schl] || {};
+      var zeile2 = (s.gesamt != null ? ' von ' + s.gesamt : '');
+      var letzter = s.letzter
+        ? '<span class="vw-kachel__zeit">zuletzt ' + esc(datum(s.letzter)) + '</span>'
+        : (s.gesamt === 0 ? '<span class="vw-kachel__zeit">noch nichts eingegangen</span>' : '');
       return '<button class="vw-kachel" data-geh="' + schl + '">' +
         '<span class="vw-kachel__kopf"><span class="vw-symbol" aria-hidden="true">' + symbol + '</span>' +
         '<span class="vw-kachel__titel">' + titel + '</span></span>' +
-        '<span class="vw-kachel__zahl">' + neu[schl] + ' neu</span></button>';
+        '<span class="vw-kachel__zahl"><b>' + neu[schl] + '</b> neu' + zeile2 + '</span>' +
+        letzter + '</button>';
     };
     $('#vw-app').innerHTML =
       '<div class="vw-mitte">' +
@@ -199,6 +282,7 @@
       '</div>';
     $('#vw-abmelden').addEventListener('click', abmelden);
     fokusAufUeberschrift();
+    startUhr();
     Array.prototype.forEach.call(document.querySelectorAll('[data-geh]'), function (b) {
       b.addEventListener('click', function () {
         bereich = b.getAttribute('data-geh'); filter = 'alle'; suche = ''; offen = null;
@@ -208,7 +292,13 @@
     });
   }
 
-  function abmelden() { pw = ''; daten = { anfragen: null, bewerbungen: null }; notizEntwurf = null; zeigeAnmeldung(''); }
+  function abmelden() {
+    pw = ''; sitzung = ''; sitzungMerken('');
+    daten = { anfragen: null, bewerbungen: null };
+    notizEntwurf = null; papierkorb = null; zeigePapierkorb();
+    stopUhr();
+    zeigeAnmeldung('');
+  }
 
   /* Die Meldungen von fetch sind englisch und sagen dem Betreiber nichts
      ("Failed to fetch", "Load failed"). Die Meldungen der Funktion selbst
@@ -303,6 +393,7 @@
     $('#vw-zurueck').addEventListener('click', function () { history.back(); });
     $('#vw-csv').addEventListener('click', csv);
 
+
     /* Nur den Listenkoerper neu zeichnen, nicht die ganze Ansicht. Vorher
        wurde bei jedem Tastendruck auch das Suchfeld neu erzeugt — die
        Schreibmarke sprang damit ans Ende und eine Korrektur mitten im
@@ -323,6 +414,36 @@
     });
     bindeZeilen();
     fokusAufUeberschrift();
+  }
+
+  /* EINMAL registriert, nicht je Ansicht — ein Handler, der sich selbst
+     abmeldet, sobald gerade keine Liste da ist, wirkt danach nirgends
+     mehr. Er entscheidet stattdessen bei jedem Tastendruck neu, wo er
+     ist. In Eingabefeldern gilt nur Escape; dort tippt man. */
+  function tasten(e) {
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    if (!pw && !sitzung) return;                      // nicht angemeldet
+    var el = document.activeElement || {};
+    var imFeld = /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName || '');
+
+    if (e.key === 'Escape') {
+      if (imFeld && el.blur) { el.blur(); return; }   // erst das Feld verlassen
+      if ($('#vw-listenkoerper') || $('#vw-drucken')) { e.preventDefault(); history.back(); }
+      return;
+    }
+    if (imFeld) return;
+    if (!$('#vw-listenkoerper')) return;              // Pfeile nur in der Liste
+
+    var zeilen = Array.prototype.slice.call(document.querySelectorAll('.vw-zeile'));
+    if (!zeilen.length) return;
+    var jetzt = zeilen.indexOf(el);
+    if (e.key === 'ArrowDown' || e.key === 'j') {
+      e.preventDefault();
+      zeilen[Math.min(zeilen.length - 1, jetzt + 1)].focus();
+    } else if (e.key === 'ArrowUp' || e.key === 'k') {
+      e.preventDefault();
+      zeilen[jetzt <= 0 ? 0 : jetzt - 1].focus();
+    }
   }
 
   function koerper(zeilen, eintrag) {
@@ -384,6 +505,7 @@
             : '') +
           '<div class="vw-aktionen">' +
             '<a class="vw-btn vw-btn--voll" href="mailto:' + esc(z.email) + '">Antworten</a>' +
+            '<button class="vw-btn vw-btn--leer" id="vw-drucken">Drucken</button>' +
             (z.telefon ? '<a class="vw-btn vw-btn--leer" href="tel:' + esc(String(z.telefon).replace(/\s/g, '')) + '">Anrufen</a>' : '') +
           '</div>' +
           (klein
@@ -408,6 +530,9 @@
       '</div>';
     $('#vw-zurueck').addEventListener('click', function () { history.back(); });
     fokusAufUeberschrift();
+    /* Zum Mitnehmen an den Ortstermin. Die Druckregeln in der Seite
+       blenden Knoepfe und Hintergruende aus. */
+    if ($('#vw-drucken')) $('#vw-drucken').addEventListener('click', function () { window.print(); });
 
     /* Der Link wird bei jedem Klick neu geholt und gilt nur zwei Minuten.
        Er steht deshalb nirgends im Markup und landet nicht im Verlauf. */
@@ -606,5 +731,26 @@
     setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
   }
 
-  document.addEventListener('DOMContentLoaded', function () { zeigeAnmeldung(''); });
+  /* Beim Laden: gibt es ein gemerktes Kennzeichen, gleich weitermachen.
+     Ist es abgelaufen, faellt die Seite auf die Anmeldung zurueck — ohne
+     Fehlermeldung, denn abgelaufen ist kein Fehler des Benutzers. */
+  function start() {
+    var gemerkt = sitzungLesen();
+    if (!gemerkt) { zeigeAnmeldung(''); return; }
+    sitzung = gemerkt;
+    $('#vw-app').innerHTML = '<div class="vw-mitte"><p class="vw-hint">lädt …</p></div>';
+    ruf({ was: 'anmelden' })
+      .then(function (a) {
+        uebernehmeStand(a.stand);
+        verlaufSetz({ ansicht: 'uebersicht' }, true);
+        zeigeUebersicht(zaehleNeu());
+      })
+      .catch(function () {
+        sitzung = ''; sitzungMerken('');
+        zeigeAnmeldung('');
+      });
+  }
+
+  document.addEventListener('keydown', tasten);
+  document.addEventListener('DOMContentLoaded', start);
 })();
