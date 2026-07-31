@@ -98,14 +98,24 @@
         '.gh-close{flex:none;display:inline-flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:999px;border:1px solid rgba(16,35,26,.14);background:rgba(255,255,255,.9);cursor:pointer;padding:0}' +
         '.gh-close svg{width:18px;height:18px;stroke:#0F2418;stroke-width:2.2;fill:none;stroke-linecap:round}' +
         '.gh-inner{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:18px clamp(16px,5vw,28px) 8px}' +
-        '.gh-grp{margin:0 0 6px;font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#4F7B33}' +
-        '.gh-grp+.gh-grp,.gh-glist+.gh-grp{margin-top:20px}' +
-        '.gh-big{display:flex;align-items:center;min-height:46px;font-size:19px;font-weight:600;letter-spacing:-.025em;color:#0F2418;border-bottom:1px solid rgba(16,35,26,.08)}' +
+        '.gh-big{display:flex;align-items:center;min-height:52px;font-size:19px;font-weight:600;letter-spacing:-.025em;color:#0F2418;border-bottom:1px solid rgba(16,35,26,.08)}' +
         '.gh-onBig{color:#2C6E49}' +
-        /* Zweitrangige Seiten zweispaltig — spart die halbe Hoehe, ohne
-           dass etwas wegfaellt. */
-        '.gh-glist{display:grid;grid-template-columns:1fr 1fr;column-gap:14px}' +
-        '.gh-glist .gh-big{font-size:16px;min-height:44px}' +
+        /* Ordner als <details>: aufklappbar ohne eigenes JavaScript, mit
+           Tastatur bedienbar und vom Screenreader korrekt angesagt. */
+        '.gh-fold{border-bottom:1px solid rgba(16,35,26,.08)}' +
+        '.gh-fold>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;'
+          + 'min-height:52px;font-size:19px;font-weight:600;letter-spacing:-.025em;color:#0F2418;'
+          + 'cursor:pointer;list-style:none;-webkit-tap-highlight-color:transparent}' +
+        '.gh-fold>summary::-webkit-details-marker{display:none}' +
+        '.gh-fold>summary i{flex:none;width:26px;height:26px;display:flex;align-items:center;'
+          + 'justify-content:center;border-radius:50%;background:rgba(31,86,55,.1);font-style:normal;'
+          + 'font-size:11px;color:#1F5637;transition:transform .3s ease}' +
+        '.gh-fold[open]>summary i{transform:rotate(180deg)}' +
+        '.gh-sub{padding:0 0 10px 2px;display:flex;flex-direction:column}' +
+        '.gh-sub a{display:flex;align-items:center;min-height:46px;font-size:16.5px;font-weight:500;color:#26382E;border-bottom:none}' +
+        '.gh-sub a.gh-onBig{font-weight:600}' +
+        '.gh-rechts{display:flex;gap:18px;padding:14px 0 4px;font-size:14px}' +
+        '.gh-rechts a{color:#4A5F52}' +
         '.gh-mcta{flex:none;display:flex;flex-direction:column;gap:9px;padding:12px clamp(16px,5vw,28px) calc(14px + env(safe-area-inset-bottom));border-top:1px solid rgba(16,35,26,.09);background:rgba(255,255,255,.5)}' +
         '.gh-mcta a{display:inline-flex;align-items:center;justify-content:center;min-height:50px;font-size:16px;font-weight:700;padding:0 24px;border-radius:999px}' +
         /* Sichtbarer Fokusring — im Design nicht vorhanden, fuer die
@@ -141,10 +151,25 @@
             '</button>' +
           '</div>' +
           '<div class="gh-inner">' +
-            '<p class="gh-grp">Leistungen</p>' +
-            MAIN.map(m => big(m[0], m[1])).join('') +
-            '<p class="gh-grp">Unternehmen</p>' +
-            '<div class="gh-glist">' + MORE.map(m => big(m[0], m[1])).join('') + '</div>' +
+            /* Ordner "Leistungen" — die fuenf Seiten dahinter sind der Kern,
+               muessen aber nicht dauerhaft die halbe Hoehe belegen. Auf der
+               jeweiligen Unterseite steht er offen. */
+            '<details class="gh-fold"' + (MAIN.some(x => on(x[1])) ? ' open' : '') + '>' +
+              '<summary>Leistungen<i aria-hidden="true">▾</i></summary>' +
+              '<div class="gh-sub">' + MAIN.map(m => big(m[0], m[1])).join('') + '</div>' +
+            '</details>' +
+            /* Direkt sichtbar, weil am haeufigsten gesucht. */
+            big('ueber-uns.html', 'Über uns') +
+            big('kontakt.html', 'Kontakt') +
+            big('stellenangebote.html', 'Stellenangebote') +
+            '<details class="gh-fold"' + (on('Impressum') || on('Datenschutz') ? ' open' : '') + '>' +
+              '<summary>Rechtliches<i aria-hidden="true">▾</i></summary>' +
+              '<div class="gh-sub">' +
+                big('impressum.html', 'Impressum') +
+                big('datenschutz.html', 'Datenschutz') +
+              '</div>' +
+            '</details>' +
+            /* Referenzen steht in der Fusszeile; das Menue bleibt schlank. */
           '</div>' +
           '<div class="gh-mcta">' +
             '<a href="' + cta + '" style="background:linear-gradient(140deg,#2A6E42,#123324);color:#F4F9F0">Kostenlos anfragen</a>' +

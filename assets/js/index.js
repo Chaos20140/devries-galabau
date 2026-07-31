@@ -102,7 +102,7 @@ class Component extends DCLogic {
     this.threeLaedt = new Promise((res, rej) => {
       if (window.THREE) return res();
       const s = document.createElement('script');
-      s.src = 'assets/js/three.min.js?v=18';
+      s.src = 'assets/js/three.min.js?v=22';
       s.async = true;
       s.onload = () => (window.THREE ? res() : rej(new Error('three geladen, aber nicht da')));
       s.onerror = () => rej(new Error('three konnte nicht geladen werden'));
@@ -114,6 +114,25 @@ class Component extends DCLogic {
   /* Standbild statt Szene: zeigt, was einen erwartet, und startet den
      Rundgang erst auf Tippen. Wer nicht tippt, scrollt eine Bildschirmhoehe
      weiter und ist bei den Leistungen — ohne 146 KB geladen zu haben. */
+  /* Muss VOR dem fruehen Ausstieg von tick laufen. Der greift, sobald
+     #rg-content oben ankommt — bei einer nur 112vh kurzen Bahn also
+     sofort. Zuerst stand dieser Block dahinter und wurde nie erreicht:
+     Startknopf und Begruessungstafel folgten die ganze Seite hinunter,
+     weil beide fest im Bild liegen. */
+  standbildPflegen() {
+    if (!this.standbild || !this.walk) return;
+    const rb = this.walk.getBoundingClientRect();
+    const drin = rb.bottom > window.innerHeight * 0.55;
+    if (drin === this.standbildAn) return;
+    this.standbildAn = drin;
+    this.standbild.style.display = drin ? 'block' : 'none';
+    if (this.startLeiste) this.startLeiste.style.display = drin ? 'flex' : 'none';
+    if (this.panels && this.panels[0]) {
+      this.panels[0].style.opacity = drin ? '1' : '0';
+      this.panels[0].style.visibility = drin ? 'visible' : 'hidden';
+    }
+  }
+
   zeigeStandbild() {
     if (this.standbild || !this.walk) return;
 
@@ -467,6 +486,63 @@ class Component extends DCLogic {
     });
   }
 
+  /* Die Galerie des Entwurfs oeffnet sich per mouseenter — auf dem Handy
+     also nie. Fuenf Kacheln in einer Flex-Reihe wurden dort zu Schlitzen,
+     in denen vom Foto nichts zu erkennen war.
+     Auf Mobil daher ein wischbares Band: eine Kachel fuellt fast die
+     Breite, Text steht dauerhaft, Antippen fuehrt auf die Seite. */
+  galerieMobil(m) {
+    const row = document.getElementById('rg-galrow');
+    if (!row || !this.panels2 || !this.panels2.length) return;
+    const hinweis = document.querySelector('[data-gal-hinweis]');
+
+    if (m) {
+      if (!row.dataset.dOverflow) {
+        row.dataset.dOverflow = row.style.overflow || 'none';
+        row.dataset.dGap = row.style.gap || '';
+      }
+      row.style.overflowX = 'auto';
+      row.style.overflowY = 'hidden';
+      row.style.scrollSnapType = 'x mandatory';
+      row.style.scrollPadding = '0 5vw';
+      row.style.padding = '4px 5vw 14px';
+      row.style.margin = '0 -5vw';
+      row.style.gap = '12px';
+      row.style.scrollbarWidth = 'none';
+      this.panels2.forEach((p) => {
+        /* flexGrow NACH dem Kurzformat laesst die Kachel wieder schrumpfen —
+           dann passen alle fuenf ins Bild und nichts ist mehr wischbar. */
+        p.style.flex = '0 0 78vw';
+        p.style.flexGrow = '0';
+        p.style.height = 'clamp(300px,44vh,420px)';
+        p.style.scrollSnapAlign = 'center';
+        /* Text dauerhaft zeigen — es gibt kein Ueberfahren zum Aufklappen. */
+        const txt = p.querySelector('[data-panel-text]');
+        const cta = p.querySelector('[data-panel-cta]');
+        const scrim = p.querySelector('[data-panel-scrim]');
+        if (txt) { txt.style.maxHeight = '9em'; txt.style.opacity = '1'; }
+        if (cta) { cta.style.maxHeight = '3em'; cta.style.opacity = '1'; }
+        if (scrim) scrim.style.opacity = '.8';
+      });
+      if (hinweis) hinweis.textContent = 'Wischen Sie durch die Bilder — tippen Sie für mehr.';
+    } else {
+      row.style.overflowX = ''; row.style.overflowY = '';
+      row.style.scrollSnapType = ''; row.style.scrollPadding = '';
+      row.style.padding = ''; row.style.margin = '';
+      row.style.gap = row.dataset.dGap || '';
+      this.panels2.forEach((p) => {
+        p.style.flex = ''; p.style.height = ''; p.style.scrollSnapAlign = ''; p.style.flexGrow = '1';
+        const txt = p.querySelector('[data-panel-text]');
+        const cta = p.querySelector('[data-panel-cta]');
+        const scrim = p.querySelector('[data-panel-scrim]');
+        if (txt) { txt.style.maxHeight = '0'; txt.style.opacity = '0'; }
+        if (cta) { cta.style.maxHeight = '0'; cta.style.opacity = '0'; }
+        if (scrim) scrim.style.opacity = '.66';
+      });
+      if (hinweis) hinweis.textContent = 'Fahren Sie über ein Bild — es öffnet sich und zeigt, was dahinter steckt.';
+    }
+  }
+
   measureFlowLen() {
     if (!this.flowLine || !this.flowLine.isConnected) return;
     this.flowLenU = this.flowLine.getTotalLength();
@@ -738,16 +814,13 @@ class Component extends DCLogic {
     });
     if (m) (this.flowSteps || []).forEach(s => { s.style.opacity = '1'; s.__on = true; });
 
+    /* Die Galerie regelt galerieMobil() weiter oben. Der Entwurf stapelte
+       sie hier senkrecht und setzte flexGrow auf 1 — das hob das wischbare
+       Band wieder auf, weil es NACH galerieMobil lief. Entfernt. */
     const galrow = document.getElementById('rg-galrow');
-    if (galrow) galrow.style.flexDirection = m ? 'column' : 'row';
-    (this.panels2 || []).forEach(p => {
-      p.style.height = m ? 'clamp(240px,42vh,340px)' : 'clamp(360px,58vh,560px)';
-      p.style.flexGrow = '1';
-      const txt = p.querySelector('[data-panel-text]');
-      const cta = p.querySelector('[data-panel-cta]');
-      if (txt) { txt.style.maxHeight = m ? '9em' : '0'; txt.style.opacity = m ? '1' : '0'; }
-      if (cta) { cta.style.maxHeight = m ? '3em' : '0'; cta.style.opacity = m ? '1' : '0'; }
-    });
+    if (galrow) galrow.style.flexDirection = 'row';
+    this.galerieMobil(m);
+
     if (this.kinSpread == null) this.kinSpread = 120;
     this.kinSpread = m ? 40 : 120;
   }
@@ -880,10 +953,17 @@ class Component extends DCLogic {
 
   setupReveals() {
     const els = Array.from(document.querySelectorAll('[data-reveal]'));
-    els.forEach(el => {
+    /* Auf dem Handy kommen die Elemente abwechselnd von links und rechts
+       herein statt alle von unten. Das gibt dem Durchscrollen einen
+       Rhythmus, ohne dass jede Karte gleich aussieht.
+       28 px sind bewusst wenig: mehr wuerde bei 360 px Breite trotz
+       overflow-x:clip auffallen und die Seite wackeln lassen. */
+    const seitlich = window.innerWidth < 820 && !__reduce;
+    els.forEach((el, i) => {
       el.style.opacity = '0';
       /* Bei reduzierter Bewegung nur blenden, nicht schieben. */
-      if (!__reduce) el.style.transform = 'translateY(26px)';
+      if (seitlich) el.style.transform = 'translateX(' + (i % 2 ? 28 : -28) + 'px)';
+      else if (!__reduce) el.style.transform = 'translateY(26px)';
       el.style.transition = __reduce
         ? 'opacity .35s ease'
         : 'opacity .9s cubic-bezier(.16,1,.3,1), transform .9s cubic-bezier(.16,1,.3,1)';
@@ -2900,6 +2980,7 @@ class Component extends DCLogic {
 
   tick = () => {
     this.raf = requestAnimationFrame(this.tick);
+    this.standbildPflegen();
     const canvas = document.getElementById('rg-canvas');
     if (!canvas) return;
     if (!this.walk || !this.walk.isConnected) {
