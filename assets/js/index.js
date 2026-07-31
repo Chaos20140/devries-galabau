@@ -116,7 +116,7 @@ class Component extends DCLogic {
     this.threeLaedt = new Promise((res, rej) => {
       if (window.THREE) return res();
       const s = document.createElement('script');
-      s.src = 'assets/js/three.min.js?v=34';
+      s.src = 'assets/js/three.min.js?v=35';
       s.async = true;
       s.onload = () => (window.THREE ? res() : rej(new Error('three geladen, aber nicht da')));
       s.onerror = () => rej(new Error('three konnte nicht geladen werden'));
@@ -252,8 +252,23 @@ class Component extends DCLogic {
          entscheidet nach Pixeldichte. Auf einem 1280 px breiten Schirm mit
          einfacher Dichte haette es die 800er Datei genommen und auf 1280
          gezogen — also wieder unscharf. */
-      const SCHLEIER = 'linear-gradient(180deg,rgba(246,249,244,.34),' +
-        'rgba(246,249,244,.76) 46%,rgba(246,249,244,.94))';
+      /* Zwei Schichten statt einer.
+
+         Ein gleichmaessiger Schleier muss so dicht sein, wie es der
+         SCHWAECHSTE Punkt verlangt — und der liegt hinter dem 12-px-Label.
+         Deckt man damit das ganze Bild ab, verschwindet das Foto ins
+         Weisse; genau das war der Eindruck "sieht scheusslich aus".
+         Gemessen: mit einem gleichmaessigen Schleier, der das Foto noch
+         zeigt (.24/.62/.80), kam das Kleinlabel auf 2,31 : 1.
+
+         Deshalb: ein weicher heller Fleck NUR hinter der Textsaeule, und
+         darunter ein sehr zurueckhaltender Gesamtschleier. Am Rand bleibt
+         das Foto kraeftig, unter dem Text ist es hell genug. */
+      const SCHLEIER =
+        'radial-gradient(ellipse 68% 52% at 50% 47%,' +
+        'rgba(247,250,245,.93),rgba(247,250,245,.74) 58%,rgba(247,250,245,0) 82%),' +
+        'linear-gradient(180deg,rgba(246,249,244,.20),' +
+        'rgba(246,249,244,.34) 46%,rgba(246,249,244,.56))';
       stil.textContent =
         '#rg-standbild{background-image:' + SCHLEIER +
           ",url('assets/img/hero-header-800.webp')}" +
@@ -296,7 +311,7 @@ class Component extends DCLogic {
       'border:none;border-radius:999px;background:linear-gradient(140deg,#2A6E42,#123324);' +
       'color:#F4F9F0;font:inherit;font-size:16px;font-weight:700;cursor:pointer;' +
       'box-shadow:0 18px 40px -16px rgba(18,51,36,.8)">Rundgang starten</button>' +
-      '<p data-hinweis style="margin:0;font-size:12.5px;color:#3C5145">' +
+      '<p data-hinweis style="margin:0;font-size:12.5px;color:#26382E">' +
       (amRechner
         ? 'Der Rundgang startet gleich von selbst · oder einfach weiterscrollen'
         : 'Lädt einmalig die 3D-Szene · oder einfach weiterscrollen') + '</p>';
@@ -304,6 +319,8 @@ class Component extends DCLogic {
     wurzel.appendChild(hero);
     this.standbild = hero;
     this.startLeiste = hero;
+    /* Ab hier laeuft die Mindeststandzeit fuer die Ausblende. */
+    this.standbildSeit = Date.now();
 
     const schicht = document.getElementById('rg-stations');
     if (schicht) schicht.style.display = 'none';
@@ -312,10 +329,46 @@ class Component extends DCLogic {
     hero.querySelector('[data-start]').addEventListener('click', () => this.starteRundgang());
   }
 
-  entferneStandbild() {
-    if (this.standbild) { this.standbild.remove(); this.standbild = null; this.startLeiste = null; }
+  /* Das Standbild verschwindet nicht mehr schlagartig, sondern blendet
+     ueber die fertig aufgebaute Szene hinweg aus.
+
+     Zwei Dinge muessen dafuer zusammenkommen:
+     · Die Szene laeuft schon, BEVOR die Blende beginnt — sonst blendet
+       man auf eine noch leere Leinwand.
+     · Das Standbild bleibt eine Mindestzeit stehen. Auf einer schnellen
+       Leitung war es sonst nach Sekundenbruchteilen wieder weg, und
+       genau das wirkte abgehackt.
+
+     Die Stationstafeln kommen erst am Ende der Blende zurueck, sonst
+     laegen zwei Textebenen uebereinander. */
+  entferneStandbild(sanft) {
     const schicht = document.getElementById('rg-stations');
-    if (schicht) schicht.style.display = '';
+    const fertig = () => {
+      if (this.standbild) { this.standbild.remove(); this.standbild = null; this.startLeiste = null; }
+      if (schicht) schicht.style.display = '';
+    };
+    if (!this.standbild || !sanft) { fertig(); return; }
+
+    const wenigerBewegung = window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const blende = wenigerBewegung ? 260 : 900;
+    const stehen = Math.max(0, (this.standbildSeit || 0) + (wenigerBewegung ? 600 : 2400) - Date.now());
+
+    const el = this.standbild;
+    /* Ab hier nicht mehr anklickbar — sonst startet ein Klick auf den
+       schon halb durchsichtigen Knopf noch einmal. */
+    el.style.pointerEvents = 'none';
+    setTimeout(() => {
+      if (!this.alive || el !== this.standbild) return;
+      el.style.transition = 'opacity ' + blende + 'ms ease-out' +
+        (wenigerBewegung ? '' : ', transform ' + blende + 'ms ease-out, filter ' + blende + 'ms ease-out');
+      el.style.opacity = '0';
+      if (!wenigerBewegung) {
+        el.style.transform = 'scale(1.04)';
+        el.style.filter = 'blur(6px)';
+      }
+      setTimeout(fertig, blende + 60);
+    }, stehen);
   }
 
   starteRundgang(automatisch) {
@@ -329,7 +382,9 @@ class Component extends DCLogic {
       this.initScene();
       if (this.renderer) this.resizeGL();
       if (this.walk) this.walk.style.height = this.bahnHoehe();
-      this.entferneStandbild();
+      /* Sanft ueberblenden: die Szene laeuft an dieser Stelle bereits,
+         das Standbild liegt nur noch davor. */
+      this.entferneStandbild(true);
       /* Beim Selbststart steht man ohnehin am Anfang — dann NICHT scrollen.
          Ein Sprung, den niemand ausgeloest hat, irritiert nur. */
       if (!automatisch) {
