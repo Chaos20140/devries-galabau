@@ -32,10 +32,24 @@ class Component extends DCLogic {
     this.onResize = () => { this.resizeGL(); this.applyMobile(); this.measureFlowLen(); };
     window.addEventListener('mousemove', this.onMouse, { passive: true });
     window.addEventListener('resize', this.onResize);
-    /* Am Desktop sofort, auf dem Handy erst auf Tippen. */
-    if (window.innerWidth < 820) this.zeigeStandbild();
-    else this.ladeTHREE().then(() => { if (this.alive) this.initScene(); })
-      .catch(e => console.error('Rundgang:', e));
+    /* Immer zuerst das Standbild — auch am Rechner.
+
+       Vorher wurde am Rechner sofort three.js geladen und die Szene
+       gebaut. Das hatte zwei Nachteile, die beide erst beim Messen
+       auffielen:
+
+       1. Das erste, was der Besucher sieht, ist dann eine WebGL-Leinwand.
+          Eine Leinwand zaehlt fuer den Browser NICHT als Inhalt — Text und
+          Bilder tun das. Messwerkzeuge warten deshalb auf ein erstes
+          Inhaltsbild, das so nie kommt, und brechen ab.
+       2. Scheiterte WebGL, stand im catch nur eine Protokollzeile. Der
+          Besucher sah eine schwarze Flaeche und sonst nichts.
+
+       Jetzt steht sofort das Standbild da — echtes Foto, echter Text.
+       Der Rundgang startet am Rechner von selbst, sobald die Seite
+       gezeichnet ist und feststeht, dass die Grafik ihn auch tragen kann. */
+    this.zeigeStandbild();
+    if (window.innerWidth >= 820) this.planeAutostart();
     this.raf = requestAnimationFrame(this.tick);
   }
 
@@ -102,13 +116,81 @@ class Component extends DCLogic {
     this.threeLaedt = new Promise((res, rej) => {
       if (window.THREE) return res();
       const s = document.createElement('script');
-      s.src = 'assets/js/three.min.js?v=31';
+      s.src = 'assets/js/three.min.js?v=32';
       s.async = true;
       s.onload = () => (window.THREE ? res() : rej(new Error('three geladen, aber nicht da')));
       s.onerror = () => rej(new Error('three konnte nicht geladen werden'));
       document.head.appendChild(s);
     });
     return this.threeLaedt;
+  }
+
+  /* Kann diese Maschine den Rundgang ueberhaupt tragen?
+
+     Geprueft wird an einer winzigen Wegwerf-Leinwand, nicht an der echten
+     — das kostet nichts und laesst sich vor dem Laden von three.js
+     beantworten.
+
+     Software-Rendering ist der entscheidende Fall: Pruefumgebungen und
+     virtuelle Maschinen haben oft keine Grafikkarte, WebGL laeuft dann
+     ueber den Hauptprozessor. Gemessen wurden dabei 0,4 bis 3 Bilder je
+     Sekunde. Das ist kein Rundgang mehr, sondern eine Diashow, die den
+     Rechner auslastet. Dort bleibt das Standbild stehen. */
+  kannWebGL() {
+    try {
+      const c = document.createElement('canvas');
+      const gl = c.getContext('webgl') || c.getContext('experimental-webgl');
+      if (!gl) return { ok: false, grund: 'Ihr Browser stellt dafür kein WebGL bereit.' };
+      const info = gl.getExtension('WEBGL_debug_renderer_info');
+      const name = info ? String(gl.getParameter(info.UNMASKED_RENDERER_WEBGL) || '') : '';
+      /* SwiftShader ist Chromes Software-Ersatz, llvmpipe der von Mesa,
+         "Basic Render" der von Windows. */
+      if (/swiftshader|llvmpipe|softpipe|basic render|software/i.test(name)) {
+        return { ok: false, grund: 'Die Grafik läuft auf diesem Gerät ohne Beschleunigung.' };
+      }
+      return { ok: true, grund: '' };
+    } catch (e) {
+      return { ok: false, grund: 'Die Grafikfähigkeit ließ sich nicht ermitteln.' };
+    }
+  }
+
+  /* Am Rechner startet der Rundgang von selbst — aber erst, nachdem die
+     Seite gezeichnet ist. Sonst konkurriert das Aufbauen der Szene mit
+     dem ersten Bild, und genau das war das Problem.
+
+     requestIdleCallback wartet auf eine ruhige Minute; wo es das nicht
+     gibt, tut es ein kurzer Zeitgeber. */
+  planeAutostart() {
+    const pruef = this.kannWebGL();
+    if (!pruef.ok) {
+      this.dreiDAus = true;
+      if (this.walk) this.walk.style.height = this.bahnHoehe();
+      this.standbildOhneRundgang(pruef.grund);
+      return;
+    }
+    const los = () => {
+      if (!this.alive || this.rundgangAn) return;
+      this.starteRundgang(true);
+    };
+    const nachDemZeichnen = () => {
+      if (window.requestIdleCallback) window.requestIdleCallback(los, { timeout: 1500 });
+      else setTimeout(los, 400);
+    };
+    if (document.readyState === 'complete') nachDemZeichnen();
+    else window.addEventListener('load', nachDemZeichnen, { once: true });
+  }
+
+  /* Wenn der Rundgang nicht laufen kann, soll das Standbild nicht so tun,
+     als warte es auf einen Klick. */
+  standbildOhneRundgang(grund) {
+    if (!this.standbild) return;
+    const knopf = this.standbild.querySelector('[data-start]');
+    const hinweis = this.standbild.querySelector('[data-hinweis]');
+    if (knopf) knopf.textContent = 'Rundgang trotzdem starten';
+    if (hinweis) {
+      hinweis.textContent = grund +
+        ' Alle Inhalte finden Sie auch weiter unten auf dieser Seite.';
+    }
   }
 
   /* Standbild statt Szene: zeigt, was einen erwartet, und startet den
@@ -135,9 +217,48 @@ class Component extends DCLogic {
       'font-family:Outfit,Helvetica,Arial,sans-serif;' +
       "background-image:linear-gradient(180deg,rgba(246,249,244,.16),rgba(246,249,244,.62) 62%,rgba(246,249,244,.88))," +
       "url('assets/img/rg-start-800.webp');background-size:cover;background-position:center bottom";
+    const amRechner = window.innerWidth >= 820;
+
+    /* Der Vorspann liegt AUF dem Standbild, nicht davor. Ein vorgeschalteter
+       Ladeschirm waere der naheliegende Gedanke — er ist hier aber genau
+       falsch: er verdeckt das erste Inhaltsbild und verschlechtert damit
+       jede Messung. Dieses Projekt hatte einmal einen (v7) und hat ihn aus
+       genau diesem Grund wieder entfernt. Das Einblenden kostet nichts,
+       weil es die Anzeige nicht aufhaelt. */
+    if (!document.getElementById('rg-vorspann-stil')) {
+      const stil = document.createElement('style');
+      stil.id = 'rg-vorspann-stil';
+      /* WICHTIG: Der Text wird NICHT eingeblendet, sondern nur bewegt.
+
+         Eine Einblendung faengt bei opacity 0 an. Laeuft die Animation aus
+         irgendeinem Grund nicht — Reiter im Hintergrund, gedrosselte
+         Darstellung, ein Messwerkzeug — bleibt der ganze Vorspann
+         unsichtbar. Und ein erstes Bild ohne sichtbaren Inhalt ist genau
+         das, was Messungen abbrechen laesst. Der Text steht deshalb von
+         der ersten Sekunde an da und rutscht nur sanft an seinen Platz.
+
+         Nur das Logo blendet auf: es ist Schmuck (alt=""), seine
+         Sichtbarkeit entscheidet nichts. */
+      stil.textContent =
+        '@keyframes rgHoch{from{transform:translateY(14px)}to{transform:none}}' +
+        '@keyframes rgLogo{from{opacity:0;transform:scale(.86)}to{opacity:1;transform:none}}' +
+        '#rg-standbild>*{animation:rgHoch .66s cubic-bezier(.22,.61,.36,1) both}' +
+        '#rg-standbild>img{animation:rgLogo .7s cubic-bezier(.22,.61,.36,1) both}' +
+        '#rg-standbild>*:nth-child(2){animation-delay:.08s}' +
+        '#rg-standbild>*:nth-child(3){animation-delay:.16s}' +
+        '#rg-standbild>*:nth-child(4){animation-delay:.24s}' +
+        '#rg-standbild>*:nth-child(5){animation-delay:.32s}' +
+        '#rg-standbild>*:nth-child(6){animation-delay:.40s}' +
+        '@media (prefers-reduced-motion: reduce){#rg-standbild>*,#rg-standbild>img{animation:none}}';
+      document.head.appendChild(stil);
+    }
+
     /* Feste Vorlage, kein eingesetzter Wert. Wortlaut wie die
        Begruessungstafel des Entwurfs. */
     hero.innerHTML =
+      '<img src="assets/img/rg-logo.webp" alt="" width="72" height="72" decoding="async" ' +
+      'style="width:72px;height:72px;border-radius:50%;object-fit:cover;display:block;' +
+      'box-shadow:0 0 0 3px rgba(255,255,255,.96), 0 14px 34px -12px rgba(9,26,17,.55)">' +
       '<p style="margin:0;font-size:12px;font-weight:700;letter-spacing:.22em;' +
       'text-transform:uppercase;color:#2C6E49">Salzhemmendorf · seit 1998</p>' +
       '<h2 style="margin:0;font-size:clamp(30px,9vw,44px);line-height:1.02;letter-spacing:-.04em;' +
@@ -151,7 +272,9 @@ class Component extends DCLogic {
       'color:#F4F9F0;font:inherit;font-size:16px;font-weight:700;cursor:pointer;' +
       'box-shadow:0 18px 40px -16px rgba(18,51,36,.8)">Rundgang starten</button>' +
       '<p data-hinweis style="margin:0;font-size:12.5px;color:#3C5145">' +
-      'Lädt einmalig die 3D-Szene · oder einfach weiterscrollen</p>';
+      (amRechner
+        ? 'Der Rundgang startet gleich von selbst · oder einfach weiterscrollen'
+        : 'Lädt einmalig die 3D-Szene · oder einfach weiterscrollen') + '</p>';
 
     wurzel.appendChild(hero);
     this.standbild = hero;
@@ -170,11 +293,11 @@ class Component extends DCLogic {
     if (schicht) schicht.style.display = '';
   }
 
-  starteRundgang() {
+  starteRundgang(automatisch) {
     if (this.rundgangAn) return;
     const knopf = this.startLeiste && this.startLeiste.querySelector('[data-start]');
     const hinweis = this.startLeiste && this.startLeiste.querySelector('[data-hinweis]');
-    if (knopf) { knopf.disabled = true; knopf.textContent = 'Wird geladen …'; }
+    if (knopf && !automatisch) { knopf.disabled = true; knopf.textContent = 'Wird geladen …'; }
     this.ladeTHREE().then(() => {
       if (!this.alive) return;
       this.rundgangAn = true;
@@ -182,15 +305,22 @@ class Component extends DCLogic {
       if (this.renderer) this.resizeGL();
       if (this.walk) this.walk.style.height = this.bahnHoehe();
       this.entferneStandbild();
-      /* An den Anfang der Bahn, damit die erste Station auch kommt. */
-      const y = this.walk.getBoundingClientRect().top + window.scrollY;
-      window.scrollTo({ top: y, behavior: 'smooth' });
+      /* Beim Selbststart steht man ohnehin am Anfang — dann NICHT scrollen.
+         Ein Sprung, den niemand ausgeloest hat, irritiert nur. */
+      if (!automatisch) {
+        const y = this.walk.getBoundingClientRect().top + window.scrollY;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
     }).catch((e) => {
       console.error('Rundgang:', e);
-      /* Fehlschlag darf die Seite nicht blockieren — Standbild bleibt stehen. */
+      /* Fehlschlag darf die Seite nicht blockieren — Standbild bleibt stehen.
+         Das ist der Fall, der vorher eine schwarze Flaeche ergab. */
       this.threeLaedt = null;
+      this.dreiDAus = true;
+      if (this.walk) this.walk.style.height = this.bahnHoehe();
       if (knopf) { knopf.disabled = false; knopf.textContent = 'Nochmal versuchen'; }
-      if (hinweis) hinweis.textContent = 'Der Rundgang lässt sich gerade nicht laden.';
+      if (hinweis) hinweis.textContent = 'Der Rundgang lässt sich gerade nicht laden. ' +
+        'Alle Inhalte finden Sie auch weiter unten auf dieser Seite.';
     });
   }
 
@@ -199,6 +329,9 @@ class Component extends DCLogic {
      scrollte man an einer leeren Leinwand vorbei. Nach dem Start vier
      Bildschirmhoehen statt der frueheren zehn. */
   bahnHoehe() {
+    /* Steht fest, dass der Rundgang hier nicht laufen kann, waere eine
+       lange Bahn nur leeres Scrollen an einer Flaeche vorbei. */
+    if (this.dreiDAus) return '112vh';
     if (!this.isMobile) return '1800vh';
     /* Wieder die volle Laenge: bei 400vh lief der Rundgang zu schnell
      durch, die Stationen hatten keine Zeit zu wirken. */
@@ -657,11 +790,13 @@ class Component extends DCLogic {
     if (!m && this.menu) { this.menu.style.display = 'none'; this.menu.style.opacity = '0'; this.menuOpen = false; document.documentElement.style.overflow = ''; }
     if (this.rail) this.rail.style.display = m ? 'none' : 'flex';
     if (this.walk) this.walk.style.height = this.bahnHoehe();
-    /* Beim Wechsel aufs Breitbild ohne geladene Szene nachziehen. */
-    if (!m && !this.threeLaedt) {
-      this.ladeTHREE().then(() => { if (this.alive) this.initScene(); })
-        .catch(e => console.error('Rundgang:', e));
-      this.entferneStandbild();
+    /* Beim Wechsel aufs Breitbild nachziehen — aber ueber denselben Weg
+       wie beim Laden, nicht daran vorbei. Vorher hat dieser Zweig die
+       Szene direkt gebaut und das Standbild sofort entfernt: bei
+       fehlender oder unbeschleunigter Grafik blieb dann wieder eine
+       schwarze Flaeche zurueck. */
+    if (!m && !this.threeLaedt && !this.rundgangAn && !this.dreiDAus) {
+      this.planeAutostart();
     }
 
 
