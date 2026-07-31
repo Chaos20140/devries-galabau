@@ -1050,3 +1050,22 @@ erweitern statt parallele bauen → 4. Desktop+Mobile im selben Schritt → 5. B
   **Merke:** Eine Änderung an der Anzeigedauer ändert, wie viel Zeit der Besucher zum Handeln
   hat. Was vorher nur theoretisch erreichbar war, wird damit zum Normalfall — bei jeder
   Verlängerung einer Einblendung durchgehen, was in dieser Zeit sonst noch passieren kann.
+
+- **2026-07-31 · Standbild schlichter und größer (v37).** Auf Wunsch: nur noch Logo, „Herzlich
+  Willkommen" und eine Zeile darunter. Logo 72 → 100 px (`clamp(84px,11vw,116px)`),
+  Überschrift 44 → 76 px (`clamp(36px,7vw,76px)`). Weggefallen: die Zeile
+  „Salzhemmendorf · seit 1998" und der Absatz mit den Leistungen.
+  **Der Startknopf bleibt im Markup, ist am Rechner aber ausgeblendet** — dort startet der
+  Rundgang von selbst, und ein Knopf, den niemand drücken muss, lenkt ab. Eingeblendet wird er
+  über `zeigeStartknopf()` genau dort, wo er gebraucht wird, sonst käme niemand mehr hinein:
+  auf dem Handy (Szene lädt erst auf Tippen), ohne Grafikbeschleunigung, wenn der Selbststart
+  wegen Scrollens übersprungen wurde, und wenn das Laden scheitert. In den letzten beiden
+  Fällen wechselt auch die Zeile — „startet jetzt" wäre dort unwahr.
+  **Gemessen, alle vier Fälle:** Rechner normal → Knopf `none`, Zeile „Unser Rundgang startet
+  jetzt : )", h2 76 px, Logo 100 px · Handy → Knopf `flex` 54 px, „Tippen Sie …", h2 36 px,
+  kein Überlauf, three.js **nicht** geladen · ohne Beschleunigung → Knopf sichtbar mit
+  ehrlichem Hinweis · Kontrast über dem Foto neu gemessen, weil die Schrift größer wurde:
+  Überschrift 12,96 · Zeile darunter 4,79 (nötig 3 bzw. 4,5).
+  **Merke:** Wird ein Bedienelement ausgeblendet, weil es im Regelfall überflüssig ist, muss
+  jeder Sonderfall einzeln durchgegangen werden — hier waren es vier. Sonst ist der einzige
+  Weg in eine Funktion zugebaut.
