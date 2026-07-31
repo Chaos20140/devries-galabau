@@ -916,3 +916,36 @@ erweitern statt parallele bauen → 4. Desktop+Mobile im selben Schritt → 5. B
   **Geprüft, 1280 px:** Anmeldung → Kennzeichen gemerkt, Passwort nicht mehr in der Seite ·
   Neuladen bleibt angemeldet · Pfeil setzt Fokus auf die Zeile · Escape Detail → Liste →
   Übersicht · neuer Eintrag erschien nach 75 s von selbst, „Anzeigen" lud ihn in die Liste.
+
+- **2026-07-31 · Startseite: Standbild zuerst, 3D danach — PageSpeed brach vorher ab (v32).**
+  Nutzerbefund: PageSpeed zeigte **alle** Kategorien rot mit „!" — auch SEO und Best
+  Practices. Das ist kein Wert 0, sondern ein **Abbruch des ganzen Laufs**.
+  **Zwei Messartefakte, an denen ich mich fast verrannt hätte — beide notiert, weil sie
+  wiederkommen:** (1) Der Vorschaubereich lädt Seiten in einem *versteckten* Reiter. Chrome
+  meldet dann **grundsätzlich kein** `first-contentful-paint`. Mein „FCP = KEINS" war
+  wertlos. (2) Im selben Zustand stehen CSS-Animationen bei `currentTime: 0` still.
+  **Merke: vor jeder Aussage über Farbwerte, Sichtbarkeit oder Zeitpunkte erst
+  `document.hidden` prüfen.** Die PageSpeed-Schnittstelle hätte den echten Fehlercode
+  geliefert, war aber bei der Tagesquote (429, ohne Schlüssel).
+  **Hart belegt und behoben:** Am Rechner wurde three.js **während** des Ladens angefordert
+  und die Szene sofort gebaut. Das erste, was ein Besucher sah, war eine WebGL-Leinwand — und
+  eine Leinwand zählt für den Browser **nicht** als Inhalt. Schlimmer: scheiterte WebGL, stand
+  im `catch` nur `console.error`, der Besucher sah eine **schwarze Fläche**.
+  **Jetzt:** Standbild sofort (echtes Foto, echter Text, Logo), three.js erst **nach** dem
+  Ladeereignis über `requestIdleCallback`. Gemessen: Ladeereignis 253 ms, three.js 258 ms —
+  vorher lief es mittendrin.
+  **Fähigkeitsprüfung vor dem Laden:** kein WebGL oder Software-Rendering (SwiftShader,
+  llvmpipe, Basic Render) → Standbild bleibt, three.js wird **gar nicht** geladen, die Bahn
+  schrumpft von 1800vh auf 112vh. Mit vorgetäuschtem SwiftShader geprüft: 148 KB gespart,
+  Seite 12 786 statt 24 940 px, ehrlicher Hinweis statt schwarzer Fläche.
+  **Zum gewünschten Vorspann:** ein vorgeschalteter Ladeschirm wäre hier genau falsch — er
+  verdeckt das erste Inhaltsbild. Dieses Projekt hatte einen (v7) und hat ihn deswegen
+  entfernt. Der Vorspann liegt jetzt **auf** dem Standbild.
+  **Und die Animation entscheidet nie über Sichtbarkeit:** Der Text wird nur *bewegt*
+  (`translateY`), nicht eingeblendet. Nur das Logo blendet auf, weil es Schmuck ist
+  (`alt=""`). Eine Einblendung beginnt bei `opacity: 0` — läuft sie nicht, ist der ganze
+  Vorspann unsichtbar, und *das* erzeugt erst recht „kein erstes Inhaltsbild". Nachgewiesen
+  bei stehenden Animationen: Text auf `opacity: 1`, nur das Logo auf 0.
+  **Zweiter Einstieg nicht vergessen:** `applyMobile()` baute beim Wechsel aufs Breitbild die
+  Szene direkt und entfernte das Standbild sofort — also am neuen Weg vorbei. Läuft jetzt
+  ebenfalls über `planeAutostart()`.
