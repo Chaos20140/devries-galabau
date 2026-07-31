@@ -726,3 +726,30 @@ erweitern statt parallele bauen → 4. Desktop+Mobile im selben Schritt → 5. B
   `https://chaos20140.github.io/devries-galabau/verwaltung.html`. Versucht worden war
   offenbar `devries-galabau.de/verwaltung.html` — diese Domain liefert weiterhin die alte
   WordPress-Seite aus (Apache/PHP, Elementor), daher 404. Adresse steht jetzt im README.
+
+- **2026-07-31 · Zwei stumme Fehler im Bewerbungsformular (v27).**
+  Der Reihe nach gefunden, weil ein Test über den **echten** Weg lief statt über `curl`:
+  **1. Die CSP blockierte den Versand.** `stellenangebote.html` trug als **einzige** der acht
+  Formularseiten `connect-src 'self'` ohne die Supabase-Adresse. Der Browser unterband jeden
+  Aufruf. Zusammen mit den fehlenden Spalten `quelle`/`betreff` heißt das: das
+  Bewerbungsformular hat **nie** etwas gespeichert — auch nach der Spaltenkorrektur nicht.
+  **Merke: bei „Formular tut nichts" zuerst `connect-src` DIESER Seite prüfen.** Die CSP steht
+  je Seite im `<meta>`, es gibt keine gemeinsame Quelle, also fällt eine vergessene Seite
+  niemandem auf. Prüfbefehl:
+  `for f in *.html; do grep -q dvFormular "$f" && { printf "%-24s " "$f"; grep -oE "connect-src [^;\"]*" "$f"; }; done`
+  **2. Der Rückfall war völlig stumm.** `formular.js` setzt bei einem Fehler
+  `window.location.href` auf eine `mailto:`-Adresse. Ist **kein E-Mail-Programm hinterlegt** —
+  auf vielen Rechnern und in **jedem** Testbrowser der Fall — passiert daraufhin sichtbar
+  **nichts**: keine Fehlermeldung, keine Weiterleitung, keine Zeile in der Datenbank. Genau
+  das hat Fehler 1 verdeckt. Der Rückfall nennt jetzt den Grund im Protokoll (Serverantwort,
+  Zeitüberschreitung, fehlgeschlagene Verbindung samt CSP-Hinweis) und zeigt dem Besucher
+  nach 1,2 s eine Zeile mit Mailadresse und Telefonnummer. Dort steht **immer** die Adresse
+  des Betriebs, nie die vorübergehende Abnahmeadresse.
+  **3. Falle beim Prüfen:** `curl` holte die neue Seite, der Browser nahm die **alte aus dem
+  Zwischenspeicher** — CSP `'self'`, Skripte noch `v=26`. Das `?v=` schützt nur die Skripte,
+  die HTML-Seite selbst trägt keine Kennung. Nach einem Deployment mit einem Zusatz in der
+  Adresse laden (`?frisch=1`), sonst prüft man den alten Stand.
+  **Geprüft, live:** Bewerbung über das echte Formular → `danke.html`, Zeile vollständig mit
+  Umlauten, `<b>` in der Nachricht erscheint in der Verwaltung als Text (0 gerenderte
+  Elemente). Bei künstlich blockierter CSP erscheint der Hinweis und es wird nichts
+  gespeichert. Kontaktformular nach dem Umbau von `senden()` unverändert in Ordnung.
