@@ -872,3 +872,47 @@ erweitern statt parallele bauen → 4. Desktop+Mobile im selben Schritt → 5. B
   sie samt funktionierendem Link wieder. **Merke:** Dateien nie per `delete from
   storage.objects` entfernen — das löscht nur den Verweis, nicht die Datei. Über die
   Speicher-Schnittstelle gehen.
+
+- **2026-07-31 · Verwaltung nach `/admin/` umgezogen und ausgebaut (v31).**
+  **Umzug:** `verwaltung.html` → `admin/index.html`, damit die Adresse `…/admin/` lautet.
+  Relative Pfade eine Ebene tiefer nachgezogen (`../assets/…`). Am alten Ort steht eine
+  Weiterleitung für vorhandene Lesezeichen; sie kann später entfallen. `robots.txt` sperrt
+  jetzt `/admin/` **und** die alte Adresse, README nachgezogen.
+  **1. Sitzung statt Passwort im Speicher.** Bisher ging das Passwort bei *jeder* Anfrage mit
+  und musste die ganze Zeit in der Seite liegen; ein Neuladen bedeutete Neuanmeldung. Jetzt
+  stellt der Server nach der Anmeldung ein Kennzeichen aus — `Ablaufzeitpunkt.Signatur`, HMAC
+  über Dienstschlüssel **und** Passwort, acht Stunden gültig. Das ist zugleich **sicherer**:
+  das Passwort wandert genau einmal über die Leitung. Serverseitig muss nichts gespeichert
+  werden, und ein geändertes Passwort entwertet sofort alle Kennzeichen.
+  Abgelegt in `sessionStorage`, nicht `localStorage`: Neuladen behält die Anmeldung, das
+  Schließen des Reiters beendet sie.
+  **Ein gültiges Kennzeichen umgeht die Anmeldebremse** — es wird ja nichts geraten. Ein
+  abgelaufenes führt deshalb auch **nicht** zur Sperre, sonst wäre man nach zwölf Neuladen
+  ausgesperrt. Geprüft: ausgedacht, abgelaufen, ohne Signatur, ein Zeichen geändert → alle 401;
+  echtes Kennzeichen → 200.
+  **Falle dabei, teuer wenn übersehen:** der `popstate`-Wächter prüfte weiter auf `pw`, das
+  jetzt leer ist. Damit wäre die **Zurück-Taste für jeden mit gemerkter Sitzung tot** gewesen.
+  Merke: Wird eine Anmeldung auf einen zweiten Träger umgestellt, **alle** Abfragen auf den
+  alten durchsuchen (`grep "!pw"`), nicht nur die offensichtliche.
+  **2. Blick auf Neues, während die Seite offen liegt.** Alle 60 s eine schlanke
+  Zahlen-Abfrage (`stand`, nur Anzahlen, keine Datensätze). Kommt etwas hinzu, erscheint oben
+  ein Streifen „1 neuer Eintrag eingegangen" mit „Anzeigen". Pausiert, solange der Reiter im
+  Hintergrund liegt — sonst läuft die Abfrage nachts durch, ohne dass jemand hinsieht.
+  Das ersetzt die Mail-Benachrichtigung nicht, macht die Seite aber zu etwas, das man
+  nebenher offen lassen kann — solange der SMTP-Zugang klemmt, ist das der einzige Weg,
+  von einer Anfrage zu erfahren, ohne aktiv nachzusehen.
+  **Merke beim Prüfen:** Der Vorschaubereich meldet `document.hidden === true`, also genau
+  die Bedingung, unter der die Abfrage absichtlich pausiert. Ohne `Object.defineProperty` auf
+  `document.hidden` sieht man nie etwas und hält die Uhr fälschlich für kaputt.
+  **3. Kacheln sagen mehr:** „2 neu von 2" plus „zuletzt 31.07.2026 · 19:22". Die Zahlen
+  kommen über `count=exact` mit `Range: 0-0`, holen also keine Zeilen.
+  **4. Drucken** einer Einzelansicht — zum Mitnehmen an den Ortstermin. Eigene `@media
+  print`-Regeln blenden Bedienelemente, Verläufe und Schatten aus und hängen die Mailadresse
+  hinter den Link.
+  **5. Tastaturbedienung** in der Liste: ↑/↓ (auch j/k) bewegen, Eingabe öffnet, Escape geht
+  eine Ebene zurück. **Falle:** Ein Handler, der sich abmeldet, sobald gerade keine Liste da
+  ist, wirkt danach nirgends mehr — erst registrierte ich ihn je Liste, Escape war im Detail
+  wirkungslos. Jetzt einmal global, entscheidet bei jedem Tastendruck neu.
+  **Geprüft, 1280 px:** Anmeldung → Kennzeichen gemerkt, Passwort nicht mehr in der Seite ·
+  Neuladen bleibt angemeldet · Pfeil setzt Fokus auf die Zeile · Escape Detail → Liste →
+  Übersicht · neuer Eintrag erschien nach 75 s von selbst, „Anzeigen" lud ihn in die Liste.

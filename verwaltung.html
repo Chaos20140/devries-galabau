@@ -2,146 +2,16 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' blob:; font-src 'self'; connect-src 'self' https://pvcbgwzqjnzzpehwuywi.supabase.co; frame-src 'none'; form-action 'self' mailto:">
-<meta name="referrer" content="strict-origin-when-cross-origin">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Verwaltung | de Vries Galabau</title>
 <meta name="robots" content="noindex, nofollow">
-<link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32.png?v=1">
-<link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png?v=1">
-<link rel="stylesheet" href="assets/css/base.css?v=30">
-<style>
-  *{box-sizing:border-box}
-  html,body{margin:0;padding:0;background:#EDF3E8;color:#12261A;
-    font-family:Outfit,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
-  a{text-decoration:none}
-
-  .vw-mitte{max-width:960px;margin:0 auto;padding:clamp(26px,5vh,64px) clamp(18px,5vw,32px) 80px}
-  .vw-anmeldung{display:flex;align-items:center;min-height:100svh;padding-top:0;padding-bottom:0}
-
-  .vw-eyebrow{margin:0 0 6px;font-size:11px;font-weight:700;letter-spacing:.2em;
-    text-transform:uppercase;color:#46761F}
-  .vw-h1{margin:0;font-size:clamp(26px,4vw,34px);line-height:1.08;letter-spacing:-.03em;
-    font-weight:600;color:#0F2318}
-  .vw-h1--klein{font-size:clamp(21px,3vw,27px)}
-  .vw-hint{margin:0;font-size:14px;line-height:1.55;color:#4A5F52}
-  .vw-fehler{margin:10px 0 0;font-size:14px;color:#A03024}
-
-  .vw-kopf{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;
-    gap:14px;margin:0 0 22px}
-
-  .vw-karte{background:linear-gradient(155deg,rgba(255,255,255,.86),rgba(255,255,255,.6));
-    border:1px solid rgba(255,255,255,.75);border-radius:22px;padding:clamp(20px,3vw,30px);
-    box-shadow:0 22px 50px -34px rgba(12,29,20,.4)}
-  .vw-karte--liste{padding:0;overflow:hidden}
-
-  .vw-label,.vw-feld__label{display:block;margin:0 0 7px;font-size:11px;font-weight:700;
-    letter-spacing:.16em;text-transform:uppercase;color:#46761F}
-  .vw-input{width:100%;padding:13px 15px;border-radius:13px;border:1px solid rgba(16,35,26,.16);
-    background:#fff;color:#12261A;font:inherit;font-size:15.5px;outline:none}
-  .vw-input:focus-visible{border-color:#2C6E49;outline:3px solid rgba(44,110,73,.3);outline-offset:1px}
-  .vw-suche{max-width:260px}
-
-  .vw-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;
-    padding:0 20px;border-radius:999px;border:1px solid transparent;font:inherit;font-size:15px;
-    font-weight:600;cursor:pointer;transition:background .25s ease,color .25s ease,border-color .25s ease}
-  .vw-btn--voll{background:linear-gradient(140deg,#2A6E42,#123324);color:#F4F9F0}
-  .vw-btn--voll:hover{background:#123324}
-  .vw-btn--leer{background:#fff;color:#1B4332;border-color:rgba(16,35,26,.16)}
-  .vw-btn--leer:hover{border-color:#2C6E49}
-  .vw-btn--warnung{background:#fff;color:#A03024;border-color:rgba(160,48,36,.3)}
-  .vw-btn--warnung:hover{background:#A03024;color:#fff}
-  .vw-btn[disabled]{opacity:.6;cursor:default}
-  #vw-login .vw-btn{width:100%;margin-top:16px}
-
-  .vw-kacheln{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:14px}
-  .vw-kachel{display:flex;flex-direction:column;align-items:flex-start;gap:16px;text-align:left;
-    padding:22px;border-radius:22px;border:1px solid rgba(255,255,255,.75);cursor:pointer;font:inherit;
-    background:linear-gradient(155deg,rgba(255,255,255,.86),rgba(255,255,255,.6));
-    box-shadow:0 22px 50px -34px rgba(12,29,20,.4);transition:border-color .25s ease,transform .25s ease}
-  .vw-kachel:hover{border-color:#8ECF4F;transform:translateY(-2px)}
-  .vw-kachel__kopf{display:flex;align-items:center;gap:12px}
-  .vw-symbol{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;
-    border-radius:13px;background:rgba(142,207,79,.24);font-size:18px}
-  .vw-kachel__titel{font-size:18px;font-weight:600;color:#0F2318}
-  .vw-kachel__zahl{font-size:14px;color:#4A5F52}
-
-  .vw-zurueck{display:inline-flex;align-items:center;min-height:44px;margin:0 0 8px;padding:0;
-    background:none;border:none;font:inherit;font-size:14.5px;color:#4A5F52;cursor:pointer}
-  .vw-zurueck:hover{color:#0F2318}
-
-  .vw-werkzeuge{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 16px}
-  .vw-chips{display:flex;flex-wrap:wrap;gap:8px}
-  .vw-chip{min-height:38px;padding:0 15px;border-radius:999px;border:1px solid rgba(16,35,26,.16);
-    background:#fff;color:#4A5F52;font:inherit;font-size:14px;cursor:pointer;
-    transition:background .2s ease,color .2s ease,border-color .2s ease}
-  .vw-chip:hover{border-color:#2C6E49}
-  .vw-chip--an{background:#1B4332;color:#F4F9F0;border-color:#1B4332}
-
-  .vw-liste{list-style:none;margin:0;padding:0}
-  .vw-liste li+li{border-top:1px solid rgba(16,35,26,.09)}
-  .vw-zeile{display:flex;align-items:center;justify-content:space-between;gap:14px;width:100%;
-    padding:16px clamp(16px,2.4vw,24px);background:none;border:none;font:inherit;text-align:left;
-    cursor:pointer;min-height:64px}
-  .vw-zeile:hover{background:rgba(142,207,79,.1)}
-  .vw-zeile__haupt{display:flex;flex-direction:column;gap:3px;min-width:0}
-  .vw-zeile__name{font-size:16px;font-weight:600;color:#0F2318}
-  .vw-zeile__meta{font-size:13px;color:#5B6F63}
-  .vw-marke{flex:none;padding:5px 12px;border-radius:999px;font-size:12px;font-weight:600}
-  .vw-marke--neu{background:rgba(142,207,79,.26);color:#31611A}
-  .vw-marke--in_arbeit{background:rgba(232,185,60,.26);color:#7A5A08}
-  .vw-marke--erledigt{background:rgba(16,35,26,.1);color:#4A5F52}
-
-  .vw-felder{margin:20px 0 0;display:grid;gap:2px}
-  .vw-feld{display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr);gap:16px;
-    padding:14px 0;border-top:1px solid rgba(16,35,26,.09)}
-  .vw-feld__wert{font-size:15.5px;line-height:1.6;color:#26382E;overflow-wrap:anywhere}
-  .vw-aktionen{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
-  .vw-bearbeiten{margin-top:26px;padding-top:22px;border-top:1px solid rgba(16,35,26,.12)}
-
-  /* Papierkorb-Streifen: erscheint nach dem Loeschen und bietet
-     "Rueckgaengig" an. Loeschen ist die einzige Handlung hier, die sich
-     nicht durch eine zweite aufheben laesst — ein Bestaetigungsdialog
-     hilft gegen Unachtsamkeit, aber nicht gegen Irrtum. */
-  .vw-papierkorb{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:200;
-    width:min(94vw,470px);display:flex;align-items:center;gap:14px;
-    padding:13px 16px;border-radius:18px;background:#12261A;color:#F4F9F0;
-    box-shadow:0 22px 60px -22px rgba(9,26,17,.75);font-size:14.5px}
-  @media (prefers-reduced-motion: no-preference){
-    .vw-papierkorb{animation:vwHoch .22s ease-out}
-    @keyframes vwHoch{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
-  }
-  .vw-papierkorb__text{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .vw-papierkorb__zusatz{color:rgba(244,249,240,.55)}
-  .vw-papierkorb__knopf{flex:none;min-height:44px;padding:0 6px;background:none;border:none;
-    font:inherit;font-weight:600;color:#A9E06B;cursor:pointer}
-  .vw-papierkorb__knopf:hover{color:#F4F9F0}
-  .vw-papierkorb__knopf[disabled]{opacity:.6;cursor:default}
-  .vw-papierkorb__zu{flex:none;width:44px;height:44px;background:none;border:none;
-    color:rgba(244,249,240,.6);font-size:15px;cursor:pointer}
-  .vw-papierkorb__zu:hover{color:#F4F9F0}
-  /* Der Fokusring aus base.css bleibt sichtbar — dunkler Grund, heller Ring. */
-  .vw-papierkorb :focus-visible{outline:3px solid #A9E06B;outline-offset:2px;border-radius:10px}
-
-  /* Ueberschriften bekommen beim Ansichtswechsel den Fokus. Ohne das
-     Ausblenden zeichnete der Browser dort einen Ring, obwohl niemand
-     mit der Tastatur navigiert. */
-  #vw-app h1:focus{outline:none}
-  #vw-app h1:focus-visible{outline:3px solid #2C6E49;outline-offset:3px;border-radius:6px}
-
-  /* Auf dem Telefon nur ansehen: Anfragen und Bewerbungen lesen, aber
-     nicht bearbeiten. Die Felder stehen dort untereinander, sonst bricht
-     jeder Wert einzeln um. */
-  @media (max-width: 860px) {
-    .vw-feld{grid-template-columns:minmax(0,1fr);gap:4px}
-    .vw-suche{max-width:none;flex:1 1 100%}
-  }
-  @media (min-width: 861px) { .vw-nurGross{display:none} }
-</style>
+<meta http-equiv="refresh" content="0; url=admin/">
+<title>Verwaltung — umgezogen</title>
+<style>body{margin:0;padding:48px 24px;background:#EDF3E8;color:#12261A;
+  font-family:Outfit,Helvetica,Arial,sans-serif;line-height:1.6}
+  a{color:#2C6E49}</style>
 </head>
 <body>
-<a class="skip" href="#vw-app">Zum Inhalt springen</a>
-<main id="vw-app"></main>
-<script src="assets/js/verwaltung.js?v=30"></script>
+<!-- Die Verwaltung liegt jetzt unter /admin/. Diese Datei ist nur eine
+     Weiterleitung fuer alte Lesezeichen und kann spaeter entfallen. -->
+<p>Die Verwaltung ist umgezogen: <a href="admin/">weiter zu /admin/</a></p>
 </body>
 </html>

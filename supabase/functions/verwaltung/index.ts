@@ -144,6 +144,52 @@ async function herkunftHash(req: Request): Promise<string> {
     .join("");
 }
 
+/* ---------------------------------------------------------------------
+   Sitzung.
+
+   Bisher ging bei JEDER Anfrage das Passwort mit, und die Seite musste es
+   deshalb die ganze Zeit im Speicher halten. Ein Neuladen bedeutete: neu
+   anmelden.
+
+   Jetzt stellt der Server nach erfolgreicher Anmeldung ein Kennzeichen
+   aus, das eine begrenzte Zeit gilt. Das ist nicht nur bequemer, sondern
+   auch sicherer: das Passwort wandert genau einmal ueber die Leitung und
+   liegt danach nirgends mehr.
+
+   Das Kennzeichen ist "Ablaufzeitpunkt.Signatur". Die Signatur haengt am
+   Dienstschluessel UND am Passwort — wird das Passwort geaendert, sind
+   alle ausgestellten Kennzeichen sofort ungueltig. Serverseitig muss
+   dafuer nichts gespeichert werden.
+   --------------------------------------------------------------------- */
+const SITZUNG_MS = 8 * 60 * 60 * 1000;   // ein Arbeitstag
+
+async function signatur(text: string): Promise<string> {
+  const schluessel = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(DIENST + "|" + PASSWORT),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const roh = await crypto.subtle.sign("HMAC", schluessel, new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(roh)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function sitzungAusstellen(): Promise<string> {
+  const bis = String(Date.now() + SITZUNG_MS);
+  return bis + "." + (await signatur(bis));
+}
+
+async function sitzungGueltig(kennzeichen: string): Promise<boolean> {
+  const punkt = kennzeichen.indexOf(".");
+  if (punkt < 1) return false;
+  const bis = kennzeichen.slice(0, punkt);
+  const sig = kennzeichen.slice(punkt + 1);
+  const n = Number(bis);
+  if (!Number.isFinite(n) || n < Date.now()) return false;
+  return gleich(sig, await signatur(bis));
+}
+
 /* Vergleich ohne fruehen Abbruch — die Laufzeit soll nichts verraten. */
 function gleich(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
@@ -165,6 +211,45 @@ async function db(pfad: string, init: RequestInit = {}) {
   if (!r.ok) throw new Error("Datenbank " + r.status);
   const txt = await r.text();
   return txt ? JSON.parse(txt) : null;
+}
+
+/* Zaehlt, ohne die Zeilen zu holen: "count=exact" liefert die Zahl im
+   Kopf, "Range: 0-0" verhindert, dass der Rumpf mitkommt. */
+async function anzahl(pfad: string): Promise<number> {
+  const r = await fetch(URL_ + "/rest/v1/" + pfad, {
+    headers: {
+      apikey: DIENST,
+      Authorization: "Bearer " + DIENST,
+      Prefer: "count=exact",
+      Range: "0-0",
+    },
+  });
+  if (!r.ok && r.status !== 206) throw new Error("Datenbank " + r.status);
+  const n = Number((r.headers.get("content-range") ?? "").split("/")[1]);
+  return Number.isFinite(n) ? n : 0;
+}
+
+/* Zahlen fuer die Kachelansicht. Bewusst mehr als nur "neu": wie viele
+   insgesamt da sind und wann der letzte Eingang war — das beantwortet die
+   Frage "ist seitdem etwas passiert?" ohne die Liste zu oeffnen. */
+async function uebersicht() {
+  const je = async (t: string) => {
+    const [neu, gesamt, letzte] = await Promise.all([
+      anzahl(t + "?select=id&status=eq.neu&archiviert=is.false"),
+      anzahl(t + "?select=id&archiviert=is.false"),
+      db(t + "?select=eingegangen_am&order=eingegangen_am.desc&limit=1"),
+    ]);
+    return {
+      neu,
+      gesamt,
+      letzter: Array.isArray(letzte) && letzte[0] ? letzte[0].eingegangen_am : null,
+    };
+  };
+  const [anfragen, bewerbungen] = await Promise.all([
+    je(TABELLEN.anfragen),
+    je(TABELLEN.bewerbungen),
+  ]);
+  return { anfragen, bewerbungen };
 }
 
 /* Zugriff auf den Speicherbereich. Laeuft ueber service_role und
@@ -233,12 +318,31 @@ Deno.serve(async (req: Request) => {
   let körper: Record<string, unknown>;
   try { körper = await req.json(); } catch { return json({ fehler: "ungültig" }, 400); }
 
+  /* Gueltiges Sitzungskennzeichen? Dann kein Passwortvergleich und keine
+     Zaehlung — es wird ja nichts geraten. Ein Kennzeichen zu faelschen
+     hiesse, HMAC-SHA256 zu brechen; das ist keine Sache des Durchprobierens.
+     Ein abgelaufenes Kennzeichen fuehrt deshalb auch NICHT zur Sperre,
+     sonst waere man nach zwoelf Neuladen ausgesperrt. */
+  const kennzeichen = String(körper.sitzung ?? "");
+  let angemeldet = false;
+  if (kennzeichen) {
+    if (await sitzungGueltig(kennzeichen)) {
+      angemeldet = true;
+      versuchWeg(anschluss);
+    } else {
+      return json(
+        { fehler: "Die Anmeldung ist abgelaufen. Bitte melden Sie sich erneut an.", neuAnmelden: true },
+        401,
+      );
+    }
+  }
+
   const wer = await herkunftHash(req);
 
   /* Erst die Sperre, DANN der Vergleich. Diese Reihenfolge ist der Kern:
      oberhalb der Grenze wird gar nicht mehr geprueft, ein paralleler
      Versuch bringt also nichts. */
-  const bis = gesperrt.get(wer) ?? 0;
+  const bis = angemeldet ? 0 : (gesperrt.get(wer) ?? 0);
   if (bis > Date.now()) {
     return json(
       zuViel,
@@ -252,25 +356,27 @@ Deno.serve(async (req: Request) => {
      Wettlauf: zwischen "zaehlen" und "eintragen" liegen zwei Netzwerkwege,
      und von 40 gleichzeitigen Versuchen kamen so 26 bis zum Vergleich. */
   let stand: number | null = null;
-  try {
-    const antwort = await db("rpc/verwaltung_versuch", {
-      method: "POST",
-      body: JSON.stringify({ p_herkunft: wer }),
-    });
-    stand = typeof antwort === "number" ? antwort : null;
-  } catch { /* unten konservativ behandelt */ }
+  if (!angemeldet) {
+    try {
+      const antwort = await db("rpc/verwaltung_versuch", {
+        method: "POST",
+        body: JSON.stringify({ p_herkunft: wer }),
+      });
+      stand = typeof antwort === "number" ? antwort : null;
+    } catch { /* unten konservativ behandelt */ }
+  }
 
-  if (stand === null || stand > GRENZE) {
+  if (!angemeldet && (stand === null || stand > GRENZE)) {
     /* Scheitert die Zaehlung, wird abgewiesen statt durchgelassen. Sonst
        waere ein Ausfall der Zaehlung der bequemste Weg an ihr vorbei. */
     gesperrt.set(wer, Date.now() + 60_000);
     return json(zuViel, 429, { "Retry-After": "900" });
   }
 
-  if (!gleich(String(körper.passwort ?? ""), PASSWORT)) {
+  if (!angemeldet && !gleich(String(körper.passwort ?? ""), PASSWORT)) {
     /* Zusaetzlich zur Grenze: jeder Fehlversuch kostet Zeit. Das bremst
        auch die Versuche UNTERHALB der Grenze. */
-    const warten = Math.min(WARTE_MAX, 900 * Math.pow(1.6, Math.max(0, stand - 1)));
+    const warten = Math.min(WARTE_MAX, 900 * Math.pow(1.6, Math.max(0, (stand ?? 1) - 1)));
     await new Promise((r) => setTimeout(r, warten));
     return json({ fehler: "Passwort falsch" }, 401);
   }
@@ -294,19 +400,27 @@ Deno.serve(async (req: Request) => {
 
   try {
     if (was === "anmelden") {
-      const zaehl = async (t: string) => {
-        const r = await db(t + "?select=id&status=eq.neu&archiviert=is.false");
-        return Array.isArray(r) ? r.length : 0;
-      };
       /* Gelegenheit zum Aufraeumen. Scheitert es, ist das kein Grund,
          die Anmeldung zu verweigern. */
       try { await papierkorbAufraeumen(); } catch (e) {
         console.error("Papierkorb:", e instanceof Error ? e.message : e);
       }
+      const zahlen = await uebersicht();
       return json({
         ok: true,
-        neu: { anfragen: await zaehl(TABELLEN.anfragen), bewerbungen: await zaehl(TABELLEN.bewerbungen) },
+        stand: zahlen,
+        /* Rueckwaertskompatibel: aeltere ausgelieferte Seiten lesen "neu". */
+        neu: { anfragen: zahlen.anfragen.neu, bewerbungen: zahlen.bewerbungen.neu },
+        /* Nur bei der Anmeldung mit Passwort ausstellen, nicht bei einer
+           Anfrage, die schon ein Kennzeichen mitbringt. */
+        sitzung: angemeldet ? undefined : await sitzungAusstellen(),
       });
+    }
+
+    /* Schlanke Abfrage fuer den regelmaessigen Blick "ist etwas Neues da?".
+       Holt nur Zahlen, keine Datensaetze. */
+    if (was === "stand") {
+      return json({ ok: true, stand: await uebersicht() });
     }
 
     if (!tabelle) return json({ fehler: "unbekannter Bereich" }, 400);

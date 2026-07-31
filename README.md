@@ -48,12 +48,12 @@ mit Notizen zu offenen Punkten — auf einem öffentlichen Branch haben sie nich
 ### Aktuelles Deployment: GitHub Pages
 
 **Live:** <https://chaos20140.github.io/devries-galabau/>
-**Verwaltung:** <https://chaos20140.github.io/devries-galabau/verwaltung.html>
+**Verwaltung:** <https://chaos20140.github.io/devries-galabau/admin/>
 Repository: `Chaos20140/devries-galabau`, Branch `main`, Quellordner `/` (Repository-Wurzel).
 
 Die Verwaltungsseite ist **absichtlich von nirgendwo verlinkt** und steht auf `noindex`
 sowie in `robots.txt` — sie ist nur über die Adresse oben erreichbar. Unter
-`devries-galabau.de/verwaltung.html` gibt es sie **nicht**: diese Domain zeigt weiterhin
+`devries-galabau.de/admin/` gibt es sie **nicht**: diese Domain zeigt weiterhin
 auf die alte WordPress-Installation (siehe *Umstellung auf die eigene Domain*).
 
 Veröffentlichen heißt hier schlicht: auf `main` committen und pushen.
