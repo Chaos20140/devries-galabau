@@ -116,7 +116,7 @@ class Component extends DCLogic {
     this.threeLaedt = new Promise((res, rej) => {
       if (window.THREE) return res();
       const s = document.createElement('script');
-      s.src = 'assets/js/three.min.js?v=37';
+      s.src = 'assets/js/three.min.js?v=38';
       s.async = true;
       s.onload = () => (window.THREE ? res() : rej(new Error('three geladen, aber nicht da')));
       s.onerror = () => rej(new Error('three konnte nicht geladen werden'));
@@ -725,9 +725,13 @@ class Component extends DCLogic {
     const hinweis = document.querySelector('[data-gal-hinweis]');
 
     if (m) {
-      if (!row.dataset.dOverflow) {
-        row.dataset.dOverflow = row.style.overflow || 'none';
-        row.dataset.dGap = row.style.gap || '';
+      /* Ausgangswerte EINMAL sichern. Sie stehen im style-Attribut der
+         Seite, nicht in einer Stildatei — wer sie spaeter auf '' setzt,
+         loescht das Layout, nicht die Handy-Fassung. */
+      if (row.dataset.dGap === undefined) {
+        row.dataset.dGap = row.style.gap;
+        row.dataset.dPadding = row.style.padding;
+        row.dataset.dMargin = row.style.margin;
       }
       row.style.overflowX = 'auto';
       row.style.overflowY = 'hidden';
@@ -738,6 +742,10 @@ class Component extends DCLogic {
       row.style.gap = '12px';
       row.style.scrollbarWidth = 'none';
       this.panels2.forEach((p) => {
+        if (p.dataset.dFlex === undefined) {
+          p.dataset.dFlex = p.style.flex;
+          p.dataset.dHeight = p.style.height;
+        }
         /* flexGrow NACH dem Kurzformat laesst die Kachel wieder schrumpfen —
            dann passen alle fuenf ins Bild und nichts ist mehr wischbar. */
         p.style.flex = '0 0 78vw';
@@ -756,10 +764,22 @@ class Component extends DCLogic {
     } else {
       row.style.overflowX = ''; row.style.overflowY = '';
       row.style.scrollSnapType = ''; row.style.scrollPadding = '';
-      row.style.padding = ''; row.style.margin = '';
-      row.style.gap = row.dataset.dGap || '';
+      row.style.scrollbarWidth = '';
+      /* ZurueckSETZEN, nicht leeren. Auf '' gesetzt verschwinden die Werte
+         aus dem Markup — die Felder verloren dadurch ihre Hoehe und fielen
+         auf 0 px zusammen, die Galerie war unsichtbar. Wurde nie auf Handy
+         umgeschaltet, gibt es nichts zurueckzusetzen: dann Finger weg. */
+      if (row.dataset.dGap !== undefined) {
+        row.style.gap = row.dataset.dGap;
+        row.style.padding = row.dataset.dPadding;
+        row.style.margin = row.dataset.dMargin;
+      }
       this.panels2.forEach((p) => {
-        p.style.flex = ''; p.style.height = ''; p.style.scrollSnapAlign = ''; p.style.flexGrow = '1';
+        if (p.dataset.dFlex !== undefined) {
+          p.style.flex = p.dataset.dFlex;
+          p.style.height = p.dataset.dHeight;
+        }
+        p.style.scrollSnapAlign = '';
         const txt = p.querySelector('[data-panel-text]');
         const cta = p.querySelector('[data-panel-cta]');
         const scrim = p.querySelector('[data-panel-scrim]');
