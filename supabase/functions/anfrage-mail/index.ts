@@ -17,6 +17,7 @@
    sonst koennte jeder ueber die oeffentliche Adresse Mails ausloesen.
    ===================================================================== */
 import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
+import { html, text, type Feld } from "./vorlage.ts";
 
 const env = (k: string, fallback = "") => Deno.env.get(k) ?? fallback;
 
@@ -80,19 +81,41 @@ Deno.serve(async (req: Request) => {
   /* Nur eine plausible Adresse darf in Reply-To. */
   const antwortAn = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : "";
 
-  const koerper =
-    `Über das Formular auf der Website ist eine neue Anfrage eingegangen.\n\n` +
-    zeile("Seite", kopfsicher(satz.quelle, 60)) +
-    zeile("Name", name) +
-    zeile("E-Mail", email) +
-    zeile("Telefon", kopfsicher(satz.telefon, 60)) +
-    zeile("Ort", kopfsicher(satz.ort, 120)) +
-    zeile("Auftraggeber", kopfsicher(satz.art, 40)) +
-    zeile("Bereich", kopfsicher(satz.bereich, 60)) +
-    zeile("Zeitraum", kopfsicher(satz.zeitraum, 120)) +
-    `\n${textsicher(satz.nachricht) || "(keine Nachricht angegeben)"}\n` +
-    `\n—\nEingegangen: ${kopfsicher(satz.eingegangen_am, 40)}\n` +
-    `Diese Nachricht wurde automatisch erzeugt. Antworten geht direkt an den Absender.\n`;
+  /* Welche Tabelle den Trigger ausgeloest hat — der Webhook schickt sie mit. */
+  const quelleTab = String(satz.__tabelle ?? "").includes("bewerbung") ||
+    satz.stelle != null || satz.verfuegbar_ab != null ? "bewerbung" : "anfrage";
+
+  const felder: Feld[] = quelleTab === "bewerbung"
+    ? [
+        ["Name", name],
+        ["E-Mail", email],
+        ["Telefon", kopfsicher(satz.telefon, 60)],
+        ["Stelle", kopfsicher(satz.stelle, 80)],
+        ["Verfügbar ab", kopfsicher(satz.verfuegbar_ab, 60)]
+      ]
+    : [
+        ["Seite", kopfsicher(satz.quelle, 60)],
+        ["Name", name],
+        ["E-Mail", email],
+        ["Telefon", kopfsicher(satz.telefon, 60)],
+        ["Ort", kopfsicher(satz.ort, 120)],
+        ["Auftraggeber", kopfsicher(satz.art, 40)],
+        ["Bereich", kopfsicher(satz.bereich, 60)],
+        ["Zeitraum", kopfsicher(satz.zeitraum, 120)]
+      ];
+
+  const titel = quelleTab === "bewerbung" ? "Neue Bewerbung" : "Neue Anfrage";
+  const vorspann = quelleTab === "bewerbung"
+    ? "Über das Bewerbungsformular auf der Website ist eine Bewerbung eingegangen."
+    : "Über das Formular auf der Website ist eine neue Anfrage eingegangen.";
+  const eingegangen = kopfsicher(satz.eingegangen_am, 40);
+  const nachricht = textsicher(satz.nachricht);
+
+  const koerperHtml = html({
+    art: quelleTab === "bewerbung" ? "bewerbung" : "anfrage",
+    titel, vorspann, felder, nachricht, antwortAn, eingegangen
+  });
+  const koerperText = text({ titel, felder, nachricht, eingegangen });
 
   const client = new SMTPClient({
     connection: {
@@ -108,8 +131,11 @@ Deno.serve(async (req: Request) => {
       from: MAIL_FROM,
       to: MAIL_TO,
       replyTo: antwortAn || undefined,
-      subject: `${betreff} — ${name || "ohne Namen"}`,
-      content: koerper,
+      /* Betreff des Absenders bevorzugen, er ist aussagekraeftiger. */
+      subject: `${betreff || titel}: ${name || "ohne Namen"}`,
+      /* Beides mitschicken: wer HTML abgeschaltet hat, bekommt den Text. */
+      content: koerperText,
+      html: koerperHtml,
     });
     return new Response("verschickt", { status: 200 });
   } catch (fehler) {

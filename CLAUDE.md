@@ -652,3 +652,32 @@ erweitern statt parallele bauen → 4. Desktop+Mobile im selben Schritt → 5. B
   inneren Container, sonst fällt alles auf die Serifenschrift zurück.
   **Mailziel** vorübergehend auf eine Abnahmeadresse, zentral in `formular.js` (`EMPFAENGER`)
   und als Secret `MAIL_TO`. Angezeigte Adressen unverändert. **Vor dem Livegang zurückstellen.**
+
+- **2026-07-31 · v26 — Supabase live, Bewerbungen, Mail-Vorlagen, Verwaltung.**
+  Der Nutzer hat dreimal bestätigt, ohne weitere Rückfrage zum Auftragsverarbeitungsvertrag
+  fortzufahren. Die Anbindung ist damit **aktiv ausgeliefert**; der Datenschutzabsatz nennt
+  Supabase und die Auftragsverarbeitung.
+  **Zweite Tabelle `galabau_bewerbungen`** samt Formular auf `stellenangebote.html`. Gleiche
+  Rechtelage wie bei den Anfragen: RLS an und erzwungen, `anon` darf **nur** einfügen.
+  Nachgeprüft: Lesen mit dem öffentlichen Schlüssel liefert 401 für beide Tabellen.
+  **Verwaltungsfelder** `status`, `notiz`, `archiviert` auf beiden Tabellen — beschreibbar
+  ausschließlich über die Edge Function.
+  **Mail-Vorlagen** in `supabase/functions/anfrage-mail/vorlage.ts`: eine Gestaltung, zwei
+  Fassungen (Anfrage/Bewerbung), als Tabellen-Layout mit Inline-Styles gebaut, weil
+  Mailprogramme modernes CSS ignorieren. Jede Mail geht zusätzlich als reiner Text raus.
+  Alle eingesetzten Werte laufen durch `maskieren()`.
+  **Backoffice `verwaltung.html`** im Aufbau der Schwesterseite CuraDoma (Anmeldung,
+  Kachelübersicht mit Zählern, Liste mit Suche und Statusfiltern, Detail mit Status, Notiz,
+  Archiv, Löschen, CSV-Export) — aber in unserer Palette und **ohne Build-Schritt**, weil
+  CuraDoma React/Vite nutzt und dieses Projekt bewusst statisch bleibt.
+  **Sicherheit:** Das Passwort wird ausschließlich serverseitig geprüft, im Quelltext der
+  Seite steht kein Geheimnis. Gelesen wird nie direkt aus der Datenbank — der öffentliche
+  Schlüssel darf das nicht. Die Funktion arbeitet intern mit `service_role`, der den Server
+  nie verlässt. Bereichsnamen laufen über eine Erlaubnisliste (Versuch mit `pg_user` → 400),
+  schreibbar sind nur drei Felder, `status` gegen eine feste Liste geprüft (Versuch mit
+  `boese` → 400). Falsches Passwort: 401 nach 900 ms Verzögerung. `verwaltung.html` steht
+  auf `noindex` und in `robots.txt`.
+  **Auf dem Telefon nur lesen** — Anfragen und Bewerbungen einsehen, Status und Notiz nur am
+  Rechner. Nachgeprüft in beiden Breiten.
+  **Merke:** Umlaute in `curl -d` werden von dieser Shell falsch kodiert und erzeugen ein
+  irreführendes `PGRST102 Empty or invalid json`. Aus dem Browser geht dasselbe durch.
