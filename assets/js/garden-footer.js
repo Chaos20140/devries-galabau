@@ -121,6 +121,12 @@
             '<div style="margin-top:clamp(24px,3.4vh,40px);padding-top:20px;border-top:1px solid rgba(16,35,26,.1);display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;font-size:13px;color:#4A5D51">' +
             '<span>© <span data-year>2026</span> de Vries Galabau · Garten- und Landschaftsbau</span>' +
             '<span>Salzhemmendorf · Hameln · Hildesheim</span>' +
+            /* Der einzige Verweis nach aussen auf dieser Seite. "noopener"
+               ist Pflicht: ohne das bekaeme die geoeffnete Seite ueber
+               window.opener Zugriff auf dieses Fenster. */
+            '<span>Webdesign &amp; Hosting: ' +
+            '<a href="https://axion-studio.de" target="_blank" rel="noopener" ' +
+            'style="color:#2C6E49;font-weight:600;text-decoration:none">Axion Studio</a></span>' +
             '</div>' +
             '</div>' +
           '</div>' +
