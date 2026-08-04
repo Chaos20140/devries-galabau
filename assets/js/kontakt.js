@@ -65,7 +65,51 @@ class Component extends DCLogic {
       });
       else mailto();
     });
+
+    this.karte();
   }
+
+  /* Zwei-Klick-Loesung fuer die Karte.
+     Eine fest eingebettete Google-Karte laedt beim Seitenaufruf von
+     Google-Servern und uebertraegt dabei die IP-Adresse jedes Besuchers
+     in die USA — ohne dass er gefragt wurde. Deshalb steht zunaechst
+     eine eigene Vorschau da, und erst dieser Klick ist die Einwilligung.
+
+     Bewusst OHNE Speichern der Zustimmung: die Seite legt nichts auf dem
+     Geraet ab, und genau das steht so in der Datenschutzerklaerung. Ein
+     Klick je Besuch ist der Preis dafuer, dass der Satz wahr bleibt. */
+  karte() {
+    const knopf = document.getElementById('karte-laden');
+    const buehne = document.getElementById('karte-buehne');
+    if (!knopf || !buehne) return;
+
+    knopf.addEventListener('click', () => {
+      const vorschau = document.getElementById('karte-vorschau');
+      const ziel = 'An den Flachsrotten 2, 31020 Salzhemmendorf';
+      const f = document.createElement('iframe');
+      /* maps.google.com leitet auf www.google.com weiter — deshalb stehen
+         beide Hosts in der frame-src dieser Seite. */
+      f.src = 'https://maps.google.com/maps?q=' + encodeURIComponent(ziel) +
+              '&hl=de&z=15&output=embed';
+      f.title = 'Karte: ' + ziel;
+      /* Bewusst OHNE loading="lazy": der Rahmen entsteht erst im Moment
+         des Klicks, es gibt also nichts aufzuschieben. Umgekehrt kann
+         "lazy" den Start verzoegern, wenn der Ausschnitt beim Klick
+         gerade nicht im Bild steht — dann taete der Knopf sichtbar
+         nichts, und genau das soll er nie. */
+      f.referrerPolicy = 'no-referrer';
+      f.setAttribute('style', 'position:absolute;inset:0;width:100%;height:100%;border:0;display:block');
+      buehne.appendChild(f);
+
+      /* Erst danach die Vorschau entfernen: faellt das Einsetzen aus
+         irgendeinem Grund aus, bleibt wenigstens die Adresse stehen. */
+      if (vorschau) vorschau.remove();
+      /* Der gedrueckte Knopf ist jetzt weg — ohne das hier verloere die
+         Tastaturbedienung ihre Stelle und spraenge an den Seitenanfang. */
+      buehne.focus();
+    });
+  }
+
   componentWillUnmount() { if (this.io) this.io.disconnect(); }
 }
 
