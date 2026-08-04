@@ -662,9 +662,30 @@ Deno.serve(async (req: Request) => {
       const datei = String(körper.datei ?? "");
       if (!SEITEN_ERLAUBT.has(datei)) return json({ fehler: "seite_nicht_freigegeben", datei }, 400);
 
-      /* Der Stand kommt aus dem Netz — nur echte Commit-Kennungen. */
+      /* ⚠ Die Kennung MUSS an die Liste gebunden werden, die der Server
+         selbst angeboten hat. Eine reine Formpruefung genuegt hier NICHT:
+
+         "texte-speichern" ist eng — es kann nur maskierten Text zwischen
+         zwei Tags setzen. Dieser Zweig dagegen schreibt den geholten
+         Dateiinhalt WOERTLICH zurueck. Ohne Bindung liesse sich damit
+         jede Fassung einsetzen, die im Objektnetz dieses oeffentlichen
+         Repositories erreichbar ist — auch eine aus einem Fork, dessen
+         Commit ueber refs/pull/N/head im Ursprungsrepository landet.
+         Eine so eingeschleuste Datei traegt ihre eigene CSP im <meta>
+         und koennte fremdes Skript auf einer Seite mit Kontakt- und
+         Bewerbungsformular ausliefern.
+
+         Die Markerzaehlung unten ist KEIN Schutz dagegen: 234 Vorkommen
+         von data-ed=" lassen sich in einem Kommentar unterbringen. Sie
+         bleibt als Bedienhilfe, nicht als Sicherung. */
       const sha = String(körper.sha ?? "");
-      if (!/^[0-9a-f]{7,40}$/.test(sha)) return json({ fehler: "sha_ungueltig" }, 400);
+      if (!/^[0-9a-f]{40}$/.test(sha)) return json({ fehler: "sha_ungueltig" }, 400);
+
+      const angeboten = await ghStaende(datei, BRANCHES[0]);
+      if (!angeboten.some((s) => s.sha === sha)) {
+        return json({ fehler: "stand_nicht_angeboten",
+          hinweis: "Diese Fassung gehört nicht zum Verlauf dieser Seite." }, 400);
+      }
 
       const alt = await ghHole(datei, sha);
 
