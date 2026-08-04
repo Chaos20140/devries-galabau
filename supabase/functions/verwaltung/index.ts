@@ -203,6 +203,67 @@ async function ghHole(pfad: string, branch: string): Promise<{ text: string; sha
   return { text: new TextDecoder().decode(bytes), sha: d.sha as string };
 }
 
+/* Mehrere Dateien in EINEM Commit — ueber die Git-Data-API.
+   Die Contents-API kann nur eine Datei je Aufruf; ein Bildwechsel
+   beruehrt aber vier (drei Groessen plus die HTML-Seite). Vier einzelne
+   Commits waeren vier Veroeffentlichungen, und zwischen ihnen zeigte die
+   Live-Seite einen halben Zustand: neues Markup, alte Bilder. */
+async function ghCommitMulti(
+  branch: string,
+  dateien: { pfad: string; inhalt: string; base64?: boolean }[],
+  nachricht: string,
+): Promise<void> {
+  const refA = await gh("/git/ref/heads/" + encodeURIComponent(branch));
+  if (!refA.ok) throw new Error("ref_fehlgeschlagen_" + refA.status);
+  const kopf = (await refA.json()).object.sha as string;
+
+  const commitA = await gh("/git/commits/" + kopf);
+  if (!commitA.ok) throw new Error("commit_lesen_fehlgeschlagen_" + commitA.status);
+  const baum = (await commitA.json()).tree.sha as string;
+
+  /* Blobs einzeln anlegen. base64 fuer Bilder, utf-8 fuer Text — sonst
+     wuerden Umlaute in der HTML-Datei zerstoert. */
+  const eintraege: { path: string; mode: string; type: string; sha: string }[] = [];
+  for (const d of dateien) {
+    const b = await gh("/git/blobs", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(
+        d.base64
+          ? { content: d.inhalt, encoding: "base64" }
+          : { content: d.inhalt, encoding: "utf-8" },
+      ),
+    });
+    if (!b.ok) throw new Error("blob_fehlgeschlagen_" + b.status);
+    eintraege.push({ path: d.pfad, mode: "100644", type: "blob", sha: (await b.json()).sha });
+  }
+
+  const baumA = await gh("/git/trees", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ base_tree: baum, tree: eintraege }),
+  });
+  if (!baumA.ok) throw new Error("baum_fehlgeschlagen_" + baumA.status);
+  const neuerBaum = (await baumA.json()).sha as string;
+
+  const neuA = await gh("/git/commits", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message: nachricht, tree: neuerBaum, parents: [kopf] }),
+  });
+  if (!neuA.ok) throw new Error("commit_fehlgeschlagen_" + neuA.status);
+  const neuerCommit = (await neuA.json()).sha as string;
+
+  /* Ohne force: schlaegt fehl, wenn der Zweig sich inzwischen bewegt hat —
+     dieselbe Sperre wie der Blob-SHA bei der Contents-API. */
+  const setz = await gh("/git/refs/heads/" + encodeURIComponent(branch), {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ sha: neuerCommit, force: false }),
+  });
+  if (!setz.ok) throw new Error("ref_setzen_fehlgeschlagen_" + setz.status);
+}
+
 /* Welche Fassungen dieser Datei gibt es? Git haelt sie ohnehin — das
    ist der billigste denkbare Rueckweg fuer den Betreiber. */
 async function ghStaende(pfad: string, branch: string): Promise<
@@ -740,6 +801,92 @@ Deno.serve(async (req: Request) => {
         }
       }
       return json({ ok: true, datei, anzahl: kennungen.length, branches: geschrieben });
+    }
+
+    /* ---- Seiten-Editor: Bild ersetzen ---------------------------------
+       Der Browser liefert die drei Groessen fertig als WebP. Hier werden
+       sie geschrieben und src/srcset/alt der Seite nachgezogen — alles in
+       EINEM Commit je Zweig, sonst zeigte die Live-Seite zwischendurch
+       neues Markup mit alten Bildern. */
+    if (was === "bild-speichern") {
+      if (!GH_TOKEN) return json({ fehler: "kein_schreibrecht" }, 501);
+      const datei = String(körper.datei ?? "");
+      if (!SEITEN_ERLAUBT.has(datei)) return json({ fehler: "seite_nicht_freigegeben", datei }, 400);
+
+      const kennung = String(körper.kennung ?? "");
+      if (!/^[A-Za-z0-9_-]{1,64}$/.test(kennung)) return json({ fehler: "kennung_ungueltig" }, 400);
+
+      /* Der Dateiname wird SERVERSEITIG gebaut, nicht uebernommen. Ein
+         Name aus dem Netz waere ein Weg, irgendwohin zu schreiben. */
+      const basisRoh = String(körper.basis ?? "bild").toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40);
+      if (!basisRoh) return json({ fehler: "name_ungueltig" }, 400);
+      const marke = Math.abs(
+        [...(kennung + basisRoh + datei)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 7),
+      ).toString(36).slice(0, 6);
+      const basis = basisRoh + "-" + marke;
+
+      const alt = String(körper.alt ?? "").trim();
+      if (!alt) return json({ fehler: "alt_leer" }, 400);
+      if (alt.length > 300) return json({ fehler: "alt_zu_lang" }, 400);
+      for (let i = 0; i < alt.length; i++) {
+        const c = alt.charCodeAt(i);
+        if (c < 32 || c === 127) return json({ fehler: "steuerzeichen" }, 400);
+      }
+
+      const roh = körper.dateien;
+      if (!roh || typeof roh !== "object") return json({ fehler: "bilder_fehlen" }, 400);
+      const groessen = [400, 800, 1600];
+      const bilder: { pfad: string; inhalt: string; base64: true }[] = [];
+      let summe = 0;
+      for (const g of groessen) {
+        const b64 = String((roh as Record<string, string>)[String(g)] ?? "");
+        if (!/^[A-Za-z0-9+/]+={0,2}$/.test(b64)) return json({ fehler: "bild_ungueltig", groesse: g }, 400);
+        const bytes = Math.floor(b64.length * 3 / 4);
+        if (bytes > 900_000) return json({ fehler: "bild_zu_gross", groesse: g }, 400);
+        summe += bytes;
+        bilder.push({ pfad: "assets/img/" + basis + "-" + g + ".webp", inhalt: b64, base64: true });
+      }
+      if (summe > 1_500_000) return json({ fehler: "bilder_zu_gross" }, 400);
+
+      /* src, srcset und alt am markierten <img> nachziehen. */
+      const bildSetzen = (html: string): string | null => {
+        const re = new RegExp('<img\\b[^>]*\\sdata-ed-img="' + regexMaskieren(kennung) + '"[^>]*>');
+        const m = re.exec(html);
+        if (!m) return null;
+        let tag = m[0];
+        const src = "assets/img/" + basis + "-800.webp";
+        const set = groessen.map((g) => "assets/img/" + basis + "-" + g + ".webp " + g + "w").join(", ");
+        const ersetzeAttr = (t: string, name: string, wert: string) => {
+          const r = new RegExp('(\\s' + name + '=")([^"]*)(")');
+          return r.test(t) ? t.replace(r, (_x, a, _b, z) => a + attributMaskieren(wert) + z) : t;
+        };
+        tag = ersetzeAttr(tag, "src", src);
+        tag = ersetzeAttr(tag, "srcset", set);
+        tag = ersetzeAttr(tag, "alt", alt);
+        return html.slice(0, m.index) + tag + html.slice(m.index + m[0].length);
+      };
+
+      const geschriebenBild: string[] = [];
+      for (const branch of BRANCHES) {
+        try {
+          const { text } = await ghHole(datei, branch);
+          const neu = bildSetzen(text);
+          if (neu === null) return json({ fehler: "bild_nicht_gefunden", kennung, branch }, 409);
+          await ghCommitMulti(
+            branch,
+            [...bilder, { pfad: datei, inhalt: neu }],
+            "Seiten-Editor: Bild in " + datei + " ersetzt",
+          );
+          geschriebenBild.push(branch);
+        } catch (e) {
+          const grund = e instanceof Error ? e.message : String(e);
+          if (geschriebenBild.length === 0) return json({ fehler: "nicht_gespeichert", grund }, 502);
+          return json({ ok: false, teilweise: true, geschrieben: geschriebenBild, grund,
+            hinweis: "Gespeichert, aber nicht veröffentlicht." }, 502);
+        }
+      }
+      return json({ ok: true, datei, basis, branches: geschriebenBild });
     }
 
     /* ---- Seiten-Editor: Titel und Google-Beschreibung ------------------
