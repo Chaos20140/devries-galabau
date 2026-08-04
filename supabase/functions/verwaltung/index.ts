@@ -803,6 +803,161 @@ Deno.serve(async (req: Request) => {
       return json({ ok: true, datei, anzahl: kennungen.length, branches: geschrieben });
     }
 
+    /* ---- Seiten-Editor: Menü und Fußzeile -----------------------------
+       Diese Datei wird VOLLSTAENDIG neu erzeugt, nicht geflickt. Sie
+       liegt auf allen 14 Seiten und wird VOR den Komponenten geladen —
+       ein Syntaxfehler darin nimmt jeder Seite Kopf- und Fusszeile.
+       Deshalb: strenge Pruefung der Struktur, Erzeugung ueber
+       JSON.stringify (keine Handarbeit an Anfuehrungszeichen), und vor
+       dem Commit ein Probelauf mit new Function(). */
+    if (was === "rahmen-speichern") {
+      if (!GH_TOKEN) return json({ fehler: "kein_schreibrecht" }, 501);
+
+      const d = körper.texte;
+      if (!d || typeof d !== "object" || Array.isArray(d)) return json({ fehler: "texte_fehlen" }, 400);
+      const q = d as Record<string, unknown>;
+
+      const fehlerhaft = (grund: string, wo?: string) =>
+        json({ fehler: "rahmen_ungueltig", grund, feld: wo }, 400);
+
+      const istText = (v: unknown, max = 200) =>
+        typeof v === "string" && v.trim().length > 0 && v.length <= max &&
+        ![...v].some((c) => c.charCodeAt(0) < 32 || c.charCodeAt(0) === 127);
+
+      /* Ein Verweisziel darf ausschliesslich eine Seite dieses Projekts
+         sein. Ohne diese Schranke liesse sich ueber ein Menue ein
+         "javascript:"-Ziel oder eine fremde Adresse in die Kopfzeile
+         JEDER Seite setzen. */
+      const istZiel = (v: unknown) =>
+        typeof v === "string" && /^[a-z0-9-]{1,60}\.html$/.test(v);
+
+      const liste = (wert: unknown, wo: string, maxN = 20) => {
+        if (!Array.isArray(wert) || wert.length === 0 || wert.length > maxN) return null;
+        const raus: { datei: string; text: string }[] = [];
+        for (const e of wert) {
+          if (!e || typeof e !== "object") return null;
+          const x = e as Record<string, unknown>;
+          if (!istZiel(x.datei) || !istText(x.text, 80)) return null;
+          raus.push({ datei: String(x.datei), text: String(x.text) });
+        }
+        return raus;
+      };
+
+      const menue = liste(q.menue, "menue");
+      if (!menue) return fehlerhaft("Menü unvollständig oder ein Ziel ist keine Seite", "menue");
+      const menueMehr = liste(q.menueMehr, "menueMehr");
+      if (!menueMehr) return fehlerhaft("Untermenü unvollständig", "menueMehr");
+
+      if (!Array.isArray(q.fussSpalten) || q.fussSpalten.length < 1 || q.fussSpalten.length > 4) {
+        return fehlerhaft("Fußzeilenspalten fehlen", "fussSpalten");
+      }
+      const fussSpalten: { titel: string; links: { datei: string; text: string }[] }[] = [];
+      for (const sp of q.fussSpalten) {
+        if (!sp || typeof sp !== "object") return fehlerhaft("Spalte ungültig", "fussSpalten");
+        const x = sp as Record<string, unknown>;
+        if (!istText(x.titel, 60)) return fehlerhaft("Spaltentitel fehlt", "fussSpalten");
+        const l = liste(x.links, "links");
+        if (!l) return fehlerhaft("Verweise einer Spalte unvollständig", "fussSpalten");
+        fussSpalten.push({ titel: String(x.titel), links: l });
+      }
+
+      const einfach: [string, number][] = [
+        ["menueMehrTitel", 60], ["knopf", 60], ["fussAbsatz", 400],
+        ["fussKontaktTitel", 60], ["fussZeiten", 80], ["fussOrt", 80],
+        ["fussRechts", 160], ["fussGebiet", 160],
+      ];
+      const rest: Record<string, string> = {};
+      for (const [k, max] of einfach) {
+        if (!istText(q[k], max)) return fehlerhaft("Feld fehlt oder ist zu lang", k);
+        rest[k] = String(q[k]);
+      }
+
+      /* Erzeugen. JSON.stringify uebernimmt jede Maskierung von
+         Anfuehrungszeichen und Backslashes — Handarbeit gibt es hier
+         nicht. Nachgereicht werden nur die drei Zeichen, die in JSON
+         gueltig, in JavaScript-Quelltext aber gefaehrlich sind:
+         "<" (koennte ein </script> bilden, falls der Inhalt je inline
+         landet) sowie U+2028/U+2029, die in aelteren Auslegungen als
+         Zeilenende gelten und die Datei zerreissen wuerden. */
+      const daten = {
+        menue, menueMehr,
+        menueMehrTitel: rest.menueMehrTitel,
+        knopf: rest.knopf,
+        fussAbsatz: rest.fussAbsatz,
+        fussSpalten,
+        fussKontaktTitel: rest.fussKontaktTitel,
+        fussZeiten: rest.fussZeiten,
+        fussOrt: rest.fussOrt,
+        fussRechts: rest.fussRechts,
+        fussGebiet: rest.fussGebiet,
+      };
+      const roh = JSON.stringify(daten, null, 2)
+        .replace(/</g, "\\u003C")
+        .split(String.fromCharCode(0x2028)).join("\\u2028")
+        .split(String.fromCharCode(0x2029)).join("\\u2029");
+
+      const inhalt = [
+        "/* =====================================================================",
+        "   Texte von Kopf- und Fusszeile",
+        "   =====================================================================",
+        "",
+        "   ⚠ Diese Datei wird vom Seiten-Editor VOLLSTAENDIG neu erzeugt.",
+        "   Von Hand geaenderte Kommentare oder Formatierungen ueberleben ein",
+        "   Speichern nicht. Wer hier dauerhaft etwas aendern will, aendert den",
+        "   Erzeuger in supabase/functions/verwaltung/index.ts.",
+        "",
+        "   Sie wird auf ALLEN Seiten geladen, VOR den Komponenten. Beide",
+        "   fallen auf ihre eingebauten Werte zurueck, wenn hier etwas fehlt.",
+        "   ===================================================================== */",
+        "window.RAHMEN_TEXTE = " + roh + ";",
+        "",
+      ].join("\n");
+
+      /* Letztes Gatter, in zwei Schritten — und BEWUSST OHNE den
+         erzeugten Inhalt auszufuehren.
+
+         Ein "new Function(inhalt)(…)" wuerde ihn laufen lassen, und zwar
+         in genau dem Kontext, der den GitHub-Token und den
+         Dienstschluessel sieht. Zwar kann wegen JSON.stringify kein Wert
+         aus seinem Zeichenketten-Literal ausbrechen — aber diese Annahme
+         als einzige Absicherung vor die wertvollsten Geheimnisse des
+         Systems zu stellen, waere ein schlechter Tausch fuer eine
+         Pruefung, die auch ohne Ausfuehrung zu haben ist.
+
+         1. JSON.parse prueft die Daten — ohne jede Codeausfuehrung.
+         2. new Function(...) OHNE Aufruf prueft nur die Syntax: der
+            Rumpf wird uebersetzt, nicht ausgefuehrt. Damit faellt eine
+            unbrauchbare Datei trotzdem vor dem Commit auf. */
+      try {
+        const zurueck = JSON.parse(roh) as Record<string, unknown>;
+        if (!Array.isArray(zurueck.menue) || (zurueck.menue as unknown[]).length !== menue.length) {
+          return json({ fehler: "erzeugung_fehlgeschlagen", grund: "Rundlauf stimmt nicht" }, 500);
+        }
+        new Function(inhalt);   // nur uebersetzen, nicht aufrufen
+      } catch (e) {
+        return json({ fehler: "erzeugung_fehlgeschlagen",
+          grund: e instanceof Error ? e.message : String(e) }, 500);
+      }
+
+      const zielDatei = "assets/js/rahmen-texte.js";
+      const geschriebenR: string[] = [];
+      for (const branch of BRANCHES) {
+        try {
+          const stand = await ghHole(zielDatei, branch);
+          if (stand.text === inhalt) { geschriebenR.push(branch); continue; }
+          await ghSchreibe(zielDatei, branch, inhalt, stand.sha,
+            "Seiten-Editor: Menü und Fußzeile geändert");
+          geschriebenR.push(branch);
+        } catch (e) {
+          const grund = e instanceof Error ? e.message : String(e);
+          if (geschriebenR.length === 0) return json({ fehler: "nicht_gespeichert", grund }, 502);
+          return json({ ok: false, teilweise: true, geschrieben: geschriebenR, grund,
+            hinweis: "Gespeichert, aber nicht veröffentlicht." }, 502);
+        }
+      }
+      return json({ ok: true, branches: geschriebenR });
+    }
+
     /* ---- Seiten-Editor: Bild ersetzen ---------------------------------
        Der Browser liefert die drei Groessen fertig als WebP. Hier werden
        sie geschrieben und src/srcset/alt der Seite nachgezogen — alles in
