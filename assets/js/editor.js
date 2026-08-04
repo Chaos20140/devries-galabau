@@ -53,6 +53,7 @@
   var geaendert = new Map();  // kennung -> neuer Text
   var leiste, zaehlerEl, meldungEl, speichernEl, verwerfenEl;
   var schublade = null, schubladeKnopf = null;
+  var verlauf = null;
 
   function start() {
     stilEinsetzen();
@@ -214,6 +215,13 @@
       rechts.appendChild(schubladeKnopf);
     }
 
+    var verlaufKnopf = el('button', 'dvg-knopf dvg-knopf-still', 'Frühere Fassung');
+    verlaufKnopf.type = 'button';
+    verlaufKnopf.id = 'dvg-verlauf';
+    verlaufKnopf.title = 'Einen früheren Stand dieser Seite wiederherstellen';
+    verlaufKnopf.addEventListener('click', verlaufUmschalten);
+    rechts.appendChild(verlaufKnopf);
+
     rechts.appendChild(verwerfenEl); rechts.appendChild(speichernEl); rechts.appendChild(raus);
 
     leiste.appendChild(links); leiste.appendChild(rechts);
@@ -230,6 +238,9 @@
   /* ---- Schublade fuer die nicht sichtbaren Stellen ----------------- */
 
   function schubladeUmschalten() {
+    /* Beide Listen liegen an derselben Stelle ueber der Leiste —
+       zwei offene wuerden sich ueberlagern. */
+    if (verlauf) { verlauf.remove(); verlauf = null; }
     if (schublade) {
       schublade.remove(); schublade = null;
       schubladeKnopf.setAttribute('aria-expanded', 'false');
@@ -288,6 +299,109 @@
     if (erstes) erstes.focus();
   }
 
+  /* ---- Frühere Fassungen ------------------------------------------
+     Git haelt die Staende ohnehin — der Betreiber soll sie sehen, ohne
+     von Commits wissen zu muessen. Beschriftet wird deshalb mit Datum
+     und Uhrzeit, nicht mit einer Kennung. */
+
+  function verlaufUmschalten() {
+    if (verlauf) { verlauf.remove(); verlauf = null; return; }
+    if (schublade) {
+      schublade.remove(); schublade = null;
+      if (schubladeKnopf) schubladeKnopf.setAttribute('aria-expanded', 'false');
+    }
+    verlauf = el('div', 'dvg-schublade');
+    verlauf.setAttribute('role', 'group');
+    verlauf.setAttribute('aria-label', 'Frühere Fassungen dieser Seite');
+    var kopf = el('div', 'dvg-schublade-kopf');
+    kopf.appendChild(el('strong', null, 'Frühere Fassungen'));
+    kopf.appendChild(el('span', null, 'Wird geladen …'));
+    verlauf.appendChild(kopf);
+    document.body.appendChild(verlauf);
+
+    ruf({ was: 'staende', datei: dateiname() }).then(function (a) {
+      if (!verlauf) return;
+      if (!a.d || !a.d.ok) {
+        kopf.lastChild.textContent =
+          a.s === 401 ? 'Die Anmeldung ist abgelaufen. Bitte im Verwaltungsbereich neu anmelden.'
+          : a.s === 501 ? 'Dafür fehlt dem Server noch das Schreibrecht am Repository.'
+          : 'Die Liste ließ sich nicht laden (' + a.s + ').';
+        return;
+      }
+      var staende = a.d.staende || [];
+      kopf.lastChild.textContent = staende.length
+        ? 'Jede Zeile ist ein gespeicherter Stand dieser Seite. Beim Wiederherstellen geht nichts verloren — der Schritt selbst lässt sich genauso zurücknehmen.'
+        : 'Für diese Seite gibt es noch keine früheren Stände.';
+
+      staende.forEach(function (s, i) {
+        var z = el('div', 'dvg-stand');
+        var links = el('div', 'dvg-stand-text');
+        links.appendChild(el('strong', null, zeitpunkt(s.datum) + (i === 0 ? ' · aktueller Stand' : '')));
+        links.appendChild(el('span', null, s.nachricht));
+        z.appendChild(links);
+        if (i > 0) {
+          var k = el('button', 'dvg-knopf dvg-knopf-still', 'Wiederherstellen');
+          k.type = 'button';
+          k.addEventListener('click', function () { zurueckAuf(s, k); });
+          z.appendChild(k);
+        }
+        verlauf.appendChild(z);
+      });
+    }).catch(function (e) {
+      if (verlauf) kopf.lastChild.textContent = 'Keine Verbindung (' + (e && e.message) + ').';
+    });
+  }
+
+  function zurueckAuf(s, knopf) {
+    if (geaendert.size && !window.confirm(
+      'Sie haben ' + geaendert.size + ' ungespeicherte Änderung(en). Beim Wiederherstellen gehen die verloren. Fortfahren?')) return;
+    if (!window.confirm('Diese Seite auf den Stand vom ' + zeitpunkt(s.datum) + ' zurücksetzen?')) return;
+    knopf.disabled = true; knopf.textContent = 'Wird zurückgesetzt …';
+    ruf({ was: 'stand-zurueck', datei: dateiname(), sha: s.sha }).then(function (a) {
+      if (a.d && a.d.fehler === 'stand_zu_alt') {
+        knopf.disabled = false; knopf.textContent = 'Wiederherstellen';
+        window.alert(a.d.hinweis);
+        return;
+      }
+      if (a.s !== 200 || !a.d || !a.d.ok) {
+        knopf.disabled = false; knopf.textContent = 'Wiederherstellen';
+        melde('Zurücksetzen fehlgeschlagen (' + a.s + ').', 'fehler');
+        return;
+      }
+      knopf.textContent = 'Zurückgesetzt';
+      melde('Zurückgesetzt. In etwa einer Minute ist der Stand für alle sichtbar — die Seite lädt gleich neu.', 'ok');
+      /* Neu laden, damit der Betreiber den wiederhergestellten Text
+         wirklich vor sich hat statt der alten Fassung im Fenster. */
+      geaendert.clear();
+      setTimeout(function () { location.reload(); }, 2500);
+    }).catch(function (e) {
+      knopf.disabled = false; knopf.textContent = 'Wiederherstellen';
+      melde('Keine Verbindung (' + (e && e.message) + ').', 'fehler');
+    });
+  }
+
+  /* Gemeinsamer Aufruf — dieselbe Form wie im uebrigen
+     Verwaltungsbereich: { was, sitzung, … } im Rumpf. */
+  function ruf(nutzlast) {
+    nutzlast.sitzung = kennzeichen;
+    return fetch(FN, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(nutzlast)
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; })
+        .then(function (d) { return { s: r.status, d: d }; });
+    });
+  }
+
+  function zeitpunkt(iso) {
+    try {
+      var d = new Date(iso);
+      return d.toLocaleDateString('de-DE', { day: '2-digit', month: 'long', year: 'numeric' }) +
+        ' · ' + d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) + ' Uhr';
+    } catch (e) { return String(iso || '').slice(0, 16); }
+  }
+
   /* Aus einer id einen Namen machen, den ein Mensch versteht. */
   function bereichName(id) {
     var karte = {
@@ -329,17 +443,10 @@
        loest eine CORS-Vorabfrage aus, die diese Funktion nicht beantwortet.
        Gemessen: der Aufruf scheiterte mit "Failed to fetch", waehrend
        derselbe Aufruf ohne die Kopfzeile sauber mit 401 antwortete. */
-    var nutzlast = { was: 'texte-speichern', sitzung: kennzeichen,
-                     datei: dateiname(), texte: {} };
+    var nutzlast = { was: 'texte-speichern', datei: dateiname(), texte: {} };
     geaendert.forEach(function (wert, kennung) { nutzlast.texte[kennung] = wert; });
 
-    fetch(FN, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(nutzlast)
-    }).then(function (r) {
-      return r.json().catch(function () { return {}; }).then(function (d) { return { s: r.status, d: d }; });
-    }).then(function (a) {
+    ruf(nutzlast).then(function (a) {
       if (a.s === 401) { melde('Die Anmeldung ist abgelaufen. Bitte im Verwaltungsbereich neu anmelden.', 'fehler'); speichernEl.disabled = false; return; }
       /* Solange die Edge Function die Aktion nicht kennt, antwortet sie
          mit 400 und "unbekannter Auftrag"/"unbekannter Bereich". Das ist
@@ -483,6 +590,14 @@
       '  transition:border-color .15s cubic-bezier(.4,0,.2,1)}',
       '.dvg-feld:focus{outline:2px solid #2C6E49;outline-offset:1px;border-color:#2C6E49}',
       '.dvg-feld-neu{border-color:#C77C1E;background:rgba(199,124,30,.07)}',
+
+      /* Liste der frueheren Staende */
+      '.dvg-stand{display:flex;align-items:center;justify-content:space-between;gap:16px;',
+      '  padding:12px 0;border-top:1px solid rgba(16,35,26,.09)}',
+      '.dvg-stand-text{display:flex;flex-direction:column;gap:3px;min-width:0}',
+      '.dvg-stand-text strong{font-size:14.5px;font-weight:600;color:var(--ink)}',
+      '.dvg-stand-text span{font-size:12.5px;color:var(--mut);overflow-wrap:anywhere}',
+      '.dvg-stand .dvg-knopf{flex:none;min-height:36px;padding:8px 16px;font-size:13.5px}',
 
       /* Hinweiskarte, wenn nicht bearbeitet werden kann */
       '.dvg-hinweis{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:2147483000;',

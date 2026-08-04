@@ -153,6 +153,27 @@ async function ghHole(pfad: string, branch: string): Promise<{ text: string; sha
   return { text: new TextDecoder().decode(bytes), sha: d.sha as string };
 }
 
+/* Welche Fassungen dieser Datei gibt es? Git haelt sie ohnehin — das
+   ist der billigste denkbare Rueckweg fuer den Betreiber. */
+async function ghStaende(pfad: string, branch: string): Promise<
+  { sha: string; datum: string; nachricht: string }[]
+> {
+  const r = await gh("/commits?path=" + encodeURIComponent(pfad) +
+    "&sha=" + encodeURIComponent(branch) + "&per_page=20");
+  if (!r.ok) throw new Error("verlauf_fehlgeschlagen_" + r.status);
+  const d = await r.json();
+  if (!Array.isArray(d)) return [];
+  return d.map((c: Record<string, never>) => ({
+    sha: String((c as { sha?: string }).sha ?? ""),
+    datum: String(
+      ((c as { commit?: { committer?: { date?: string } } }).commit?.committer?.date) ?? "",
+    ),
+    nachricht: String(
+      ((c as { commit?: { message?: string } }).commit?.message ?? "").split("\n")[0],
+    ).slice(0, 120),
+  })).filter((c) => c.sha);
+}
+
 async function ghSchreibe(
   pfad: string, branch: string, inhalt: string, sha: string, nachricht: string,
 ): Promise<void> {
@@ -623,6 +644,64 @@ Deno.serve(async (req: Request) => {
         }
       }
       return json({ ok: true, datei, anzahl: kennungen.length, branches: geschrieben });
+    }
+
+    /* ---- Seiten-Editor: frühere Fassungen ------------------------------
+       Git haelt die Staende ohnehin. Ohne diesen Weg haette der Betreiber
+       auf einer LIVE-Seite 802 aenderbare Textstellen und kein Zurueck —
+       das ist der wichtigste Vertrauensbaustein des ganzen Editors. */
+    if (was === "staende") {
+      if (!GH_TOKEN) return json({ fehler: "kein_schreibrecht" }, 501);
+      const datei = String(körper.datei ?? "");
+      if (!SEITEN_ERLAUBT.has(datei)) return json({ fehler: "seite_nicht_freigegeben", datei }, 400);
+      return json({ ok: true, datei, staende: await ghStaende(datei, BRANCHES[0]) });
+    }
+
+    if (was === "stand-zurueck") {
+      if (!GH_TOKEN) return json({ fehler: "kein_schreibrecht" }, 501);
+      const datei = String(körper.datei ?? "");
+      if (!SEITEN_ERLAUBT.has(datei)) return json({ fehler: "seite_nicht_freigegeben", datei }, 400);
+
+      /* Der Stand kommt aus dem Netz — nur echte Commit-Kennungen. */
+      const sha = String(körper.sha ?? "");
+      if (!/^[0-9a-f]{7,40}$/.test(sha)) return json({ fehler: "sha_ungueltig" }, 400);
+
+      const alt = await ghHole(datei, sha);
+
+      /* Sicherung gegen einen Fussangel: Faellt der Betreiber auf einen
+         Stand VOR der Editor-Vorbereitung zurueck, fehlen der Datei die
+         data-ed-Marker — die Seite liesse sich danach nicht mehr
+         bearbeiten, und er saehe nur, dass "nichts mehr geht". Deshalb
+         zaehlen und ablehnen statt es geschehen zu lassen. */
+      const zaehle = (t: string) => (t.match(/data-ed="/g) ?? []).length;
+      const jetzt = await ghHole(datei, BRANCHES[0]);
+      if (zaehle(alt.text) < zaehle(jetzt.text)) {
+        return json({
+          fehler: "stand_zu_alt",
+          hinweis: "Diese Fassung stammt aus der Zeit vor dem Seiten-Editor und ließe sich danach nicht mehr bearbeiten.",
+          markerAlt: zaehle(alt.text), markerJetzt: zaehle(jetzt.text),
+        }, 409);
+      }
+
+      /* Als NEUER Commit zurueckschreiben, nicht zurueckspulen: der
+         Verlauf bleibt vollstaendig, und der Schritt selbst laesst sich
+         genauso wieder rueckgaengig machen. */
+      const nachricht = "Seiten-Editor: " + datei + " auf einen früheren Stand zurückgesetzt";
+      const geschrieben: string[] = [];
+      for (const branch of BRANCHES) {
+        try {
+          const stand = await ghHole(datei, branch);
+          if (stand.text === alt.text) { geschrieben.push(branch); continue; }
+          await ghSchreibe(datei, branch, alt.text, stand.sha, nachricht);
+          geschrieben.push(branch);
+        } catch (e) {
+          const grund = e instanceof Error ? e.message : String(e);
+          if (geschrieben.length === 0) return json({ fehler: "nicht_gespeichert", grund }, 502);
+          return json({ ok: false, teilweise: true, geschrieben, grund,
+            hinweis: "Zurückgesetzt, aber nicht veröffentlicht." }, 502);
+        }
+      }
+      return json({ ok: true, datei, sha, branches: geschrieben });
     }
 
     if (!tabelle) return json({ fehler: "unbekannter Bereich" }, 400);
