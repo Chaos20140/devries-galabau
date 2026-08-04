@@ -37,6 +37,13 @@
   var gewuenscht = /[?&]bearbeiten=1(&|$)/.test(location.search);
   if (!gewuenscht) return;
 
+  /* Schutz gegen Clickjacking — nur im Bearbeitungsmodus. Ein
+     fremdes Dokument koennte die Seite sonst unsichtbar ueberlagern
+     und einem angemeldeten Betreiber Klicks auf "Speichern"
+     unterschieben. Fuer normale Besucher aendert sich nichts: ohne
+     ?bearbeiten=1 ist diese Datei schon zwei Zeilen darueber fertig. */
+  if (window.top !== window.self) { window.top.location = window.self.location; return; }
+
   var kennzeichen = null;
   try { kennzeichen = sessionStorage.getItem(SITZUNG); } catch (e) { /* Speicher gesperrt */ }
   if (!kennzeichen) { hinweisSeite('Nicht angemeldet', 'Bitte zuerst im Verwaltungsbereich anmelden — dann von dort aus die Seite zum Bearbeiten öffnen.', true); return; }
@@ -90,6 +97,14 @@
     if (!felder.length) { hinweisSeite('Diese Seite ist noch nicht vorbereitet', 'Für sie wurden noch keine bearbeitbaren Stellen eingerichtet.', true); return; }
     felder.forEach(bereitmachen);
     leisteBauen();
+    /* Rechtstexte sind bearbeitbar wie jede andere Seite — das ist
+       richtig, der Betreiber muss seine eigene Anschrift aendern
+       koennen. Ein Hinweis gehoert aber dazu: eine unbedacht
+       geaenderte Pflichtangabe ist ein Rechtsmangel, kein Tippfehler. */
+    if (/^(impressum|datenschutz)\.html$/.test(dateiname())) {
+      melde('Achtung: Das ist ein Rechtstext. Pflichtangaben wie Anschrift, '
+        + 'Vertretung und USt-IdNr. müssen stimmen — im Zweifel nichts ändern.', 'fehler');
+    }
     document.documentElement.classList.add('dvg-bearbeiten');
 
     /* Im Bearbeitungsmodus ist die Seite zum LESEN und TIPPEN da, nicht
@@ -493,8 +508,15 @@
       return;
     }
 
-    var nutzlast = { was: 'texte-speichern', datei: dateiname(), texte: {} };
+    /* "vorher" ist der Wert, den DIESES Fenster beim Oeffnen vorgefunden
+       hat. Der Server vergleicht ihn mit dem, was inzwischen in der Datei
+       steht — sonst ueberschreiben sich zwei offene Editorfenster
+       lautlos, und der erste erfaehrt nie davon. */
+    var nutzlast = { was: 'texte-speichern', datei: dateiname(), texte: {}, vorher: {} };
     geaendert.forEach(function (wert, kennung) { nutzlast.texte[kennung] = wert; });
+    felder.forEach(function (f) {
+      if (geaendert.has(f.kennung)) nutzlast.vorher[f.kennung] = f.alt;
+    });
 
     ruf(nutzlast).then(function (a) {
       if (a.s === 401) { melde('Die Anmeldung ist abgelaufen. Bitte im Verwaltungsbereich neu anmelden.', 'fehler'); speichernEl.disabled = false; return; }
@@ -560,7 +582,8 @@
       marker_nicht_gefunden: 'diese Stelle gibt es in der Datei nicht mehr — bitte die Seite neu laden',
       seite_nicht_freigegeben: 'diese Seite ist für den Editor nicht freigegeben',
       stand_nicht_angeboten: 'diese Fassung gehört nicht zum Verlauf dieser Seite',
-      nicht_gespeichert: 'der Server konnte nicht schreiben'
+      nicht_gespeichert: 'der Server konnte nicht schreiben',
+      inzwischen_geaendert: 'diese Stelle wurde zwischenzeitlich anderswo geändert — bitte die Seite neu laden'
     };
     return karte[f] || f;
   }
