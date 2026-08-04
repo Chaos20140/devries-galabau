@@ -323,17 +323,22 @@
      Seite faelschlich als bearbeitbar anzubieten fuehrt zu einem Editor
      ohne einzige bearbeitbare Stelle, und das sieht aus wie ein Fehler. */
   var SEITEN = [
-    { datei: 'ueber-uns.html',        titel: 'Über uns',           bereit: true },
-    { datei: 'index.html',            titel: 'Startseite',         bereit: false },
-    { datei: 'gartengestaltung.html', titel: 'Gartengestaltung',   bereit: false },
-    { datei: 'gartenplanung.html',    titel: 'Gartenplanung',      bereit: false },
-    { datei: 'gartenpflege.html',     titel: 'Gartenpflege',       bereit: false },
-    { datei: 'bepflanzung.html',      titel: 'Bepflanzung',        bereit: false },
-    { datei: 'referenzen.html',       titel: 'Referenzen',         bereit: false },
-    { datei: 'kontakt.html',          titel: 'Kontakt',            bereit: false },
-    { datei: 'anfrage.html',          titel: 'Kostenlose Anfrage', bereit: false },
-    { datei: 'stellenangebote.html',  titel: 'Stellenangebote',    bereit: false }
+    { datei: 'index.html',          titel: 'Startseite',          bereit: false },
+    { datei: 'ueber-uns.html',      titel: 'Über uns',            bereit: true  },
+    { datei: 'gartengestaltung.html', titel: 'Gartengestaltung',    bereit: true  },
+    { datei: 'gartenplanung.html',  titel: 'Gartenplanung',       bereit: true  },
+    { datei: 'gartenpflege.html',   titel: 'Gartenpflege',        bereit: true  },
+    { datei: 'bepflanzung.html',    titel: 'Bepflanzung',         bereit: true  },
+    { datei: 'referenzen.html',     titel: 'Referenzen',          bereit: true  },
+    { datei: 'kontakt.html',        titel: 'Kontakt',             bereit: true  },
+    { datei: 'anfrage.html',        titel: 'Kostenlose Anfrage',  bereit: true  },
+    { datei: 'stellenangebote.html', titel: 'Stellenangebote',     bereit: true  },
+    { datei: 'impressum.html',      titel: 'Impressum',           bereit: true  },
+    { datei: 'datenschutz.html',    titel: 'Datenschutz',         bereit: true  },
+    { datei: 'danke.html',          titel: 'Danke-Seite',         bereit: true  },
+    { datei: '404.html',            titel: 'Fehlerseite 404',     bereit: true  },
   ];
+
 
   function zeigeSeiten() {
     /* Der Editor liest sein Anmeldekennzeichen aus dem sessionStorage

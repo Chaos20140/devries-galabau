@@ -80,6 +80,18 @@ const BRANCHES = ["redesign/gartenrundgang", "main"];
    Verwaltungspasswort Schreibrecht darauf. */
 const SEITEN_ERLAUBT = new Set([
   "ueber-uns.html",
+  "gartengestaltung.html",
+  "gartenplanung.html",
+  "gartenpflege.html",
+  "bepflanzung.html",
+  "referenzen.html",
+  "kontakt.html",
+  "anfrage.html",
+  "stellenangebote.html",
+  "impressum.html",
+  "datenschutz.html",
+  "danke.html",
+  "404.html",
 ]);
 
 const MAX_TEXTE = 200;

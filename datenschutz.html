@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; connect-src 'self'; frame-src 'none'; form-action 'self' mailto:">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; connect-src 'self' https://pvcbgwzqjnzzpehwuywi.supabase.co; frame-src 'none'; form-action 'self' mailto:">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Datenschutzerklärung | de Vries Galabau</title>
@@ -23,7 +23,7 @@
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png?v=1">
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/outfit-600-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/outfit-400-latin.woff2" crossorigin>
-<link rel="stylesheet" href="assets/css/base.css?v=50">
+<link rel="stylesheet" href="assets/css/base.css?v=51">
 <style>
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;background:#EDF3E8;color:#12261A}
@@ -55,230 +55,233 @@
 
   <section data-screen-label="Hero Datenschutz" style="position:relative;z-index:2;padding:clamp(44px,8vh,104px) clamp(20px,5vw,68px) clamp(30px,4vh,56px)">
     <div style="max-width:1240px;margin:0 auto">
-      <p data-reveal style="margin:0 0 18px;font-size:12px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:#2C6E49">Datenschutz</p>
-      <h1 data-reveal style="margin:0;font-size:clamp(36px,6.4vw,92px);line-height:.96;letter-spacing:-.04em;font-weight:600;max-width:20ch;color:#0F2318;text-wrap:balance">Ihre Daten, <span style="display:inline-block;padding:.12em .1em .2em;margin:-.12em -.1em -.2em;font-family:'Instrument Serif',Georgia,serif;font-style:italic;font-weight:400;background:linear-gradient(120deg,#2C6E49,#8ECF4F);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent">transparent</span> behandelt.</h1>
-      <p data-reveal style="margin:clamp(22px,3vh,34px) 0 0;max-width:62ch;font-size:clamp(16px,1.4vw,20px);line-height:1.6;color:#3C5145;text-wrap:pretty">Diese Erklärung informiert Sie darüber, welche personenbezogenen Daten beim Besuch dieser Website verarbeitet werden — und welche Rechte Sie dabei haben.</p>
+      <p data-reveal style="margin:0 0 18px;font-size:12px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:#2C6E49" data-ed="hero-datenschutz-p">Datenschutz</p>
+      <h1 data-reveal style="margin:0;font-size:clamp(36px,6.4vw,92px);line-height:.96;letter-spacing:-.04em;font-weight:600;max-width:20ch;color:#0F2318;text-wrap:balance"><span data-ed="hero-datenschutz-t">Ihre Daten,</span> <span style="display:inline-block;padding:.12em .1em .2em;margin:-.12em -.1em -.2em;font-family:'Instrument Serif',Georgia,serif;font-style:italic;font-weight:400;background:linear-gradient(120deg,#2C6E49,#8ECF4F);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent" data-ed="hero-datenschutz-span">transparent</span> <span data-ed="hero-datenschutz-t2">behandelt.</span></h1>
+      <p data-reveal style="margin:clamp(22px,3vh,34px) 0 0;max-width:62ch;font-size:clamp(16px,1.4vw,20px);line-height:1.6;color:#3C5145;text-wrap:pretty" data-ed="hero-datenschutz-p2">Diese Erklärung informiert Sie darüber, welche personenbezogenen Daten beim Besuch dieser Website verarbeitet werden — und welche Rechte Sie dabei haben.</p>
     </div>
   </section>
   <section data-screen-label="Datenschutzerklärung" style="position:relative;z-index:2;padding:clamp(20px,4vh,50px) clamp(20px,5vw,68px) clamp(50px,8vh,110px)">
     <div style="max-width:1240px;margin:0 auto">
       <div style="border-radius:26px;padding:clamp(24px,3vw,48px);background:linear-gradient(155deg,rgba(255,255,255,.72),rgba(255,255,255,.42));backdrop-filter:blur(26px) saturate(1.45);border:1px solid rgba(255,255,255,.6);box-shadow:0 26px 54px -38px rgba(12,29,20,.34)">
         <div class="prose">
-<h2>Allgemeine Hinweise</h2>
+<h2 data-ed="datenschutzerklaerung-h2">Allgemeine Hinweise</h2>
 
-<p>Die folgenden Hinweise geben einen einfachen Überblick darüber, was mit Ihren personenbezogenen Daten passiert, wenn Sie diese Website besuchen. Personenbezogene Daten sind alle Daten, mit denen Sie persönlich identifiziert werden können. Ausführliche Informationen zum Thema Datenschutz entnehmen Sie unserer unter diesem Text aufgeführten Datenschutzerklärung.</p>
+<p data-ed="datenschutzerklaerung-p">Die folgenden Hinweise geben einen einfachen Überblick darüber, was mit Ihren personenbezogenen Daten passiert, wenn Sie diese Website besuchen. Personenbezogene Daten sind alle Daten, mit denen Sie persönlich identifiziert werden können. Ausführliche Informationen zum Thema Datenschutz entnehmen Sie unserer unter diesem Text aufgeführten Datenschutzerklärung.</p>
 
-<h3>Datenerfassung auf dieser Website</h3>
+<h3 data-ed="datenschutzerklaerung-h3">Datenerfassung auf dieser Website</h3>
 
-<h4>Wer ist verantwortlich für die Datenerfassung auf dieser Website?</h4>
+<h4 data-ed="datenschutzerklaerung-h4">Wer ist verantwortlich für die Datenerfassung auf dieser Website?</h4>
 
-<p>Die Datenverarbeitung auf dieser Website erfolgt durch den Websitebetreiber. Dessen Kontaktdaten können Sie dem Abschnitt „Hinweis zur Verantwortlichen Stelle“ in dieser Datenschutzerklärung entnehmen.</p>
+<p data-ed="datenschutzerklaerung-p2">Die Datenverarbeitung auf dieser Website erfolgt durch den Websitebetreiber. Dessen Kontaktdaten können Sie dem Abschnitt „Hinweis zur Verantwortlichen Stelle“ in dieser Datenschutzerklärung entnehmen.</p>
 
-<h4>Wie erfassen wir Ihre Daten?</h4>
+<h4 data-ed="datenschutzerklaerung-h42">Wie erfassen wir Ihre Daten?</h4>
 
-<p>Ihre Daten werden zum einen dadurch erhoben, dass Sie uns diese mitteilen. Hierbei kann es sich z. B. um Daten handeln, die Sie in ein Kontaktformular eingeben.</p>
+<p data-ed="datenschutzerklaerung-p3">Ihre Daten werden zum einen dadurch erhoben, dass Sie uns diese mitteilen. Hierbei kann es sich z. B. um Daten handeln, die Sie in ein Kontaktformular eingeben.</p>
 
-<p>Andere Daten werden automatisch oder nach Ihrer Einwilligung beim Besuch der Website durch unsere IT-Systeme erfasst. Das sind vor allem technische Daten (z. B. Internetbrowser, Betriebssystem oder Uhrzeit des Seitenaufrufs). Die Erfassung dieser Daten erfolgt automatisch, sobald Sie diese Website betreten.</p>
+<p data-ed="datenschutzerklaerung-p4">Andere Daten werden automatisch oder nach Ihrer Einwilligung beim Besuch der Website durch unsere IT-Systeme erfasst. Das sind vor allem technische Daten (z. B. Internetbrowser, Betriebssystem oder Uhrzeit des Seitenaufrufs). Die Erfassung dieser Daten erfolgt automatisch, sobald Sie diese Website betreten.</p>
 
-<h4>Wofür nutzen wir Ihre Daten?</h4>
+<h4 data-ed="datenschutzerklaerung-h43">Wofür nutzen wir Ihre Daten?</h4>
 
-<p>Ein Teil der Daten wird erhoben, um eine fehlerfreie Bereitstellung der Website zu gewährleisten. Andere Daten können zur Analyse Ihres Nutzerverhaltens verwendet werden. Sofern über die Website Verträge geschlossen oder angebahnt werden können, werden die übermittelten Daten auch für Vertragsangebote, Bestellungen oder sonstige Auftragsanfragen verarbeitet.</p>
+<p data-ed="datenschutzerklaerung-p5">Ein Teil der Daten wird erhoben, um eine fehlerfreie Bereitstellung der Website zu gewährleisten. Andere Daten können zur Analyse Ihres Nutzerverhaltens verwendet werden. Sofern über die Website Verträge geschlossen oder angebahnt werden können, werden die übermittelten Daten auch für Vertragsangebote, Bestellungen oder sonstige Auftragsanfragen verarbeitet.</p>
 
-<h4>Welche Rechte haben Sie bezüglich Ihrer Daten?</h4>
+<h4 data-ed="datenschutzerklaerung-h44">Welche Rechte haben Sie bezüglich Ihrer Daten?</h4>
 
-<p>Sie haben jederzeit das Recht, unentgeltlich Auskunft über Herkunft, Empfänger und Zweck Ihrer gespeicherten personenbezogenen Daten zu erhalten. Sie haben außerdem ein Recht, die Berichtigung oder Löschung dieser Daten zu verlangen. Wenn Sie eine Einwilligung zur Datenverarbeitung erteilt haben, können Sie diese Einwilligung jederzeit für die Zukunft widerrufen. Außerdem haben Sie das Recht, unter bestimmten Umständen die Einschränkung der Verarbeitung Ihrer personenbezogenen Daten zu verlangen. Des Weiteren steht Ihnen ein Beschwerderecht bei der zuständigen Aufsichtsbehörde zu.</p>
+<p data-ed="datenschutzerklaerung-p6">Sie haben jederzeit das Recht, unentgeltlich Auskunft über Herkunft, Empfänger und Zweck Ihrer gespeicherten personenbezogenen Daten zu erhalten. Sie haben außerdem ein Recht, die Berichtigung oder Löschung dieser Daten zu verlangen. Wenn Sie eine Einwilligung zur Datenverarbeitung erteilt haben, können Sie diese Einwilligung jederzeit für die Zukunft widerrufen. Außerdem haben Sie das Recht, unter bestimmten Umständen die Einschränkung der Verarbeitung Ihrer personenbezogenen Daten zu verlangen. Des Weiteren steht Ihnen ein Beschwerderecht bei der zuständigen Aufsichtsbehörde zu.</p>
 
-<p>Hierzu sowie zu weiteren Fragen zum Thema Datenschutz können Sie sich jederzeit an uns wenden.</p>
+<p data-ed="datenschutzerklaerung-p7">Hierzu sowie zu weiteren Fragen zum Thema Datenschutz können Sie sich jederzeit an uns wenden.</p>
 
-<h3>Analyse-Tools und Tools von Drittanbietern</h3>
+<h3 data-ed="datenschutzerklaerung-h32">Analyse-Tools und Tools von Drittanbietern</h3>
 
-<p>Ihr Surf-Verhalten wird auf dieser Website <strong>nicht</strong> statistisch ausgewertet. Wir setzen keine Analyseprogramme und keine Werkzeuge zur Reichweitenmessung ein.</p>
+<p><span data-ed="datenschutzerklaerung-t">Ihr Surf-Verhalten wird auf dieser Website</span> <strong data-ed="datenschutzerklaerung-strong">nicht</strong> <span data-ed="datenschutzerklaerung-t2">statistisch ausgewertet. Wir setzen keine Analyseprogramme und keine Werkzeuge zur Reichweitenmessung ein.</span></p>
 
-<h2>Hosting</h2>
+<h2 data-ed="datenschutzerklaerung-h22">Hosting</h2>
 
-<p>Wir hosten die Inhalte unserer Website bei folgendem Anbieter:</p>
+<p data-ed="datenschutzerklaerung-p8">Wir hosten die Inhalte unserer Website bei folgendem Anbieter:</p>
 
-<h3>GitHub Pages</h3>
+<h3 data-ed="datenschutzerklaerung-h33">GitHub Pages</h3>
 
-<p>Diese Website wird bei GitHub Pages gehostet. Anbieter ist die GitHub, Inc., 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, USA, ein Unternehmen der Microsoft Corporation (im Folgenden „GitHub“). Wenn Sie unsere Website aufrufen, erfasst GitHub technisch notwendige Zugriffsdaten, darunter Ihre IP-Adresse, den Zeitpunkt des Zugriffs, die abgerufene Datei sowie Angaben zu Browser und Betriebssystem. Diese Daten werden zur Auslieferung der Seite und zur Abwehr von Missbrauch verarbeitet.</p>
+<p data-ed="datenschutzerklaerung-p9">Diese Website wird bei GitHub Pages gehostet. Anbieter ist die GitHub, Inc., 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, USA, ein Unternehmen der Microsoft Corporation (im Folgenden „GitHub“). Wenn Sie unsere Website aufrufen, erfasst GitHub technisch notwendige Zugriffsdaten, darunter Ihre IP-Adresse, den Zeitpunkt des Zugriffs, die abgerufene Datei sowie Angaben zu Browser und Betriebssystem. Diese Daten werden zur Auslieferung der Seite und zur Abwehr von Missbrauch verarbeitet.</p>
 
-<p>Die Verarbeitung erfolgt auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO. Wir haben ein berechtigtes Interesse an einer zuverlässigen und sicheren Bereitstellung unserer Website.</p>
+<p data-ed="datenschutzerklaerung-p10">Die Verarbeitung erfolgt auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO. Wir haben ein berechtigtes Interesse an einer zuverlässigen und sicheren Bereitstellung unserer Website.</p>
 
-<p>Die Verarbeitung findet auch in den USA statt. GitHub bzw. Microsoft ist nach dem EU-US Data Privacy Framework zertifiziert; ergänzend stützt sich die Übermittlung auf die Standardvertragsklauseln der EU-Kommission.</p>
+<p data-ed="datenschutzerklaerung-p11">Die Verarbeitung findet auch in den USA statt. GitHub bzw. Microsoft ist nach dem EU-US Data Privacy Framework zertifiziert; ergänzend stützt sich die Übermittlung auf die Standardvertragsklauseln der EU-Kommission.</p>
 
-<p>Weitere Informationen finden Sie in der Datenschutzerklärung von GitHub: <a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement" rel="noopener">https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement</a>.</p>
+<p><span data-ed="datenschutzerklaerung-t3">Weitere Informationen finden Sie in der Datenschutzerklärung von GitHub:</span> <a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement" rel="noopener" data-ed="datenschutzerklaerung-a">https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement</a><span data-ed="datenschutzerklaerung-t4">.</span></p>
 
-<h2>Allgemeine Hinweise und Pflichtinformationen</h2>
+<h2 data-ed="datenschutzerklaerung-h23">Allgemeine Hinweise und Pflichtinformationen</h2>
 
-<h3>Datenschutz</h3>
+<h3 data-ed="datenschutzerklaerung-h34">Datenschutz</h3>
 
-<p>Die Betreiber dieser Seiten nehmen den Schutz Ihrer persönlichen Daten sehr ernst. Wir behandeln Ihre personenbezogenen Daten vertraulich und entsprechend den gesetzlichen Datenschutzvorschriften sowie dieser Datenschutzerklärung.</p>
+<p data-ed="datenschutzerklaerung-p12">Die Betreiber dieser Seiten nehmen den Schutz Ihrer persönlichen Daten sehr ernst. Wir behandeln Ihre personenbezogenen Daten vertraulich und entsprechend den gesetzlichen Datenschutzvorschriften sowie dieser Datenschutzerklärung.</p>
 
-<p>Wenn Sie diese Website benutzen, werden verschiedene personenbezogene Daten erhoben. Personenbezogene Daten sind Daten, mit denen Sie persönlich identifiziert werden können. Die vorliegende Datenschutzerklärung erläutert, welche Daten wir erheben und wofür wir sie nutzen. Sie erläutert auch, wie und zu welchem Zweck das geschieht.</p>
+<p data-ed="datenschutzerklaerung-p13">Wenn Sie diese Website benutzen, werden verschiedene personenbezogene Daten erhoben. Personenbezogene Daten sind Daten, mit denen Sie persönlich identifiziert werden können. Die vorliegende Datenschutzerklärung erläutert, welche Daten wir erheben und wofür wir sie nutzen. Sie erläutert auch, wie und zu welchem Zweck das geschieht.</p>
 
-<p>Wir weisen darauf hin, dass die Datenübertragung im Internet (z. B. bei der Kommunikation per E-Mail) Sicherheitslücken aufweisen kann. Ein lückenloser Schutz der Daten vor dem Zugriff durch Dritte ist nicht möglich.</p>
+<p data-ed="datenschutzerklaerung-p14">Wir weisen darauf hin, dass die Datenübertragung im Internet (z. B. bei der Kommunikation per E-Mail) Sicherheitslücken aufweisen kann. Ein lückenloser Schutz der Daten vor dem Zugriff durch Dritte ist nicht möglich.</p>
 
-<h3>Hinweis zur verantwortlichen Stelle</h3>
+<h3 data-ed="datenschutzerklaerung-h35">Hinweis zur verantwortlichen Stelle</h3>
 
-<p>Die verantwortliche Stelle für die Datenverarbeitung auf dieser Website ist:</p>
+<p data-ed="datenschutzerklaerung-p15">Die verantwortliche Stelle für die Datenverarbeitung auf dieser Website ist:</p>
 
-<p>Andreas de Vries<br>Schützenplatzweg 5<br>31020 Salzhemmendorf</p>
+<p><span data-ed="datenschutzerklaerung-t5">Andreas de Vries</span><br><span data-ed="datenschutzerklaerung-t6">Schützenplatzweg 5</span><br><span data-ed="datenschutzerklaerung-t7">31020 Salzhemmendorf</span></p>
 
-<p>Telefon: <a href="tel:051531552">05153 1552</a><br>E-Mail: <a href="mailto:info@devries-galabau.de">info@devries-galabau.de</a></p>
+<p><span data-ed="datenschutzerklaerung-t8">Telefon:</span> <a href="tel:051531552" data-ed="datenschutzerklaerung-a2">05153 1552</a><br><span data-ed="datenschutzerklaerung-t9">E-Mail:</span> <a href="mailto:info@devries-galabau.de" data-ed="datenschutzerklaerung-a3">info@devries-galabau.de</a></p>
 
-<p>Verantwortliche Stelle ist die natürliche oder juristische Person, die allein oder gemeinsam mit anderen über die Zwecke und Mittel der Verarbeitung von personenbezogenen Daten (z. B. Namen, E-Mail-Adressen o. Ä.) entscheidet.</p>
+<p data-ed="datenschutzerklaerung-p16">Verantwortliche Stelle ist die natürliche oder juristische Person, die allein oder gemeinsam mit anderen über die Zwecke und Mittel der Verarbeitung von personenbezogenen Daten (z. B. Namen, E-Mail-Adressen o. Ä.) entscheidet.</p>
 
-<h3>Speicherdauer</h3>
+<h3 data-ed="datenschutzerklaerung-h36">Speicherdauer</h3>
 
-<p>Soweit innerhalb dieser Datenschutzerklärung keine speziellere Speicherdauer genannt wurde, verbleiben Ihre personenbezogenen Daten bei uns, bis der Zweck für die Datenverarbeitung entfällt. Wenn Sie ein berechtigtes Löschersuchen geltend machen oder eine Einwilligung zur Datenverarbeitung widerrufen, werden Ihre Daten gelöscht, sofern wir keine anderen rechtlich zulässigen Gründe für die Speicherung Ihrer personenbezogenen Daten haben (z. B. steuer- oder handelsrechtliche Aufbewahrungsfristen); im letztgenannten Fall erfolgt die Löschung nach Fortfall dieser Gründe.</p>
+<p data-ed="datenschutzerklaerung-p17">Soweit innerhalb dieser Datenschutzerklärung keine speziellere Speicherdauer genannt wurde, verbleiben Ihre personenbezogenen Daten bei uns, bis der Zweck für die Datenverarbeitung entfällt. Wenn Sie ein berechtigtes Löschersuchen geltend machen oder eine Einwilligung zur Datenverarbeitung widerrufen, werden Ihre Daten gelöscht, sofern wir keine anderen rechtlich zulässigen Gründe für die Speicherung Ihrer personenbezogenen Daten haben (z. B. steuer- oder handelsrechtliche Aufbewahrungsfristen); im letztgenannten Fall erfolgt die Löschung nach Fortfall dieser Gründe.</p>
 
-<h3>Allgemeine Hinweise zu den Rechtsgrundlagen der Datenverarbeitung auf dieser Website</h3>
+<h3 data-ed="datenschutzerklaerung-h37">Allgemeine Hinweise zu den Rechtsgrundlagen der Datenverarbeitung auf dieser Website</h3>
 
-<p>Sofern Sie in die Datenverarbeitung eingewilligt haben, verarbeiten wir Ihre personenbezogenen Daten auf Grundlage von Art. 6 Abs. 1 lit. a DSGVO bzw. Art. 9 Abs. 2 lit. a DSGVO, sofern besondere Datenkategorien nach Art. 9 Abs. 1 DSGVO verarbeitet werden. Im Falle einer ausdrücklichen Einwilligung in die Übertragung personenbezogener Daten in Drittstaaten erfolgt die Datenverarbeitung außerdem auf Grundlage von Art. 49 Abs. 1 lit. a DSGVO. Sofern Sie in die Speicherung von Cookies oder in den Zugriff auf Informationen in Ihr Endgerät (z. B. via Device-Fingerprinting) eingewilligt haben, erfolgt die Datenverarbeitung zusätzlich auf Grundlage von § 25 Abs. 1 TDDDG. Die Einwilligung ist jederzeit widerrufbar. Sind Ihre Daten zur Vertragserfüllung oder zur Durchführung vorvertraglicher Maßnahmen erforderlich, verarbeiten wir Ihre Daten auf Grundlage des Art. 6 Abs. 1 lit. b DSGVO. Des Weiteren verarbeiten wir Ihre Daten, sofern diese zur Erfüllung einer rechtlichen Verpflichtung erforderlich sind auf Grundlage von Art. 6 Abs. 1 lit. c DSGVO. Die Datenverarbeitung kann ferner auf Grundlage unseres berechtigten Interesses nach Art. 6 Abs. 1 lit. f DSGVO erfolgen. Über die jeweils im Einzelfall einschlägigen Rechtsgrundlagen wird in den folgenden Absätzen dieser Datenschutzerklärung informiert.</p>
+<p data-ed="datenschutzerklaerung-p18">Sofern Sie in die Datenverarbeitung eingewilligt haben, verarbeiten wir Ihre personenbezogenen Daten auf Grundlage von Art. 6 Abs. 1 lit. a DSGVO bzw. Art. 9 Abs. 2 lit. a DSGVO, sofern besondere Datenkategorien nach Art. 9 Abs. 1 DSGVO verarbeitet werden. Im Falle einer ausdrücklichen Einwilligung in die Übertragung personenbezogener Daten in Drittstaaten erfolgt die Datenverarbeitung außerdem auf Grundlage von Art. 49 Abs. 1 lit. a DSGVO. Sofern Sie in die Speicherung von Cookies oder in den Zugriff auf Informationen in Ihr Endgerät (z. B. via Device-Fingerprinting) eingewilligt haben, erfolgt die Datenverarbeitung zusätzlich auf Grundlage von § 25 Abs. 1 TDDDG. Die Einwilligung ist jederzeit widerrufbar. Sind Ihre Daten zur Vertragserfüllung oder zur Durchführung vorvertraglicher Maßnahmen erforderlich, verarbeiten wir Ihre Daten auf Grundlage des Art. 6 Abs. 1 lit. b DSGVO. Des Weiteren verarbeiten wir Ihre Daten, sofern diese zur Erfüllung einer rechtlichen Verpflichtung erforderlich sind auf Grundlage von Art. 6 Abs. 1 lit. c DSGVO. Die Datenverarbeitung kann ferner auf Grundlage unseres berechtigten Interesses nach Art. 6 Abs. 1 lit. f DSGVO erfolgen. Über die jeweils im Einzelfall einschlägigen Rechtsgrundlagen wird in den folgenden Absätzen dieser Datenschutzerklärung informiert.</p>
 
-<h3>Empfänger von personenbezogenen Daten</h3>
+<h3 data-ed="datenschutzerklaerung-h38">Empfänger von personenbezogenen Daten</h3>
 
-<p>Im Rahmen unserer Geschäftstätigkeit arbeiten wir mit verschiedenen externen Stellen zusammen. Dabei ist teilweise auch eine Übermittlung von personenbezogenen Daten an diese externen Stellen erforderlich. Wir geben personenbezogene Daten nur dann an externe Stellen weiter, wenn dies im Rahmen einer Vertragserfüllung erforderlich ist, wenn wir gesetzlich hierzu verpflichtet sind (z. B. Weitergabe von Daten an Steuerbehörden), wenn wir ein berechtigtes Interesse nach Art. 6 Abs. 1 lit. f DSGVO an der Weitergabe haben oder wenn eine sonstige Rechtsgrundlage die Datenweitergabe erlaubt. Beim Einsatz von Auftragsverarbeitern geben wir personenbezogene Daten unserer Kunden nur auf Grundlage eines gültigen Vertrags über Auftragsverarbeitung weiter. Im Falle einer gemeinsamen Verarbeitung wird ein Vertrag über gemeinsame Verarbeitung geschlossen.</p>
+<p data-ed="datenschutzerklaerung-p19">Im Rahmen unserer Geschäftstätigkeit arbeiten wir mit verschiedenen externen Stellen zusammen. Dabei ist teilweise auch eine Übermittlung von personenbezogenen Daten an diese externen Stellen erforderlich. Wir geben personenbezogene Daten nur dann an externe Stellen weiter, wenn dies im Rahmen einer Vertragserfüllung erforderlich ist, wenn wir gesetzlich hierzu verpflichtet sind (z. B. Weitergabe von Daten an Steuerbehörden), wenn wir ein berechtigtes Interesse nach Art. 6 Abs. 1 lit. f DSGVO an der Weitergabe haben oder wenn eine sonstige Rechtsgrundlage die Datenweitergabe erlaubt. Beim Einsatz von Auftragsverarbeitern geben wir personenbezogene Daten unserer Kunden nur auf Grundlage eines gültigen Vertrags über Auftragsverarbeitung weiter. Im Falle einer gemeinsamen Verarbeitung wird ein Vertrag über gemeinsame Verarbeitung geschlossen.</p>
 
-<h3>Widerruf Ihrer Einwilligung zur Datenverarbeitung</h3>
+<h3 data-ed="datenschutzerklaerung-h39">Widerruf Ihrer Einwilligung zur Datenverarbeitung</h3>
 
-<p>Viele Datenverarbeitungsvorgänge sind nur mit Ihrer ausdrücklichen Einwilligung möglich. Sie können eine bereits erteilte Einwilligung jederzeit widerrufen. Die Rechtmäßigkeit der bis zum Widerruf erfolgten Datenverarbeitung bleibt vom Widerruf unberührt.</p>
+<p data-ed="datenschutzerklaerung-p20">Viele Datenverarbeitungsvorgänge sind nur mit Ihrer ausdrücklichen Einwilligung möglich. Sie können eine bereits erteilte Einwilligung jederzeit widerrufen. Die Rechtmäßigkeit der bis zum Widerruf erfolgten Datenverarbeitung bleibt vom Widerruf unberührt.</p>
 
-<h3>Widerspruchsrecht gegen die Datenerhebung in besonderen Fällen sowie gegen Direktwerbung (Art. 21 DSGVO)</h3>
+<h3 data-ed="datenschutzerklaerung-h310">Widerspruchsrecht gegen die Datenerhebung in besonderen Fällen sowie gegen Direktwerbung (Art. 21 DSGVO)</h3>
 
-<p>WENN DIE DATENVERARBEITUNG AUF GRUNDLAGE VON ART. 6 ABS. 1 LIT. E ODER F DSGVO ERFOLGT, HABEN SIE JEDERZEIT DAS RECHT, AUS GRÜNDEN, DIE SICH AUS IHRER BESONDEREN SITUATION ERGEBEN, GEGEN DIE VERARBEITUNG IHRER PERSONENBEZOGENEN DATEN WIDERSPRUCH EINZULEGEN; DIES GILT AUCH FÜR EIN AUF DIESE BESTIMMUNGEN GESTÜTZTES PROFILING. DIE JEWEILIGE RECHTSGRUNDLAGE, AUF DENEN EINE VERARBEITUNG BERUHT, ENTNEHMEN SIE DIESER DATENSCHUTZERKLÄRUNG. WENN SIE WIDERSPRUCH EINLEGEN, WERDEN WIR IHRE BETROFFENEN PERSONENBEZOGENEN DATEN NICHT MEHR VERARBEITEN, ES SEI DENN, WIR KÖNNEN ZWINGENDE SCHUTZWÜRDIGE GRÜNDE FÜR DIE VERARBEITUNG NACHWEISEN, DIE IHRE INTERESSEN, RECHTE UND FREIHEITEN ÜBERWIEGEN ODER DIE VERARBEITUNG DIENT DER GELTENDMACHUNG, AUSÜBUNG ODER VERTEIDIGUNG VON RECHTSANSPRÜCHEN (WIDERSPRUCH NACH ART. 21 ABS. 1 DSGVO).</p>
+<p data-ed="datenschutzerklaerung-p21">WENN DIE DATENVERARBEITUNG AUF GRUNDLAGE VON ART. 6 ABS. 1 LIT. E ODER F DSGVO ERFOLGT, HABEN SIE JEDERZEIT DAS RECHT, AUS GRÜNDEN, DIE SICH AUS IHRER BESONDEREN SITUATION ERGEBEN, GEGEN DIE VERARBEITUNG IHRER PERSONENBEZOGENEN DATEN WIDERSPRUCH EINZULEGEN; DIES GILT AUCH FÜR EIN AUF DIESE BESTIMMUNGEN GESTÜTZTES PROFILING. DIE JEWEILIGE RECHTSGRUNDLAGE, AUF DENEN EINE VERARBEITUNG BERUHT, ENTNEHMEN SIE DIESER DATENSCHUTZERKLÄRUNG. WENN SIE WIDERSPRUCH EINLEGEN, WERDEN WIR IHRE BETROFFENEN PERSONENBEZOGENEN DATEN NICHT MEHR VERARBEITEN, ES SEI DENN, WIR KÖNNEN ZWINGENDE SCHUTZWÜRDIGE GRÜNDE FÜR DIE VERARBEITUNG NACHWEISEN, DIE IHRE INTERESSEN, RECHTE UND FREIHEITEN ÜBERWIEGEN ODER DIE VERARBEITUNG DIENT DER GELTENDMACHUNG, AUSÜBUNG ODER VERTEIDIGUNG VON RECHTSANSPRÜCHEN (WIDERSPRUCH NACH ART. 21 ABS. 1 DSGVO).</p>
 
-<p>WERDEN IHRE PERSONENBEZOGENEN DATEN VERARBEITET, UM DIREKTWERBUNG ZU BETREIBEN, SO HABEN SIE DAS RECHT, JEDERZEIT WIDERSPRUCH GEGEN DIE VERARBEITUNG SIE BETREFFENDER PERSONENBEZOGENER DATEN ZUM ZWECKE DERARTIGER WERBUNG EINZULEGEN; DIES GILT AUCH FÜR DAS PROFILING, SOWEIT ES MIT SOLCHER DIREKTWERBUNG IN VERBINDUNG STEHT. WENN SIE WIDERSPRECHEN, WERDEN IHRE PERSONENBEZOGENEN DATEN ANSCHLIESSEND NICHT MEHR ZUM ZWECKE DER DIREKTWERBUNG VERWENDET (WIDERSPRUCH NACH ART. 21 ABS. 2 DSGVO).</p>
+<p data-ed="datenschutzerklaerung-p22">WERDEN IHRE PERSONENBEZOGENEN DATEN VERARBEITET, UM DIREKTWERBUNG ZU BETREIBEN, SO HABEN SIE DAS RECHT, JEDERZEIT WIDERSPRUCH GEGEN DIE VERARBEITUNG SIE BETREFFENDER PERSONENBEZOGENER DATEN ZUM ZWECKE DERARTIGER WERBUNG EINZULEGEN; DIES GILT AUCH FÜR DAS PROFILING, SOWEIT ES MIT SOLCHER DIREKTWERBUNG IN VERBINDUNG STEHT. WENN SIE WIDERSPRECHEN, WERDEN IHRE PERSONENBEZOGENEN DATEN ANSCHLIESSEND NICHT MEHR ZUM ZWECKE DER DIREKTWERBUNG VERWENDET (WIDERSPRUCH NACH ART. 21 ABS. 2 DSGVO).</p>
 
-<h3>Beschwerderecht bei der zuständigen Aufsichtsbehörde</h3>
+<h3 data-ed="datenschutzerklaerung-h311">Beschwerderecht bei der zuständigen Aufsichtsbehörde</h3>
 
-<p>Im Falle von Verstößen gegen die DSGVO steht den Betroffenen ein Beschwerderecht bei einer Aufsichtsbehörde, insbesondere in dem Mitgliedstaat ihres gewöhnlichen Aufenthalts, ihres Arbeitsplatzes oder des Orts des mutmaßlichen Verstoßes zu. Das Beschwerderecht besteht unbeschadet anderweitiger verwaltungsrechtlicher oder gerichtlicher Rechtsbehelfe.</p>
+<p data-ed="datenschutzerklaerung-p23">Im Falle von Verstößen gegen die DSGVO steht den Betroffenen ein Beschwerderecht bei einer Aufsichtsbehörde, insbesondere in dem Mitgliedstaat ihres gewöhnlichen Aufenthalts, ihres Arbeitsplatzes oder des Orts des mutmaßlichen Verstoßes zu. Das Beschwerderecht besteht unbeschadet anderweitiger verwaltungsrechtlicher oder gerichtlicher Rechtsbehelfe.</p>
 
-<h3>Recht auf Datenübertragbarkeit</h3>
+<h3 data-ed="datenschutzerklaerung-h312">Recht auf Datenübertragbarkeit</h3>
 
-<p>Sie haben das Recht, Daten, die wir auf Grundlage Ihrer Einwilligung oder in Erfüllung eines Vertrags automatisiert verarbeiten, an sich oder an einen Dritten in einem gängigen, maschinenlesbaren Format aushändigen zu lassen. Sofern Sie die direkte Übertragung der Daten an einen anderen Verantwortlichen verlangen, erfolgt dies nur, soweit es technisch machbar ist.</p>
+<p data-ed="datenschutzerklaerung-p24">Sie haben das Recht, Daten, die wir auf Grundlage Ihrer Einwilligung oder in Erfüllung eines Vertrags automatisiert verarbeiten, an sich oder an einen Dritten in einem gängigen, maschinenlesbaren Format aushändigen zu lassen. Sofern Sie die direkte Übertragung der Daten an einen anderen Verantwortlichen verlangen, erfolgt dies nur, soweit es technisch machbar ist.</p>
 
-<h3>Auskunft, Berichtigung und Löschung</h3>
+<h3 data-ed="datenschutzerklaerung-h313">Auskunft, Berichtigung und Löschung</h3>
 
-<p>Sie haben im Rahmen der geltenden gesetzlichen Bestimmungen jederzeit das Recht auf unentgeltliche Auskunft über Ihre gespeicherten personenbezogenen Daten, deren Herkunft und Empfänger und den Zweck der Datenverarbeitung und ggf. ein Recht auf Berichtigung oder Löschung dieser Daten. Hierzu sowie zu weiteren Fragen zum Thema personenbezogene Daten können Sie sich jederzeit an uns wenden.</p>
+<p data-ed="datenschutzerklaerung-p25">Sie haben im Rahmen der geltenden gesetzlichen Bestimmungen jederzeit das Recht auf unentgeltliche Auskunft über Ihre gespeicherten personenbezogenen Daten, deren Herkunft und Empfänger und den Zweck der Datenverarbeitung und ggf. ein Recht auf Berichtigung oder Löschung dieser Daten. Hierzu sowie zu weiteren Fragen zum Thema personenbezogene Daten können Sie sich jederzeit an uns wenden.</p>
 
-<h3>Recht auf Einschränkung der Verarbeitung</h3>
+<h3 data-ed="datenschutzerklaerung-h314">Recht auf Einschränkung der Verarbeitung</h3>
 
-<p>Sie haben das Recht, die Einschränkung der Verarbeitung Ihrer personenbezogenen Daten zu verlangen. Hierzu können Sie sich jederzeit an uns wenden. Das Recht auf Einschränkung der Verarbeitung besteht in folgenden Fällen:</p>
+<p data-ed="datenschutzerklaerung-p26">Sie haben das Recht, die Einschränkung der Verarbeitung Ihrer personenbezogenen Daten zu verlangen. Hierzu können Sie sich jederzeit an uns wenden. Das Recht auf Einschränkung der Verarbeitung besteht in folgenden Fällen:</p>
 
 <ul>
-<li>Wenn Sie die Richtigkeit Ihrer bei uns gespeicherten personenbezogenen Daten bestreiten, benötigen wir in der Regel Zeit, um dies zu überprüfen. Für die Dauer der Prüfung haben Sie das Recht, die Einschränkung der Verarbeitung Ihrer personenbezogenen Daten zu verlangen.</li>
-<li>Wenn die Verarbeitung Ihrer personenbezogenen Daten unrechtmäßig geschah/geschieht, können Sie statt der Löschung die Einschränkung der Datenverarbeitung verlangen.</li>
-<li>Wenn wir Ihre personenbezogenen Daten nicht mehr benötigen, Sie sie jedoch zur Ausübung, Verteidigung oder Geltendmachung von Rechtsansprüchen benötigen, haben Sie das Recht, statt der Löschung die Einschränkung der Verarbeitung Ihrer personenbezogenen Daten zu verlangen.</li>
-<li>Wenn Sie einen Widerspruch nach Art. 21 Abs. 1 DSGVO eingelegt haben, muss eine Abwägung zwischen Ihren und unseren Interessen vorgenommen werden. Solange noch nicht feststeht, wessen Interessen überwiegen, haben Sie das Recht, die Einschränkung der Verarbeitung Ihrer personenbezogenen Daten zu verlangen.</li>
+<li data-ed="datenschutzerklaerung-li">Wenn Sie die Richtigkeit Ihrer bei uns gespeicherten personenbezogenen Daten bestreiten, benötigen wir in der Regel Zeit, um dies zu überprüfen. Für die Dauer der Prüfung haben Sie das Recht, die Einschränkung der Verarbeitung Ihrer personenbezogenen Daten zu verlangen.</li>
+<li data-ed="datenschutzerklaerung-li2">Wenn die Verarbeitung Ihrer personenbezogenen Daten unrechtmäßig geschah/geschieht, können Sie statt der Löschung die Einschränkung der Datenverarbeitung verlangen.</li>
+<li data-ed="datenschutzerklaerung-li3">Wenn wir Ihre personenbezogenen Daten nicht mehr benötigen, Sie sie jedoch zur Ausübung, Verteidigung oder Geltendmachung von Rechtsansprüchen benötigen, haben Sie das Recht, statt der Löschung die Einschränkung der Verarbeitung Ihrer personenbezogenen Daten zu verlangen.</li>
+<li data-ed="datenschutzerklaerung-li4">Wenn Sie einen Widerspruch nach Art. 21 Abs. 1 DSGVO eingelegt haben, muss eine Abwägung zwischen Ihren und unseren Interessen vorgenommen werden. Solange noch nicht feststeht, wessen Interessen überwiegen, haben Sie das Recht, die Einschränkung der Verarbeitung Ihrer personenbezogenen Daten zu verlangen.</li>
 </ul>
 
-<p>Wenn Sie die Verarbeitung Ihrer personenbezogenen Daten eingeschränkt haben, dürfen diese Daten – von ihrer Speicherung abgesehen – nur mit Ihrer Einwilligung oder zur Geltendmachung, Ausübung oder Verteidigung von Rechtsansprüchen oder zum Schutz der Rechte einer anderen natürlichen oder juristischen Person oder aus Gründen eines wichtigen öffentlichen Interesses der Europäischen Union oder eines Mitgliedstaats verarbeitet werden.</p>
+<p data-ed="datenschutzerklaerung-p27">Wenn Sie die Verarbeitung Ihrer personenbezogenen Daten eingeschränkt haben, dürfen diese Daten – von ihrer Speicherung abgesehen – nur mit Ihrer Einwilligung oder zur Geltendmachung, Ausübung oder Verteidigung von Rechtsansprüchen oder zum Schutz der Rechte einer anderen natürlichen oder juristischen Person oder aus Gründen eines wichtigen öffentlichen Interesses der Europäischen Union oder eines Mitgliedstaats verarbeitet werden.</p>
 
-<h3>SSL- bzw. TLS-Verschlüsselung</h3>
+<h3 data-ed="datenschutzerklaerung-h315">SSL- bzw. TLS-Verschlüsselung</h3>
 
-<p>Diese Seite nutzt aus Sicherheitsgründen und zum Schutz der Übertragung vertraulicher Inhalte, wie zum Beispiel Bestellungen oder Anfragen, die Sie an uns als Seitenbetreiber senden, eine SSL- bzw. TLS-Verschlüsselung. Eine verschlüsselte Verbindung erkennen Sie daran, dass die Adresszeile des Browsers von „http://“ auf „https://“ wechselt und an dem Schloss-Symbol in Ihrer Browserzeile.</p>
+<p data-ed="datenschutzerklaerung-p28">Diese Seite nutzt aus Sicherheitsgründen und zum Schutz der Übertragung vertraulicher Inhalte, wie zum Beispiel Bestellungen oder Anfragen, die Sie an uns als Seitenbetreiber senden, eine SSL- bzw. TLS-Verschlüsselung. Eine verschlüsselte Verbindung erkennen Sie daran, dass die Adresszeile des Browsers von „http://“ auf „https://“ wechselt und an dem Schloss-Symbol in Ihrer Browserzeile.</p>
 
-<p>Wenn die SSL- bzw. TLS-Verschlüsselung aktiviert ist, können die Daten, die Sie an uns übermitteln, nicht von Dritten mitgelesen werden.</p>
+<p data-ed="datenschutzerklaerung-p29">Wenn die SSL- bzw. TLS-Verschlüsselung aktiviert ist, können die Daten, die Sie an uns übermitteln, nicht von Dritten mitgelesen werden.</p>
 
-<h2>4. Datenerfassung auf dieser Website</h2>
+<h2 data-ed="datenschutzerklaerung-h24">4. Datenerfassung auf dieser Website</h2>
 
-<h3>Cookies</h3>
+<h3 data-ed="datenschutzerklaerung-h316">Cookies</h3>
 
-<p><strong>Diese Website setzt keine Cookies.</strong> Es werden auch keine vergleichbaren Techniken eingesetzt, um Informationen auf Ihrem Endgerät zu speichern oder auszulesen — weder zur Analyse noch für Werbung noch für Komfortfunktionen. Aus diesem Grund gibt es hier auch kein Einwilligungsbanner: Ohne Ihr Zutun besteht nichts, wozu eingewilligt werden müsste (§ 25 Abs. 1 TDDDG).</p>
+<p><strong data-ed="datenschutzerklaerung-strong2">Diese Website setzt keine Cookies.</strong> <span data-ed="datenschutzerklaerung-t10">Es werden auch keine vergleichbaren Techniken eingesetzt, um Informationen auf Ihrem Endgerät zu speichern oder auszulesen — weder zur Analyse noch für Werbung noch für Komfortfunktionen. Aus diesem Grund gibt es hier auch kein Einwilligungsbanner: Ohne Ihr Zutun besteht nichts, wozu eingewilligt werden müsste (§ 25 Abs. 1 TDDDG).</span></p>
 
-<p>Eine Ausnahme können allein Sie selbst auslösen: Wenn Sie auf der Seite „Kontakt“ die Karte über die Schaltfläche „Karte laden“ nachladen, kann Google im Rahmen dieser Karte eigene Cookies setzen oder auf Ihrem Endgerät gespeicherte Informationen auslesen. Ohne diesen Klick geschieht das nicht. Einzelheiten dazu finden Sie im Abschnitt <a href="#karte">Google Maps</a>.</p>
+<p><span data-ed="datenschutzerklaerung-t11">Eine Ausnahme können allein Sie selbst auslösen: Wenn Sie auf der Seite „Kontakt“ die Karte über die Schaltfläche „Karte laden“ nachladen, kann Google im Rahmen dieser Karte eigene Cookies setzen oder auf Ihrem Endgerät gespeicherte Informationen auslesen. Ohne diesen Klick geschieht das nicht. Einzelheiten dazu finden Sie im Abschnitt</span> <a href="#karte" data-ed="datenschutzerklaerung-a4">Google Maps</a><span data-ed="datenschutzerklaerung-t12">.</span></p>
 
-<p>Eine weitere Ausnahme betrifft ausschließlich uns selbst: Der passwortgeschützte Verwaltungsbereich, über den wir eingegangene Anfragen einsehen, legt nach der Anmeldung ein Sitzungskennzeichen im Speicher des Browserfensters ab (sessionStorage). Es wird beim Schließen des Fensters gelöscht und hat für Besucherinnen und Besucher der Website keine Bedeutung.</p>
+<p data-ed="datenschutzerklaerung-p30">Eine weitere Ausnahme betrifft ausschließlich uns selbst: Der passwortgeschützte Verwaltungsbereich, über den wir eingegangene Anfragen einsehen, legt nach der Anmeldung ein Sitzungskennzeichen im Speicher des Browserfensters ab (sessionStorage). Es wird beim Schließen des Fensters gelöscht und hat für Besucherinnen und Besucher der Website keine Bedeutung.</p>
 
-<h3>Kontaktformular</h3>
+<h3 data-ed="datenschutzerklaerung-h317">Kontaktformular</h3>
 
-<p>Wenn Sie uns per Kontaktformular Anfragen zukommen lassen, werden Ihre Angaben aus dem Anfrageformular inklusive der von Ihnen dort angegebenen Kontaktdaten zwecks Bearbeitung der Anfrage und für den Fall von Anschlussfragen bei uns gespeichert. Diese Daten geben wir nicht ohne Ihre Einwilligung weiter.</p>
+<p data-ed="datenschutzerklaerung-p31">Wenn Sie uns per Kontaktformular Anfragen zukommen lassen, werden Ihre Angaben aus dem Anfrageformular inklusive der von Ihnen dort angegebenen Kontaktdaten zwecks Bearbeitung der Anfrage und für den Fall von Anschlussfragen bei uns gespeichert. Diese Daten geben wir nicht ohne Ihre Einwilligung weiter.</p>
 
-<p>Die Verarbeitung dieser Daten erfolgt auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO, sofern Ihre Anfrage mit der Erfüllung eines Vertrags zusammenhängt oder zur Durchführung vorvertraglicher Maßnahmen erforderlich ist. In allen übrigen Fällen beruht die Verarbeitung auf unserem berechtigten Interesse an der effektiven Bearbeitung der an uns gerichteten Anfragen (Art. 6 Abs. 1 lit. f DSGVO) oder auf Ihrer Einwilligung (Art. 6 Abs. 1 lit. a DSGVO) sofern diese abgefragt wurde; die Einwilligung ist jederzeit widerrufbar.</p>
+<p data-ed="datenschutzerklaerung-p32">Die Verarbeitung dieser Daten erfolgt auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO, sofern Ihre Anfrage mit der Erfüllung eines Vertrags zusammenhängt oder zur Durchführung vorvertraglicher Maßnahmen erforderlich ist. In allen übrigen Fällen beruht die Verarbeitung auf unserem berechtigten Interesse an der effektiven Bearbeitung der an uns gerichteten Anfragen (Art. 6 Abs. 1 lit. f DSGVO) oder auf Ihrer Einwilligung (Art. 6 Abs. 1 lit. a DSGVO) sofern diese abgefragt wurde; die Einwilligung ist jederzeit widerrufbar.</p>
 
-<p>Die von Ihnen im Kontaktformular eingegebenen Daten verbleiben bei uns, bis Sie uns zur Löschung auffordern, Ihre Einwilligung zur Speicherung widerrufen oder der Zweck für die Datenspeicherung entfällt (z. B. nach abgeschlossener Bearbeitung Ihrer Anfrage). Zwingende gesetzliche Bestimmungen – insbesondere Aufbewahrungsfristen – bleiben unberührt.</p>
+<p data-ed="datenschutzerklaerung-p33">Die von Ihnen im Kontaktformular eingegebenen Daten verbleiben bei uns, bis Sie uns zur Löschung auffordern, Ihre Einwilligung zur Speicherung widerrufen oder der Zweck für die Datenspeicherung entfällt (z. B. nach abgeschlossener Bearbeitung Ihrer Anfrage). Zwingende gesetzliche Bestimmungen – insbesondere Aufbewahrungsfristen – bleiben unberührt.</p>
 
-<h3>Supabase (Speicherung der Formularanfragen)</h3>
+<h3 data-ed="datenschutzerklaerung-h318">Supabase (Speicherung der Formularanfragen)</h3>
 
-<p>Für die Speicherung der über die Formulare dieser Website übermittelten Anfragen nutzen wir den Datenbankdienst Supabase des Anbieters Supabase, Inc., USA (im Folgenden „Supabase“). Wenn Sie ein Formular absenden, werden die von Ihnen eingegebenen Daten an Supabase übertragen und dort in einer Datenbank gespeichert. Bei einer Anfrage sind das Name, E-Mail-Adresse sowie, sofern angegeben, Telefonnummer, Ort, Art des Auftraggebers, gewünschter Leistungsbereich, gewünschter Zeitraum und Ihre Nachricht. Bei einer Bewerbung über das Formular auf der Seite „Stellenangebote“ sind es Name, E-Mail-Adresse sowie, sofern angegeben, Telefonnummer, die gewünschte Stelle, Ihre Verfügbarkeit und Ihre Nachricht.</p>
+<p data-ed="datenschutzerklaerung-p34">Für die Speicherung der über die Formulare dieser Website übermittelten Anfragen nutzen wir den Datenbankdienst Supabase des Anbieters Supabase, Inc., USA (im Folgenden „Supabase“). Wenn Sie ein Formular absenden, werden die von Ihnen eingegebenen Daten an Supabase übertragen und dort in einer Datenbank gespeichert. Bei einer Anfrage sind das Name, E-Mail-Adresse sowie, sofern angegeben, Telefonnummer, Ort, Art des Auftraggebers, gewünschter Leistungsbereich, gewünschter Zeitraum und Ihre Nachricht. Bei einer Bewerbung über das Formular auf der Seite „Stellenangebote“ sind es Name, E-Mail-Adresse sowie, sofern angegeben, Telefonnummer, die gewünschte Stelle, Ihre Verfügbarkeit und Ihre Nachricht.</p>
 
-<p>Die Datenbank wird auf Servern innerhalb der Europäischen Union betrieben; Standort des Rechenzentrums ist Frankfurt am Main, Deutschland. Ein Abruf der gespeicherten Anfragen über diese Website ist technisch ausgeschlossen: der im Quelltext hinterlegte Zugangsschlüssel erlaubt ausschließlich das Anlegen neuer Einträge, nicht das Lesen, Ändern oder Löschen vorhandener Daten. Einsehen können die Anfragen nur wir über den geschützten Zugang bei Supabase.</p>
+<p data-ed="datenschutzerklaerung-p35">Die Datenbank wird auf Servern innerhalb der Europäischen Union betrieben; Standort des Rechenzentrums ist Frankfurt am Main, Deutschland. Ein Abruf der gespeicherten Anfragen über diese Website ist technisch ausgeschlossen: der im Quelltext hinterlegte Zugangsschlüssel erlaubt ausschließlich das Anlegen neuer Einträge, nicht das Lesen, Ändern oder Löschen vorhandener Daten. Einsehen können die Anfragen nur wir über den geschützten Zugang bei Supabase.</p>
 
-<p>Die Verarbeitung erfolgt auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO, sofern Ihre Anfrage mit der Erfüllung eines Vertrags zusammenhängt oder zur Durchführung vorvertraglicher Maßnahmen erforderlich ist. In allen übrigen Fällen beruht sie auf unserem berechtigten Interesse an einer zuverlässigen und nachvollziehbaren Bearbeitung der an uns gerichteten Anfragen (Art. 6 Abs. 1 lit. f DSGVO).</p>
+<p data-ed="datenschutzerklaerung-p36">Die Verarbeitung erfolgt auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO, sofern Ihre Anfrage mit der Erfüllung eines Vertrags zusammenhängt oder zur Durchführung vorvertraglicher Maßnahmen erforderlich ist. In allen übrigen Fällen beruht sie auf unserem berechtigten Interesse an einer zuverlässigen und nachvollziehbaren Bearbeitung der an uns gerichteten Anfragen (Art. 6 Abs. 1 lit. f DSGVO).</p>
 
-<p>Wir haben mit Supabase einen Vertrag über Auftragsverarbeitung (AVV) geschlossen. Dabei handelt es sich um einen datenschutzrechtlich vorgeschriebenen Vertrag, der gewährleistet, dass Supabase die personenbezogenen Daten unserer Websitebesucher nur nach unseren Weisungen und unter Einhaltung der DSGVO verarbeitet. Soweit personenbezogene Daten dabei in die USA übermittelt werden, stützt sich die Übermittlung auf die Standardvertragsklauseln der EU-Kommission.</p>
+<p data-ed="datenschutzerklaerung-p37">Wir haben mit Supabase einen Vertrag über Auftragsverarbeitung (AVV) geschlossen. Dabei handelt es sich um einen datenschutzrechtlich vorgeschriebenen Vertrag, der gewährleistet, dass Supabase die personenbezogenen Daten unserer Websitebesucher nur nach unseren Weisungen und unter Einhaltung der DSGVO verarbeitet. Soweit personenbezogene Daten dabei in die USA übermittelt werden, stützt sich die Übermittlung auf die Standardvertragsklauseln der EU-Kommission.</p>
 
-<p>Ist der Dienst vorübergehend nicht erreichbar, öffnet sich stattdessen Ihr E-Mail-Programm mit der vorbereiteten Anfrage. In diesem Fall werden keine Daten an Supabase übertragen; es gelten dann die Hinweise im folgenden Abschnitt.</p>
+<p data-ed="datenschutzerklaerung-p38">Ist der Dienst vorübergehend nicht erreichbar, öffnet sich stattdessen Ihr E-Mail-Programm mit der vorbereiteten Anfrage. In diesem Fall werden keine Daten an Supabase übertragen; es gelten dann die Hinweise im folgenden Abschnitt.</p>
 
-<p>Ihre Anfrage verbleibt in der Datenbank, bis Sie uns zur Löschung auffordern oder der Zweck der Speicherung entfällt (z. B. nach abgeschlossener Bearbeitung Ihres Anliegens). Zwingende gesetzliche Bestimmungen – insbesondere Aufbewahrungsfristen – bleiben unberührt.</p>
+<p data-ed="datenschutzerklaerung-p39">Ihre Anfrage verbleibt in der Datenbank, bis Sie uns zur Löschung auffordern oder der Zweck der Speicherung entfällt (z. B. nach abgeschlossener Bearbeitung Ihres Anliegens). Zwingende gesetzliche Bestimmungen – insbesondere Aufbewahrungsfristen – bleiben unberührt.</p>
 
-<h3>Lebenslauf im Bewerbungsformular</h3>
+<h3 data-ed="datenschutzerklaerung-h319">Lebenslauf im Bewerbungsformular</h3>
 
-<p>Im Bewerbungsformular auf der Seite „Stellenangebote“ können Sie freiwillig einen Lebenslauf im PDF-Format bis 5 MB hochladen. Die Datei wird im selben Speicherbereich bei Supabase abgelegt wie die übrigen Bewerbungsdaten (Rechenzentrum Frankfurt am Main). Das Hochladen ist freiwillig: Sie können sich auch ohne Datei bewerben und Unterlagen später per E-Mail nachreichen.</p>
+<p data-ed="datenschutzerklaerung-p40">Im Bewerbungsformular auf der Seite „Stellenangebote“ können Sie freiwillig einen Lebenslauf im PDF-Format bis 5 MB hochladen. Die Datei wird im selben Speicherbereich bei Supabase abgelegt wie die übrigen Bewerbungsdaten (Rechenzentrum Frankfurt am Main). Das Hochladen ist freiwillig: Sie können sich auch ohne Datei bewerben und Unterlagen später per E-Mail nachreichen.</p>
 
-<p>Welche Angaben Ihr Lebenslauf enthält, bestimmen ausschließlich Sie. Wir bitten Sie, auf Angaben zu verzichten, die für die Bewerbung nicht erforderlich sind – etwa zu Gesundheit, Religionszugehörigkeit oder Gewerkschaftsmitgliedschaft. Ein Bewerbungsfoto ist nicht erforderlich.</p>
+<p data-ed="datenschutzerklaerung-p41">Welche Angaben Ihr Lebenslauf enthält, bestimmen ausschließlich Sie. Wir bitten Sie, auf Angaben zu verzichten, die für die Bewerbung nicht erforderlich sind – etwa zu Gesundheit, Religionszugehörigkeit oder Gewerkschaftsmitgliedschaft. Ein Bewerbungsfoto ist nicht erforderlich.</p>
 
-<p>Rechtsgrundlage ist § 26 Abs. 1 BDSG in Verbindung mit Art. 6 Abs. 1 lit. b DSGVO (Durchführung des Bewerbungsverfahrens als vorvertragliche Maßnahme).</p>
+<p data-ed="datenschutzerklaerung-p42">Rechtsgrundlage ist § 26 Abs. 1 BDSG in Verbindung mit Art. 6 Abs. 1 lit. b DSGVO (Durchführung des Bewerbungsverfahrens als vorvertragliche Maßnahme).</p>
 
-<p>Der Zugriff ist technisch beschränkt: Der im Quelltext dieser Website hinterlegte Zugangsschlüssel erlaubt ausschließlich das Ablegen einer Datei, nicht das Auflisten, Abrufen, Ändern oder Löschen. Ein Abruf über die Website ist damit ausgeschlossen. Wir selbst rufen den Lebenslauf über einen geschützten Zugang ab; der dabei erzeugte Abruflink ist auf zwei Minuten befristet.</p>
+<p data-ed="datenschutzerklaerung-p43">Der Zugriff ist technisch beschränkt: Der im Quelltext dieser Website hinterlegte Zugangsschlüssel erlaubt ausschließlich das Ablegen einer Datei, nicht das Auflisten, Abrufen, Ändern oder Löschen. Ein Abruf über die Website ist damit ausgeschlossen. Wir selbst rufen den Lebenslauf über einen geschützten Zugang ab; der dabei erzeugte Abruflink ist auf zwei Minuten befristet.</p>
 
-<p>Löschen wir Ihre Bewerbung, wird die Datei mit gelöscht. Sie wird dabei bis zu 24 Stunden in einem Zwischenbereich vorgehalten, damit eine versehentliche Löschung rückgängig gemacht werden kann, und danach endgültig entfernt. Im Übrigen löschen wir Bewerbungsunterlagen spätestens sechs Monate nach Abschluss des Bewerbungsverfahrens, sofern Sie einer längeren Aufbewahrung nicht zugestimmt haben.</p>
+<p data-ed="datenschutzerklaerung-p44">Löschen wir Ihre Bewerbung, wird die Datei mit gelöscht. Sie wird dabei bis zu 24 Stunden in einem Zwischenbereich vorgehalten, damit eine versehentliche Löschung rückgängig gemacht werden kann, und danach endgültig entfernt. Im Übrigen löschen wir Bewerbungsunterlagen spätestens sechs Monate nach Abschluss des Bewerbungsverfahrens, sofern Sie einer längeren Aufbewahrung nicht zugestimmt haben.</p>
 
-<p>Weitere Informationen zum Umgang mit Nutzerdaten finden Sie in der Datenschutzerklärung von Supabase: <a href="https://supabase.com/privacy" rel="noopener">https://supabase.com/privacy</a>.</p>
+<p><span data-ed="datenschutzerklaerung-t13">Weitere Informationen zum Umgang mit Nutzerdaten finden Sie in der Datenschutzerklärung von Supabase:</span> <a href="https://supabase.com/privacy" rel="noopener" data-ed="datenschutzerklaerung-a5">https://supabase.com/privacy</a><span data-ed="datenschutzerklaerung-t14">.</span></p>
 
-<h3>Anfrage per E-Mail, Telefon oder Telefax</h3>
+<h3 data-ed="datenschutzerklaerung-h320">Anfrage per E-Mail, Telefon oder Telefax</h3>
 
-<p>Wenn Sie uns per E-Mail, Telefon oder Telefax kontaktieren, wird Ihre Anfrage inklusive aller daraus hervorgehenden personenbezogenen Daten (Name, Anfrage) zum Zwecke der Bearbeitung Ihres Anliegens bei uns gespeichert und verarbeitet. Diese Daten geben wir nicht ohne Ihre Einwilligung weiter.</p>
+<p data-ed="datenschutzerklaerung-p45">Wenn Sie uns per E-Mail, Telefon oder Telefax kontaktieren, wird Ihre Anfrage inklusive aller daraus hervorgehenden personenbezogenen Daten (Name, Anfrage) zum Zwecke der Bearbeitung Ihres Anliegens bei uns gespeichert und verarbeitet. Diese Daten geben wir nicht ohne Ihre Einwilligung weiter.</p>
 
-<p>Die Verarbeitung dieser Daten erfolgt auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO, sofern Ihre Anfrage mit der Erfüllung eines Vertrags zusammenhängt oder zur Durchführung vorvertraglicher Maßnahmen erforderlich ist. In allen übrigen Fällen beruht die Verarbeitung auf unserem berechtigten Interesse an der effektiven Bearbeitung der an uns gerichteten Anfragen (Art. 6 Abs. 1 lit. f DSGVO) oder auf Ihrer Einwilligung (Art. 6 Abs. 1 lit. a DSGVO) sofern diese abgefragt wurde; die Einwilligung ist jederzeit widerrufbar.</p>
+<p data-ed="datenschutzerklaerung-p46">Die Verarbeitung dieser Daten erfolgt auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO, sofern Ihre Anfrage mit der Erfüllung eines Vertrags zusammenhängt oder zur Durchführung vorvertraglicher Maßnahmen erforderlich ist. In allen übrigen Fällen beruht die Verarbeitung auf unserem berechtigten Interesse an der effektiven Bearbeitung der an uns gerichteten Anfragen (Art. 6 Abs. 1 lit. f DSGVO) oder auf Ihrer Einwilligung (Art. 6 Abs. 1 lit. a DSGVO) sofern diese abgefragt wurde; die Einwilligung ist jederzeit widerrufbar.</p>
 
-<p>Die von Ihnen an uns per Kontaktanfragen übersandten Daten verbleiben bei uns, bis Sie uns zur Löschung auffordern, Ihre Einwilligung zur Speicherung widerrufen oder der Zweck für die Datenspeicherung entfällt (z. B. nach abgeschlossener Bearbeitung Ihres Anliegens). Zwingende gesetzliche Bestimmungen – insbesondere gesetzliche Aufbewahrungsfristen – bleiben unberührt.</p>
+<p data-ed="datenschutzerklaerung-p47">Die von Ihnen an uns per Kontaktanfragen übersandten Daten verbleiben bei uns, bis Sie uns zur Löschung auffordern, Ihre Einwilligung zur Speicherung widerrufen oder der Zweck für die Datenspeicherung entfällt (z. B. nach abgeschlossener Bearbeitung Ihres Anliegens). Zwingende gesetzliche Bestimmungen – insbesondere gesetzliche Aufbewahrungsfristen – bleiben unberührt.</p>
 
-<h2>5. Soziale Medien</h2>
+<h2 data-ed="datenschutzerklaerung-h25">5. Soziale Medien</h2>
 
-<h3>Verlinkung auf Facebook und Instagram</h3>
+<h3 data-ed="datenschutzerklaerung-h321">Verlinkung auf Facebook und Instagram</h3>
 
-<p>In der Fußzeile dieser Website finden Sie Verweise auf unsere Profile bei Facebook und Instagram. Dabei handelt es sich um <strong>einfache Links, nicht um eingebundene Inhalte oder Schaltflächen</strong> der jeweiligen Netzwerke. Solange Sie einen dieser Links nicht anklicken, wird keine Verbindung zu Meta hergestellt und es werden keine Daten dorthin übertragen.</p>
+<p><span data-ed="datenschutzerklaerung-t15">In der Fußzeile dieser Website finden Sie Verweise auf unsere Profile bei Facebook und Instagram. Dabei handelt es sich um</span> <strong data-ed="datenschutzerklaerung-strong3">einfache Links, nicht um eingebundene Inhalte oder Schaltflächen</strong> <span data-ed="datenschutzerklaerung-t16">der jeweiligen Netzwerke. Solange Sie einen dieser Links nicht anklicken, wird keine Verbindung zu Meta hergestellt und es werden keine Daten dorthin übertragen.</span></p>
 
-<p>Erst wenn Sie einen Link anklicken, verlassen Sie diese Website. Ab diesem Zeitpunkt gilt die Datenschutzerklärung des jeweiligen Anbieters, der Meta Platforms Ireland Limited, Merrion Road, Dublin 4, D04 X2K5, Irland. Auf die dortige Verarbeitung haben wir keinen Einfluss.</p>
+<p data-ed="datenschutzerklaerung-p48">Erst wenn Sie einen Link anklicken, verlassen Sie diese Website. Ab diesem Zeitpunkt gilt die Datenschutzerklärung des jeweiligen Anbieters, der Meta Platforms Ireland Limited, Merrion Road, Dublin 4, D04 X2K5, Irland. Auf die dortige Verarbeitung haben wir keinen Einfluss.</p>
 
-<p>Datenschutzerklärung von Meta: <a href="https://www.facebook.com/privacy/policy/" rel="noopener">https://www.facebook.com/privacy/policy/</a>.</p>
+<p><span data-ed="datenschutzerklaerung-t17">Datenschutzerklärung von Meta:</span> <a href="https://www.facebook.com/privacy/policy/" rel="noopener" data-ed="datenschutzerklaerung-a6">https://www.facebook.com/privacy/policy/</a><span data-ed="datenschutzerklaerung-t18">.</span></p>
 
-<h2>6. Schriften und externe Inhalte</h2>
+<h2 data-ed="datenschutzerklaerung-h26">6. Schriften und externe Inhalte</h2>
 
-<h3>Schriftarten</h3>
+<h3 data-ed="datenschutzerklaerung-h322">Schriftarten</h3>
 
-<p>Diese Website verwendet die Schriften „Outfit“ und „Instrument Serif“. Beide werden <strong>von unserem eigenen Server ausgeliefert</strong>. Es besteht keine Verbindung zu Google Fonts oder einem anderen Schriftdienst; es wird dabei keine IP-Adresse an Dritte übermittelt.</p>
+<p><span data-ed="datenschutzerklaerung-t19">Diese Website verwendet die Schriften „Outfit“ und „Instrument Serif“. Beide werden</span> <strong data-ed="datenschutzerklaerung-strong4">von unserem eigenen Server ausgeliefert</strong><span data-ed="datenschutzerklaerung-t20">. Es besteht keine Verbindung zu Google Fonts oder einem anderen Schriftdienst; es wird dabei keine IP-Adresse an Dritte übermittelt.</span></p>
 
-<h3 id="karte">Google Maps</h3>
+<h3 id="karte" data-ed="datenschutzerklaerung-h323">Google Maps</h3>
 
-<p>Auf der Seite „Kontakt“ bieten wir eine Karte des Kartendienstes Google Maps an. Anbieter ist die Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irland.</p>
+<p data-ed="datenschutzerklaerung-p49">Auf der Seite „Kontakt“ bieten wir eine Karte des Kartendienstes Google Maps an. Anbieter ist die Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irland.</p>
 
-<p><strong>Die Karte wird nicht automatisch geladen.</strong> Beim Aufruf der Seite sehen Sie zunächst nur eine von uns selbst erstellte Vorschau, die vollständig von unserem eigenen Server stammt. Zu Google besteht zu diesem Zeitpunkt keinerlei Verbindung. Erst wenn Sie ausdrücklich auf die Schaltfläche „Karte laden“ klicken, wird die Karte nachgeladen. Dabei wird Ihre IP-Adresse an Google übertragen und in der Regel an einen Server von Google in den USA übermittelt. Google kann dabei weitere Informationen über Ihren Browser und Ihr Endgerät erhalten; sind Sie zugleich in einem Google-Konto angemeldet, kann Google den Aufruf diesem Konto zuordnen. Auf diese Verarbeitung haben wir keinen Einfluss.</p>
+<p><strong data-ed="datenschutzerklaerung-strong5">Die Karte wird nicht automatisch geladen.</strong> <span data-ed="datenschutzerklaerung-t21">Beim Aufruf der Seite sehen Sie zunächst nur eine von uns selbst erstellte Vorschau, die vollständig von unserem eigenen Server stammt. Zu Google besteht zu diesem Zeitpunkt keinerlei Verbindung. Erst wenn Sie ausdrücklich auf die Schaltfläche „Karte laden“ klicken, wird die Karte nachgeladen. Dabei wird Ihre IP-Adresse an Google übertragen und in der Regel an einen Server von Google in den USA übermittelt. Google kann dabei weitere Informationen über Ihren Browser und Ihr Endgerät erhalten; sind Sie zugleich in einem Google-Konto angemeldet, kann Google den Aufruf diesem Konto zuordnen. Auf diese Verarbeitung haben wir keinen Einfluss.</span></p>
 
-<p>Rechtsgrundlage ist Ihre Einwilligung nach Art. 6 Abs. 1 lit. a DSGVO und § 25 Abs. 1 TDDDG, die Sie mit dem Klick auf „Karte laden“ erteilen. Ihre Entscheidung wird <strong>nicht gespeichert</strong> — wir legen dafür weder ein Cookie noch einen sonstigen Eintrag auf Ihrem Endgerät ab. Die Einwilligung gilt daher nur für den aktuellen Seitenaufruf; Sie widerrufen sie, indem Sie die Seite neu laden oder verlassen. Für die Übermittlung in die USA beruft sich Google auf das EU-US Data Privacy Framework.</p>
+<p><span data-ed="datenschutzerklaerung-t22">Rechtsgrundlage ist Ihre Einwilligung nach Art. 6 Abs. 1 lit. a DSGVO und § 25 Abs. 1 TDDDG, die Sie mit dem Klick auf „Karte laden“ erteilen. Ihre Entscheidung wird</span> <strong data-ed="datenschutzerklaerung-strong6">nicht gespeichert</strong> <span data-ed="datenschutzerklaerung-t23">— wir legen dafür weder ein Cookie noch einen sonstigen Eintrag auf Ihrem Endgerät ab. Die Einwilligung gilt daher nur für den aktuellen Seitenaufruf; Sie widerrufen sie, indem Sie die Seite neu laden oder verlassen. Für die Übermittlung in die USA beruft sich Google auf das EU-US Data Privacy Framework.</span></p>
 
-<p>Die Schaltfläche „Route planen“ ist demgegenüber ein <strong>einfacher Link</strong>. Solange Sie ihn nicht anklicken, werden keine Daten an Google übertragen; mit dem Klick verlassen Sie diese Website und es gilt die Datenschutzerklärung von Google.</p>
+<p><span data-ed="datenschutzerklaerung-t24">Die Schaltfläche „Route planen“ ist demgegenüber ein</span> <strong data-ed="datenschutzerklaerung-strong7">einfacher Link</strong><span data-ed="datenschutzerklaerung-t25">. Solange Sie ihn nicht anklicken, werden keine Daten an Google übertragen; mit dem Klick verlassen Sie diese Website und es gilt die Datenschutzerklärung von Google.</span></p>
 
-<p>Weitere Informationen: <a href="https://policies.google.com/privacy?hl=de" rel="noopener">https://policies.google.com/privacy?hl=de</a>.</p>
+<p><span data-ed="datenschutzerklaerung-t26">Weitere Informationen:</span> <a href="https://policies.google.com/privacy?hl=de" rel="noopener" data-ed="datenschutzerklaerung-a7">https://policies.google.com/privacy?hl=de</a><span data-ed="datenschutzerklaerung-t27">.</span></p>
 
-<h3>Keine Analyse- und Werbedienste</h3>
+<h3 data-ed="datenschutzerklaerung-h324">Keine Analyse- und Werbedienste</h3>
 
-<p>Wir setzen keine Analyse-, Tracking- oder Werbedienste ein. Es sind weder Google Analytics noch vergleichbare Werkzeuge, noch Videoplayer oder Schaltflächen sozialer Netzwerke eingebunden. Außer den in dieser Erklärung ausdrücklich genannten Diensten (Hosting, Speicherung der Formularanfragen, die auf Klick nachladbare Karte) findet keine Übermittlung Ihrer Daten an Dritte statt.</p>
+<p data-ed="datenschutzerklaerung-p50">Wir setzen keine Analyse-, Tracking- oder Werbedienste ein. Es sind weder Google Analytics noch vergleichbare Werkzeuge, noch Videoplayer oder Schaltflächen sozialer Netzwerke eingebunden. Außer den in dieser Erklärung ausdrücklich genannten Diensten (Hosting, Speicherung der Formularanfragen, die auf Klick nachladbare Karte) findet keine Übermittlung Ihrer Daten an Dritte statt.</p>
 
 </div>
       </div>
       <div data-reveal style="display:flex;flex-wrap:wrap;gap:12px;margin-top:24px">
-        <a href="impressum.html" style="display:inline-flex;align-items:center;gap:9px;background:#1B4332;color:#F3F7F0;border-radius:999px;padding:15px 26px;font-size:15px;font-weight:600">Zum Impressum →</a>
-        <a href="kontakt.html" style="display:inline-flex;align-items:center;gap:9px;border-radius:999px;padding:15px 26px;font-size:15px;font-weight:500;color:#12261A;background:linear-gradient(155deg,rgba(255,255,255,.72),rgba(255,255,255,.42));backdrop-filter:blur(26px) saturate(1.45);border:1px solid rgba(255,255,255,.6);box-shadow:0 26px 54px -38px rgba(12,29,20,.34)">Kontakt</a>
+        <a href="impressum.html" style="display:inline-flex;align-items:center;gap:9px;background:#1B4332;color:#F3F7F0;border-radius:999px;padding:15px 26px;font-size:15px;font-weight:600" data-ed="datenschutzerklaerung-a8">Zum Impressum →</a>
+        <a href="kontakt.html" style="display:inline-flex;align-items:center;gap:9px;border-radius:999px;padding:15px 26px;font-size:15px;font-weight:500;color:#12261A;background:linear-gradient(155deg,rgba(255,255,255,.72),rgba(255,255,255,.42));backdrop-filter:blur(26px) saturate(1.45);border:1px solid rgba(255,255,255,.6);box-shadow:0 26px 54px -38px rgba(12,29,20,.34)" data-ed="datenschutzerklaerung-a9">Kontakt</a>
       </div>
     </div>
   </section>
   <garden-footer active="Datenschutz"></garden-footer>
 </div>
-<script src="assets/js/garden-header.js?v=50"></script>
-<script src="assets/js/garden-footer.js?v=50"></script>
-<script src="assets/js/impressum.js?v=50"></script>
+<script src="assets/js/garden-header.js?v=51"></script>
+<script src="assets/js/garden-footer.js?v=51"></script>
+<script src="assets/js/impressum.js?v=51"></script>
+<!-- Seiten-Editor: laeuft NUR mit ?bearbeiten=1 UND gueltiger Anmeldung
+     aus /admin/. Ohne beides beendet sich die Datei sofort. -->
+<script src="assets/js/editor.js?v=51"></script>
 </body>
 </html>
