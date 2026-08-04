@@ -63,6 +63,7 @@
   var verlauf = null;
   var seo = null, seoMeldung = null, seoSpeichern = null;
   var seoWerte = {}, seoStart = null;
+  var bild = null, bildMeldung = null, bildSpeichern = null, bildNeu = null;
 
   function start() {
     stilEinsetzen();
@@ -98,6 +99,7 @@
     });
     if (!felder.length) { hinweisSeite('Diese Seite ist noch nicht vorbereitet', 'Für sie wurden noch keine bearbeitbaren Stellen eingerichtet.', true); return; }
     felder.forEach(bereitmachen);
+    Array.prototype.forEach.call(document.querySelectorAll('[data-ed-img]'), bildBereitmachen);
     leisteBauen();
     /* Rechtstexte sind bearbeitbar wie jede andere Seite — das ist
        richtig, der Betreiber muss seine eigene Anschrift aendern
@@ -295,6 +297,7 @@
        zwei offene wuerden sich ueberlagern. */
     if (verlauf) { verlauf.remove(); verlauf = null; }
     if (seo) { seo.remove(); seo = null; }
+    if (bild) { bild.remove(); bild = null; }
     if (schublade) {
       schublade.remove(); schublade = null;
       schubladeKnopf.setAttribute('aria-expanded', 'false');
@@ -353,6 +356,233 @@
     if (erstes) erstes.focus();
   }
 
+  /* ---- Bilder ersetzen ---------------------------------------------
+
+     Die drei Groessen entstehen im Browser, nicht auf dem Server: so
+     bleibt der Bestand (400/800/1600 als WebP) erhalten, ohne dass eine
+     Bildbibliothek in die Edge Function muss.
+
+     Bewusst OHNE data:- oder blob:-Adressen. Die CSP dieser Seiten
+     erlaubt nur img-src 'self'; eine Vorschau ueber eine solche Adresse
+     waere blockiert, und die CSP dafuer zu lockern waere der falsche
+     Preis. createImageBitmap nimmt die Datei direkt entgegen, gezeichnet
+     wird auf eine <canvas> — beides unterliegt img-src nicht. */
+
+  var BILD_GROESSEN = [400, 800, 1600];
+
+  function bildBereitmachen(img) {
+    img.classList.add('dvg-bild');
+    img.setAttribute('tabindex', '0');
+    img.setAttribute('role', 'button');
+    img.setAttribute('aria-label', 'Bild ersetzen: ' + kurz(img.getAttribute('alt') || ''));
+    var oeffne = function (ev) {
+      if (ev) { ev.preventDefault(); ev.stopPropagation(); }
+      bildUmschalten(img);
+    };
+    img.addEventListener('click', oeffne);
+    img.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Enter' || ev.key === ' ') oeffne(ev);
+    });
+  }
+
+  function bildUmschalten(img) {
+    if (bild) { bild.remove(); bild = null; }
+    if (schublade) { schublade.remove(); schublade = null;
+      if (schubladeKnopf) schubladeKnopf.setAttribute('aria-expanded', 'false'); }
+    if (verlauf) { verlauf.remove(); verlauf = null; }
+    if (seo) { seo.remove(); seo = null; }
+
+    var kennung = img.getAttribute('data-ed-img');
+    bildNeu = null;
+
+    bild = el('div', 'dvg-schublade');
+    bild.setAttribute('role', 'group');
+    bild.setAttribute('aria-label', 'Bild ersetzen');
+    var kopf = el('div', 'dvg-schublade-kopf');
+    kopf.appendChild(el('strong', null, 'Bild ersetzen'));
+    kopf.appendChild(el('span', null,
+      'Wählen Sie ein Foto von Ihrem Rechner. Die drei Größen für Handy, ' +
+      'Tablet und großen Bildschirm werden hier erzeugt — Sie brauchen nur eine Datei. ' +
+      'Am besten quer und mindestens 1600 Pixel breit.'));
+    bild.appendChild(kopf);
+
+    /* Auswahl */
+    var zeileD = el('label', 'dvg-zeile');
+    zeileD.appendChild(el('span', 'dvg-zeile-kennung', 'Neues Foto'));
+    var rechtsD = el('div', 'dvg-seo-feld');
+    var eingabe = document.createElement('input');
+    eingabe.type = 'file';
+    eingabe.accept = 'image/jpeg,image/png,image/webp';
+    eingabe.className = 'dvg-datei';
+    var stand = el('span', 'dvg-ampel', 'Noch kein Foto gewählt.');
+    var leinwand = document.createElement('canvas');
+    leinwand.className = 'dvg-vorschau';
+    leinwand.hidden = true;
+    rechtsD.appendChild(eingabe); rechtsD.appendChild(stand); rechtsD.appendChild(leinwand);
+    zeileD.appendChild(rechtsD); bild.appendChild(zeileD);
+
+    /* Alt-Text */
+    var zeileA = el('label', 'dvg-zeile');
+    zeileA.appendChild(el('span', 'dvg-zeile-kennung', 'Bildbeschreibung'));
+    var rechtsA = el('div', 'dvg-seo-feld');
+    var altFeld = document.createElement('textarea');
+    altFeld.className = 'dvg-feld';
+    altFeld.rows = 2;
+    altFeld.value = img.getAttribute('alt') || '';
+    var altAmpel = el('span', 'dvg-ampel');
+    var altPruef = function () {
+      var t = altFeld.value.replace(/[\r\n]+/g, ' ');
+      if (t !== altFeld.value) altFeld.value = t;
+      var n = t.trim().length;
+      altAmpel.className = 'dvg-ampel dvg-ampel-' + (n === 0 ? 'rot' : n < 15 ? 'gelb' : 'gruen');
+      altAmpel.textContent = n === 0
+        ? 'Was ist auf dem Bild zu sehen? Ohne Beschreibung ist es für blinde Besucher und für Google unsichtbar.'
+        : n < 15 ? 'Sehr knapp — ein ganzer Satz hilft mehr.'
+        : 'Gut.';
+      bildKnopfStand();
+    };
+    altFeld.addEventListener('input', altPruef);
+    rechtsA.appendChild(altFeld); rechtsA.appendChild(altAmpel);
+    zeileA.appendChild(rechtsA); bild.appendChild(zeileA);
+
+    var leisteB = el('div', 'dvg-seo-aktionen');
+    bildMeldung = el('span', 'dvg-meldung');
+    bildMeldung.setAttribute('role', 'status');
+    bildSpeichern = el('button', 'dvg-knopf dvg-knopf-voll', 'Bild speichern');
+    bildSpeichern.type = 'button';
+    bildSpeichern.addEventListener('click', function () { bildSenden(img, kennung, altFeld); });
+    leisteB.appendChild(bildMeldung); leisteB.appendChild(bildSpeichern);
+    bild.appendChild(leisteB);
+
+    eingabe.addEventListener('change', function () {
+      var f = eingabe.files && eingabe.files[0];
+      if (!f) return;
+      stand.className = 'dvg-ampel';
+      stand.textContent = 'Wird umgerechnet …';
+      bildUmrechnen(f, leinwand)
+        .then(function (erg) {
+          bildNeu = erg;
+          leinwand.hidden = false;
+          stand.className = 'dvg-ampel dvg-ampel-gruen';
+          stand.textContent = 'Bereit: ' + erg.breite + ' × ' + erg.hoehe + ' Pixel, ' +
+            BILD_GROESSEN.map(function (g, i) { return g + 'px ≈ ' + Math.round(erg.groessen[i] / 1024) + ' KB'; }).join(' · ');
+          bildKnopfStand();
+        })
+        .catch(function (e) {
+          bildNeu = null;
+          leinwand.hidden = true;
+          stand.className = 'dvg-ampel dvg-ampel-rot';
+          stand.textContent = e && e.message ? e.message : 'Das Bild ließ sich nicht verarbeiten.';
+          bildKnopfStand();
+        });
+    });
+
+    document.body.appendChild(bild);
+    altPruef();
+    eingabe.focus();
+  }
+
+  function bildKnopfStand() {
+    if (!bildSpeichern) return;
+    var altOk = bild && bild.querySelector('textarea') &&
+      bild.querySelector('textarea').value.trim().length > 0;
+    bildSpeichern.disabled = !bildNeu || !altOk;
+  }
+
+  /* Datei -> drei WebP. Ohne Adressen: createImageBitmap nimmt den Blob
+     direkt, gezeichnet wird auf eine Leinwand. */
+  function bildUmrechnen(datei, vorschau) {
+    if (datei.size > 25 * 1024 * 1024) {
+      return Promise.reject(new Error('Die Datei ist größer als 25 MB.'));
+    }
+    if (!window.createImageBitmap) {
+      return Promise.reject(new Error('Dieser Browser kann Bilder nicht umrechnen. Bitte einen aktuellen Browser verwenden.'));
+    }
+    return createImageBitmap(datei).then(function (bmp) {
+      if (bmp.width < 800) {
+        throw new Error('Das Bild ist nur ' + bmp.width + ' Pixel breit. Mindestens 1600 wären gut, unter 800 wird es unscharf.');
+      }
+      /* Vorschau: kleine Fassung, direkt auf die Leinwand — keine
+         Bildadresse, also auch kein CSP-Problem. */
+      var vb = 320, vh = Math.round(vb * bmp.height / bmp.width);
+      vorschau.width = vb; vorschau.height = vh;
+      vorschau.getContext('2d').drawImage(bmp, 0, 0, vb, vh);
+
+      var aufgaben = BILD_GROESSEN.map(function (breite) {
+        var w = Math.min(breite, bmp.width);
+        var h = Math.round(w * bmp.height / bmp.width);
+        var c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        c.getContext('2d').drawImage(bmp, 0, 0, w, h);
+        return new Promise(function (loese, brich) {
+          c.toBlob(function (blob) {
+            if (!blob) { brich(new Error('Das Umrechnen ist fehlgeschlagen.')); return; }
+            /* ⚠ Nicht jeder Browser kann WebP schreiben — manche liefern
+               still ein PNG zurueck. Das waere eine PNG-Datei unter einem
+               .webp-Namen: funktioniert zwar, sprengt aber die Groesse und
+               bricht mit der Konvention des Projekts. Deshalb pruefen. */
+            if (blob.type !== 'image/webp') {
+              brich(new Error('Dieser Browser kann kein WebP erzeugen (er liefert ' +
+                (blob.type || 'ein unbekanntes Format') + '). Bitte Chrome, Edge oder Firefox verwenden.'));
+              return;
+            }
+            var leser = new FileReader();
+            leser.onload = function () {
+              loese({ b64: String(leser.result).split(',')[1], bytes: blob.size });
+            };
+            leser.onerror = function () { brich(new Error('Die Datei ließ sich nicht lesen.')); };
+            leser.readAsDataURL(blob);
+          }, 'image/webp', 0.82);
+        });
+      });
+
+      return Promise.all(aufgaben).then(function (teile) {
+        var dateien = {};
+        BILD_GROESSEN.forEach(function (g, i) { dateien[g] = teile[i].b64; });
+        return { dateien: dateien, groessen: teile.map(function (t) { return t.bytes; }),
+                 breite: bmp.width, hoehe: bmp.height };
+      });
+    });
+  }
+
+  function bildSenden(img, kennung, altFeld) {
+    bildSpeichern.disabled = true;
+    bildMeldung.className = 'dvg-meldung';
+    bildMeldung.textContent = 'Wird gespeichert — Bilder brauchen einen Moment …';
+    /* Aus dem bisherigen Dateinamen einen lesbaren Namensteil ableiten,
+       damit die Mediathek spaeter nicht aus Zufallszeichen besteht. */
+    var quelle = (img.getAttribute('src') || '').split('/').pop() || 'bild';
+    var basis = quelle.replace(/-\d+\.webp$/, '').replace(/\.[a-z]+$/, '');
+
+    ruf({ was: 'bild-speichern', datei: dateiname(), kennung: kennung,
+          basis: basis, alt: altFeld.value.trim(), dateien: bildNeu.dateien })
+      .then(function (a) {
+        if (a.s === 401) { bildSage('Die Anmeldung ist abgelaufen. Bitte neu anmelden.', 'fehler'); return; }
+        if (a.d && a.d.teilweise) {
+          bildSage('Gespeichert, aber noch nicht veröffentlicht. Bitte melden Sie das.', 'fehler'); return;
+        }
+        if (a.s !== 200 || !a.d || !a.d.ok) {
+          bildSpeichern.disabled = false;
+          bildSage('Speichern fehlgeschlagen (' + a.s +
+            (a.d && a.d.fehler ? ' · ' + klartext(a.d.fehler) : '') + ').', 'fehler');
+          return;
+        }
+        bildSage('Gespeichert. In etwa einer Minute ist das neue Bild sichtbar — ' +
+          'die Seite lädt gleich neu.', 'ok');
+        setTimeout(function () { location.reload(); }, 3000);
+      })
+      .catch(function (e) {
+        bildSpeichern.disabled = false;
+        bildSage('Keine Verbindung (' + (e && e.message) + '). Der Zustand ist unbekannt — ' +
+          'bitte die Seite neu laden und nachsehen.', 'fehler');
+      });
+  }
+
+  function bildSage(text, art) {
+    bildMeldung.textContent = text;
+    bildMeldung.className = 'dvg-meldung' + (art ? ' dvg-meldung-' + art : '');
+  }
+
   /* ---- Titel und Google-Beschreibung -------------------------------
      Beurteilt wird in Klartext, nicht mit einem Zeichenzähler. „58 von
      60" sagt einem Handwerksmeister nichts; „Google schneidet den Titel
@@ -363,6 +593,7 @@
     if (schublade) { schublade.remove(); schublade = null;
       if (schubladeKnopf) schubladeKnopf.setAttribute('aria-expanded', 'false'); }
     if (verlauf) { verlauf.remove(); verlauf = null; }
+    if (bild) { bild.remove(); bild = null; }
 
     var titelJetzt = document.title;
     var m = document.querySelector('meta[name="description"]');
@@ -494,6 +725,7 @@
   function verlaufUmschalten() {
     if (verlauf) { verlauf.remove(); verlauf = null; return; }
     if (seo) { seo.remove(); seo = null; }
+    if (bild) { bild.remove(); bild = null; }
     if (schublade) {
       schublade.remove(); schublade = null;
       if (schubladeKnopf) schubladeKnopf.setAttribute('aria-expanded', 'false');
@@ -732,7 +964,10 @@
       beschreibung_leer: 'die Beschreibung darf nicht leer sein',
       titel_zu_lang: 'der Titel ist zu lang',
       beschreibung_zu_lang: 'die Beschreibung ist zu lang',
-      feld_nicht_gefunden: 'ein SEO-Feld fehlt im Markup dieser Seite'
+      feld_nicht_gefunden: 'ein SEO-Feld fehlt im Markup dieser Seite',
+      alt_leer: 'die Bildbeschreibung darf nicht leer sein',
+      bild_zu_gross: 'das Bild ist zu groß',
+      bild_nicht_gefunden: 'dieses Bild gibt es in der Datei nicht mehr — bitte neu laden'
     };
     return karte[f] || f;
   }
@@ -846,6 +1081,14 @@
       '  transition:border-color .15s cubic-bezier(.4,0,.2,1)}',
       '.dvg-feld:focus{outline:2px solid #2C6E49;outline-offset:1px;border-color:#2C6E49}',
       '.dvg-feld-neu{border-color:#C77C1E;background:rgba(199,124,30,.07)}',
+
+      /* Bilder */
+      '.dvg-bearbeiten .dvg-bild{outline:2px dashed rgba(44,110,73,.5);outline-offset:4px;cursor:pointer;',
+      '  transition:outline-color .15s cubic-bezier(.4,0,.2,1)}',
+      '.dvg-bearbeiten .dvg-bild:hover,.dvg-bearbeiten .dvg-bild:focus{outline:3px solid #2C6E49}',
+      '.dvg-datei{font:inherit;font-size:14px;color:var(--ink)}',
+      '.dvg-vorschau{max-width:320px;width:100%;height:auto;border-radius:8px;',
+      '  border:1px solid rgba(16,35,26,.16);margin-top:4px}',
 
       /* Titel und Beschreibung */
       '.dvg-seo-feld{display:flex;flex-direction:column;gap:6px;min-width:0}',
