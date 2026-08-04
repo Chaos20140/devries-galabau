@@ -916,12 +916,34 @@ Deno.serve(async (req: Request) => {
         return null; /* kein passendes Ende — lieber nichts schreiben */
       };
 
+      /* Der Hinweis "Zurzeit sind keine Stellen ausgeschrieben" darf nicht
+         ueber einer Liste offener Stellen stehen. Er wird deshalb genau
+         dann ausgeblendet, wenn die Zone gefuellt ist — und kommt von
+         selbst zurueck, sobald sie wieder leer ist.
+         Bewusst NICHT dem Betreiber ueberlassen: Wer eine Stelle eintraegt,
+         denkt an die Stelle, nicht an einen Satz weiter oben. Der
+         Widerspruch waere der Normalfall, nicht die Ausnahme.
+         Der Text selbst bleibt bearbeitbar (data-ed) und erscheint dann in
+         der Lade fuer nicht sichtbare Stellen. */
+      const leerhinweis = (html: string, sichtbar: boolean): string => {
+        const m = /<[a-zA-Z][\w-]*\b[^>]*\sdata-ed-leerhinweis[\s=>][^>]*>/.exec(html);
+        if (!m) return html; /* Seite ohne Hinweiskarte — nichts zu tun */
+        /* Vorhandenes data-ed-leer erst entfernen, sonst stuende es beim
+           zweiten Speichern doppelt im Tag. Der Ausblick (?=[\s>]) ist
+           noetig, weil "data-ed-leerhinweis" mit "data-ed-leer" ANFAENGT —
+           ohne ihn wuerde die Markierung selbst zerschnitten. */
+        let tag = m[0].replace(/\sdata-ed-leer(="[^"]*")?(?=[\s>])/g, "");
+        if (!sichtbar) tag = tag.replace(/\sdata-ed-leerhinweis/, ' data-ed-leerhinweis data-ed-leer="aus"');
+        return html.slice(0, m.index) + tag + html.slice(m.index + m[0].length);
+      };
+
       const geschriebenB: string[] = [];
       for (const branch of BRANCHES) {
         try {
           const stand = await ghHole(datei, branch);
-          const neu = zoneSetzen(stand.text);
+          let neu = zoneSetzen(stand.text);
           if (neu === null) return json({ fehler: "zone_nicht_gefunden", zone, branch }, 409);
+          neu = leerhinweis(neu, bloecke.length === 0);
           if (neu === stand.text) { geschriebenB.push(branch); continue; }
           await ghSchreibe(datei, branch, neu, stand.sha,
             "Seiten-Editor: Blöcke in " + datei + " geändert");
