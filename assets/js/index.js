@@ -6,6 +6,27 @@
 (function () {
   "use strict";
 
+  /* ===================================================================
+     SCHALTER: Rundgang voruebergehend abgeschaltet
+
+     Zum WIEDER EINSCHALTEN nur diese eine Zeile auf false setzen:
+         var RUNDGANG_AUS = false;
+
+     Es ist NICHTS geloescht. Der gesamte Rundgang — Szene, Stationen,
+     Kamerafahrt — steht unveraendert in dieser Datei und schaltet sich
+     mit dieser Zeile wieder zu.
+
+     Was der Schalter bewirkt:
+     · three.js wird gar nicht erst geladen (spart 148 KB)
+     · die Scrollbahn bleibt kurz (112vh statt 1800vh), die Startseite
+       ist damit rund 18 statt 34 Bildschirmhoehen lang
+     · das Standbild bleibt als ruhiger Kopfbereich stehen, ohne Knopf
+       und ohne die Zeile "startet jetzt"
+     · Leinwand, Stationstafeln und die Punkteleiste am rechten Rand
+       bleiben ausgeblendet
+     =================================================================== */
+  var RUNDGANG_AUS = true;
+
   /* Systemeinstellung "Bewegung reduzieren" — im Design nicht vorgesehen. */
   var __reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
@@ -49,7 +70,8 @@ class Component extends DCLogic {
        Der Rundgang startet am Rechner von selbst, sobald die Seite
        gezeichnet ist und feststeht, dass die Grafik ihn auch tragen kann. */
     this.zeigeStandbild();
-    if (window.innerWidth >= 820) this.planeAutostart();
+    if (RUNDGANG_AUS) this.rundgangAbschalten();
+    else if (window.innerWidth >= 820) this.planeAutostart();
     this.raf = requestAnimationFrame(this.tick);
   }
 
@@ -116,13 +138,35 @@ class Component extends DCLogic {
     this.threeLaedt = new Promise((res, rej) => {
       if (window.THREE) return res();
       const s = document.createElement('script');
-      s.src = 'assets/js/three.min.js?v=39';
+      s.src = 'assets/js/three.min.js?v=40';
       s.async = true;
       s.onload = () => (window.THREE ? res() : rej(new Error('three geladen, aber nicht da')));
       s.onerror = () => rej(new Error('three konnte nicht geladen werden'));
       document.head.appendChild(s);
     });
     return this.threeLaedt;
+  }
+
+  /* Der Rundgang ist ueber den Schalter am Dateianfang abgeschaltet.
+     Hier wird nur aufgeraeumt, was sonst leer herumstuende. */
+  rundgangAbschalten() {
+    /* dreiDAus haelt die Bahn kurz und verhindert jeden Selbststart —
+       auch den beim Wechsel der Fensterbreite. */
+    this.dreiDAus = true;
+    if (this.walk) this.walk.style.height = this.bahnHoehe();
+
+    const weg = (id) => { const el = document.getElementById(id); if (el) el.style.display = 'none'; };
+    weg('rg-canvas');     // leere Leinwand unter der Seite
+    weg('rg-stations');   // Tafeln der sieben Stationen
+    weg('rg-rail');       // Punkteleiste am rechten Rand
+
+    /* Kein Knopf und keine Zeile "startet jetzt" — beides waere unwahr. */
+    if (this.standbild) {
+      const knopf = this.standbild.querySelector('[data-start]');
+      const hinweis = this.standbild.querySelector('[data-hinweis]');
+      if (knopf) knopf.style.display = 'none';
+      if (hinweis) hinweis.style.display = 'none';
+    }
   }
 
   /* Kann diese Maschine den Rundgang ueberhaupt tragen?
@@ -397,7 +441,7 @@ class Component extends DCLogic {
   }
 
   starteRundgang(automatisch) {
-    if (this.rundgangAn) return;
+    if (RUNDGANG_AUS || this.rundgangAn) return;
     const knopf = this.startLeiste && this.startLeiste.querySelector('[data-start]');
     if (knopf && !automatisch) { knopf.disabled = true; knopf.textContent = 'Wird geladen …'; }
     this.ladeTHREE().then(() => {
@@ -925,7 +969,7 @@ class Component extends DCLogic {
        Szene direkt gebaut und das Standbild sofort entfernt: bei
        fehlender oder unbeschleunigter Grafik blieb dann wieder eine
        schwarze Flaeche zurueck. */
-    if (!m && !this.threeLaedt && !this.rundgangAn && !this.dreiDAus) {
+    if (!RUNDGANG_AUS && !m && !this.threeLaedt && !this.rundgangAn && !this.dreiDAus) {
       this.planeAutostart();
     }
 
