@@ -64,6 +64,8 @@
   var seo = null, seoMeldung = null, seoSpeichern = null;
   var seoWerte = {}, seoStart = null;
   var bild = null, bildMeldung = null, bildSpeichern = null, bildNeu = null;
+  var rahmen = null, rahmenMeldung = null, rahmenSpeichern = null;
+  var rahmenNeu = null, rahmenStand = null;
 
   function start() {
     stilEinsetzen();
@@ -263,6 +265,13 @@
       rechts.appendChild(schubladeKnopf);
     }
 
+    var rahmenKnopf = el('button', 'dvg-knopf dvg-knopf-still', 'Menü & Fußzeile');
+    rahmenKnopf.type = 'button';
+    rahmenKnopf.id = 'dvg-rahmen';
+    rahmenKnopf.title = 'Beschriftungen, die auf allen Seiten gleich sind';
+    rahmenKnopf.addEventListener('click', rahmenUmschalten);
+    rechts.appendChild(rahmenKnopf);
+
     var seoKnopf = el('button', 'dvg-knopf dvg-knopf-still', 'Titel & Beschreibung');
     seoKnopf.type = 'button';
     seoKnopf.id = 'dvg-seo';
@@ -293,16 +302,12 @@
   /* ---- Schublade fuer die nicht sichtbaren Stellen ----------------- */
 
   function schubladeUmschalten() {
-    /* Beide Listen liegen an derselben Stelle ueber der Leiste —
-       zwei offene wuerden sich ueberlagern. */
-    if (verlauf) { verlauf.remove(); verlauf = null; }
-    if (seo) { seo.remove(); seo = null; }
-    if (bild) { bild.remove(); bild = null; }
     if (schublade) {
       schublade.remove(); schublade = null;
       schubladeKnopf.setAttribute('aria-expanded', 'false');
       return;
     }
+    ladenSchliessen('verborgen');
     schublade = el('div', 'dvg-schublade');
     schublade.setAttribute('role', 'group');
     schublade.setAttribute('aria-label', 'Nicht sichtbare Textstellen');
@@ -356,6 +361,184 @@
     if (erstes) erstes.focus();
   }
 
+  /* Es gibt fuenf Laden, und alle liegen an derselben Stelle ueber der
+     Werkzeugleiste. Statt in jeder Lade die vier anderen einzeln zu
+     schliessen — dabei vergisst man verlaesslich eine Kombination —
+     macht das eine Stelle. */
+  function ladenSchliessen(ausser) {
+    if (schublade && ausser !== 'verborgen') {
+      schublade.remove(); schublade = null;
+      if (schubladeKnopf) schubladeKnopf.setAttribute('aria-expanded', 'false');
+    }
+    if (verlauf && ausser !== 'verlauf') { verlauf.remove(); verlauf = null; }
+    if (seo && ausser !== 'seo') { seo.remove(); seo = null; }
+    if (bild && ausser !== 'bild') { bild.remove(); bild = null; }
+    if (rahmen && ausser !== 'rahmen') { rahmen.remove(); rahmen = null; }
+  }
+
+  /* ---- Menü und Fußzeile -------------------------------------------
+     Diese Texte stehen auf ALLEN Seiten. Deshalb sagt die Lade das
+     ausdruecklich — wer hier tippt, aendert nicht nur die Seite, auf der
+     er gerade steht. */
+
+  function rahmenUmschalten() {
+    if (rahmen) { rahmen.remove(); rahmen = null; return; }
+    ladenSchliessen();
+
+    rahmen = el('div', 'dvg-schublade');
+    rahmen.setAttribute('role', 'group');
+    rahmen.setAttribute('aria-label', 'Menü und Fußzeile');
+    var kopf = el('div', 'dvg-schublade-kopf');
+    kopf.appendChild(el('strong', null, 'Menü und Fußzeile'));
+    kopf.appendChild(el('span', null,
+      'Diese Beschriftungen erscheinen auf ALLEN Seiten. Eine Änderung hier ' +
+      'wirkt überall — die Ziele der Verweise bleiben unverändert.'));
+    rahmen.appendChild(kopf);
+    rahmen.appendChild(el('div', 'dvg-ampel', 'Wird geladen …'));
+    document.body.appendChild(rahmen);
+
+    /* Der aktuelle Stand steht im Fenster — die Datendatei ist ja
+       geladen. Kein Serverweg noetig, um ihn zu zeigen. */
+    var T = window.RAHMEN_TEXTE;
+    if (!T || typeof T !== 'object') {
+      rahmen.lastChild.className = 'dvg-ampel dvg-ampel-rot';
+      rahmen.lastChild.textContent =
+        'Die Datei mit den Texten ist auf dieser Seite nicht geladen. ' +
+        'Kopf- und Fußzeile laufen dann mit ihren eingebauten Werten.';
+      return;
+    }
+    rahmen.removeChild(rahmen.lastChild);
+
+    /* Tiefe Kopie als Arbeitsstand — der Betreiber soll verwerfen koennen. */
+    rahmenStand = JSON.parse(JSON.stringify(T));
+    rahmenNeu = JSON.parse(JSON.stringify(T));
+
+    var feldZeile = function (beschriftung, lies, schreib, max) {
+      var z = el('label', 'dvg-zeile');
+      z.appendChild(el('span', 'dvg-zeile-kennung', beschriftung));
+      var r = el('div', 'dvg-seo-feld');
+      var f = document.createElement('textarea');
+      f.className = 'dvg-feld';
+      f.rows = max > 120 ? 3 : 1;
+      f.value = lies();
+      f.addEventListener('input', function () {
+        var t = f.value.replace(/[\r\n]+/g, ' ');
+        if (t !== f.value) f.value = t;
+        schreib(t);
+        f.classList.toggle('dvg-feld-neu', t !== lies.ausgang);
+        rahmenKnopfStand();
+      });
+      lies.ausgang = lies();
+      r.appendChild(f);
+      z.appendChild(r);
+      return z;
+    };
+
+    var gruppe = function (titel) {
+      var g = el('div', 'dvg-gruppe');
+      g.appendChild(el('div', 'dvg-gruppe-titel', titel));
+      rahmen.appendChild(g);
+      return g;
+    };
+
+    var menueGruppe = gruppe('Menü oben · ' + rahmenNeu.menue.length);
+    rahmenNeu.menue.forEach(function (e, i) {
+      menueGruppe.appendChild(feldZeile(e.datei,
+        function () { return rahmenStand.menue[i].text; },
+        function (v) { rahmenNeu.menue[i].text = v; }, 80));
+    });
+
+    var mehrGruppe = gruppe('Untermenü „' + rahmenNeu.menueMehrTitel + '" · ' + rahmenNeu.menueMehr.length);
+    mehrGruppe.appendChild(feldZeile('Titel des Untermenüs',
+      function () { return rahmenStand.menueMehrTitel; },
+      function (v) { rahmenNeu.menueMehrTitel = v; }, 60));
+    rahmenNeu.menueMehr.forEach(function (e, i) {
+      mehrGruppe.appendChild(feldZeile(e.datei,
+        function () { return rahmenStand.menueMehr[i].text; },
+        function (v) { rahmenNeu.menueMehr[i].text = v; }, 80));
+    });
+
+    var knopfGruppe = gruppe('Knopf oben rechts');
+    knopfGruppe.appendChild(feldZeile('Beschriftung',
+      function () { return rahmenStand.knopf; },
+      function (v) { rahmenNeu.knopf = v; }, 60));
+
+    rahmenNeu.fussSpalten.forEach(function (sp, i) {
+      var g = gruppe('Fußzeile · Spalte ' + (i + 1));
+      g.appendChild(feldZeile('Überschrift',
+        function () { return rahmenStand.fussSpalten[i].titel; },
+        function (v) { rahmenNeu.fussSpalten[i].titel = v; }, 60));
+      sp.links.forEach(function (l, j) {
+        g.appendChild(feldZeile(l.datei,
+          function () { return rahmenStand.fussSpalten[i].links[j].text; },
+          function (v) { rahmenNeu.fussSpalten[i].links[j].text = v; }, 80));
+      });
+    });
+
+    var fg = gruppe('Fußzeile · Text');
+    [['Absatz oben', 'fussAbsatz', 400], ['Überschrift Kontakt', 'fussKontaktTitel', 60],
+     ['Öffnungszeiten', 'fussZeiten', 80], ['Ort', 'fussOrt', 80],
+     ['Zeile unten links', 'fussRechts', 160], ['Zeile unten rechts', 'fussGebiet', 160]
+    ].forEach(function (p) {
+      fg.appendChild(feldZeile(p[0],
+        function () { return rahmenStand[p[1]]; },
+        function (v) { rahmenNeu[p[1]] = v; }, p[2]));
+    });
+
+    var leisteR = el('div', 'dvg-seo-aktionen');
+    rahmenMeldung = el('span', 'dvg-meldung');
+    rahmenMeldung.setAttribute('role', 'status');
+    rahmenSpeichern = el('button', 'dvg-knopf dvg-knopf-voll', 'Menü und Fußzeile speichern');
+    rahmenSpeichern.type = 'button';
+    rahmenSpeichern.addEventListener('click', rahmenSenden);
+    leisteR.appendChild(rahmenMeldung); leisteR.appendChild(rahmenSpeichern);
+    rahmen.appendChild(leisteR);
+    rahmenKnopfStand();
+    var erstes = rahmen.querySelector('textarea');
+    if (erstes) erstes.focus();
+  }
+
+  function rahmenKnopfStand() {
+    if (!rahmenSpeichern) return;
+    var anders = JSON.stringify(rahmenNeu) !== JSON.stringify(rahmenStand);
+    var leer = JSON.stringify(rahmenNeu).indexOf('""') >= 0;
+    rahmenSpeichern.disabled = !anders || leer;
+    if (leer) rahmenSage('Ein Feld ist leer — bitte ausfüllen.', 'fehler');
+  }
+
+  function rahmenSenden() {
+    rahmenSpeichern.disabled = true;
+    rahmenSage('Wird gespeichert …', null);
+    ruf({ was: 'rahmen-speichern', texte: rahmenNeu }).then(function (a) {
+      if (a.s === 401) { rahmenSage('Die Anmeldung ist abgelaufen. Bitte neu anmelden.', 'fehler'); return; }
+      if (a.d && a.d.teilweise) {
+        rahmenSage('Gespeichert, aber noch nicht veröffentlicht. Bitte melden Sie das.', 'fehler'); return;
+      }
+      if (a.s !== 200 || !a.d || !a.d.ok) {
+        rahmenSpeichern.disabled = false;
+        rahmenSage('Speichern fehlgeschlagen (' + a.s +
+          (a.d && a.d.grund ? ' · ' + a.d.grund : a.d && a.d.fehler ? ' · ' + klartext(a.d.fehler) : '') +
+          (a.d && a.d.feld ? ' · Feld: ' + a.d.feld : '') + ').', 'fehler');
+        return;
+      }
+      rahmenStand = JSON.parse(JSON.stringify(rahmenNeu));
+      Array.prototype.forEach.call(rahmen.querySelectorAll('.dvg-feld'), function (x) {
+        x.classList.remove('dvg-feld-neu');
+      });
+      rahmenKnopfStand();
+      rahmenSage('Gespeichert. Die Änderung wirkt auf allen Seiten — in etwa einer Minute sichtbar.', 'ok');
+    }).catch(function (e) {
+      rahmenSpeichern.disabled = false;
+      rahmenSage('Keine Verbindung (' + (e && e.message) + '). Der Zustand ist unbekannt — ' +
+        'bitte die Seite neu laden und nachsehen.', 'fehler');
+    });
+  }
+
+  function rahmenSage(text, art) {
+    rahmenMeldung.textContent = text;
+    rahmenMeldung.className = 'dvg-meldung' + (art ? ' dvg-meldung-' + art : '');
+  }
+
   /* ---- Bilder ersetzen ---------------------------------------------
 
      Die drei Groessen entstehen im Browser, nicht auf dem Server: so
@@ -387,10 +570,7 @@
 
   function bildUmschalten(img) {
     if (bild) { bild.remove(); bild = null; }
-    if (schublade) { schublade.remove(); schublade = null;
-      if (schubladeKnopf) schubladeKnopf.setAttribute('aria-expanded', 'false'); }
-    if (verlauf) { verlauf.remove(); verlauf = null; }
-    if (seo) { seo.remove(); seo = null; }
+    ladenSchliessen('bild');
 
     var kennung = img.getAttribute('data-ed-img');
     bildNeu = null;
@@ -590,10 +770,7 @@
 
   function seoUmschalten() {
     if (seo) { seo.remove(); seo = null; return; }
-    if (schublade) { schublade.remove(); schublade = null;
-      if (schubladeKnopf) schubladeKnopf.setAttribute('aria-expanded', 'false'); }
-    if (verlauf) { verlauf.remove(); verlauf = null; }
-    if (bild) { bild.remove(); bild = null; }
+    ladenSchliessen('seo');
 
     var titelJetzt = document.title;
     var m = document.querySelector('meta[name="description"]');
@@ -724,12 +901,7 @@
 
   function verlaufUmschalten() {
     if (verlauf) { verlauf.remove(); verlauf = null; return; }
-    if (seo) { seo.remove(); seo = null; }
-    if (bild) { bild.remove(); bild = null; }
-    if (schublade) {
-      schublade.remove(); schublade = null;
-      if (schubladeKnopf) schubladeKnopf.setAttribute('aria-expanded', 'false');
-    }
+    ladenSchliessen('verlauf');
     verlauf = el('div', 'dvg-schublade');
     verlauf.setAttribute('role', 'group');
     verlauf.setAttribute('aria-label', 'Frühere Fassungen dieser Seite');
@@ -967,7 +1139,9 @@
       feld_nicht_gefunden: 'ein SEO-Feld fehlt im Markup dieser Seite',
       alt_leer: 'die Bildbeschreibung darf nicht leer sein',
       bild_zu_gross: 'das Bild ist zu groß',
-      bild_nicht_gefunden: 'dieses Bild gibt es in der Datei nicht mehr — bitte neu laden'
+      bild_nicht_gefunden: 'dieses Bild gibt es in der Datei nicht mehr — bitte neu laden',
+      rahmen_ungueltig: 'eine Angabe für Menü oder Fußzeile ist nicht gültig',
+      erzeugung_fehlgeschlagen: 'die Datei ließ sich nicht erzeugen — nichts wurde gespeichert'
     };
     return karte[f] || f;
   }
