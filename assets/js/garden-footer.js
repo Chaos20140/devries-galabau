@@ -196,7 +196,12 @@
 
       const mark = () => {
         Array.from(R.querySelectorAll('a')).forEach(a => {
-          if ((a.textContent || '').trim() === active) {
+          /* Dateiname ODER Beschriftung — siehe garden-header.js.
+             Der Dateiname ueberlebt eine Umbenennung im Editor, die
+             Beschriftung nicht. Beides zu pruefen haelt vorhandene Seiten
+             lauffaehig und macht neue unabhaengig vom Text. */
+          const ziel = (a.getAttribute('href') || '').split('/').pop();
+          if ((a.textContent || '').trim() === active || (ziel && ziel === active)) {
             a.style.color = '#2C6E49';
             a.style.fontWeight = '600';
             a.setAttribute('aria-current', 'page');

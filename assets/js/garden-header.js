@@ -39,12 +39,20 @@
          koennen es mit cta="..." ueberschreiben (die Anfrageseite selbst
          springt zu ihrem eigenen Formular). */
       const cta = esc(this.getAttribute('cta') || 'anfrage.html');
-      const on = l => active === l;
-      const cur = l => (on(l) ? ' aria-current="page"' : '');
-      const pill = (h, l) => '<a href="' + h + '"' + cur(l) + ' class="gh-link' + (on(l) ? ' gh-on' : '') + '">' + l + '</a>';
-      const item = (h, l) => '<a href="' + h + '"' + cur(l) + ' class="gh-item' + (on(l) ? ' gh-on2' : '') + '">' + l + '</a>';
-      const big = (h, l) => '<a href="' + h + '"' + cur(l) + ' class="gh-big' + (on(l) ? ' gh-onBig' : '') + '">' + l + '</a>';
-      const moreActive = MORE.some(m => on(m[1]));
+      /* Verglichen wird der DATEINAME, nicht die Beschriftung.
+         Frueher stand hier "active === l" mit l = Beschriftung. Das war
+         solange richtig, wie die Beschriftungen fest im Code standen —
+         mit dem Seiten-Editor sind sie aenderbar, und dann verlöre jede
+         umbenannte Seite still ihre aria-current-Markierung. Der
+         Dateiname aendert sich nicht, wenn jemand ein Menue umbenennt.
+         Rueckwaertsvertraeglich: eine Seite, die noch die alte
+         Beschriftung im active-Attribut traegt, wird weiterhin erkannt. */
+      const on = (h, l) => active === h || active === l;
+      const cur = (h, l) => (on(h, l) ? ' aria-current="page"' : '');
+      const pill = (h, l) => '<a href="' + h + '"' + cur(h, l) + ' class="gh-link' + (on(h, l) ? ' gh-on' : '') + '">' + l + '</a>';
+      const item = (h, l) => '<a href="' + h + '"' + cur(h, l) + ' class="gh-item' + (on(h, l) ? ' gh-on2' : '') + '">' + l + '</a>';
+      const big = (h, l) => '<a href="' + h + '"' + cur(h, l) + ' class="gh-big' + (on(h, l) ? ' gh-onBig' : '') + '">' + l + '</a>';
+      const moreActive = MORE.some(m => on(m[0], m[1]));
 
       const root = this.attachShadow({ mode: 'open' });
       this.root = root;
