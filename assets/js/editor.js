@@ -66,6 +66,8 @@
   var bild = null, bildMeldung = null, bildSpeichern = null, bildNeu = null;
   var rahmen = null, rahmenMeldung = null, rahmenSpeichern = null;
   var rahmenNeu = null, rahmenStand = null;
+  var bloecke = null, bloeckeMeldung = null, bloeckeSpeichern = null;
+  var bloeckeNeu = null, bloeckeStand = null;
 
   function start() {
     stilEinsetzen();
@@ -265,6 +267,15 @@
       rechts.appendChild(schubladeKnopf);
     }
 
+    if (document.querySelector('[data-ed-zone]')) {
+      var bloeckeKnopf = el('button', 'dvg-knopf dvg-knopf-still', 'Stellenanzeigen');
+      bloeckeKnopf.type = 'button';
+      bloeckeKnopf.id = 'dvg-bloecke';
+      bloeckeKnopf.title = 'Offene Stellen anlegen, ändern, entfernen';
+      bloeckeKnopf.addEventListener('click', bloeckeUmschalten);
+      rechts.appendChild(bloeckeKnopf);
+    }
+
     var rahmenKnopf = el('button', 'dvg-knopf dvg-knopf-still', 'Menü & Fußzeile');
     rahmenKnopf.type = 'button';
     rahmenKnopf.id = 'dvg-rahmen';
@@ -374,6 +385,180 @@
     if (seo && ausser !== 'seo') { seo.remove(); seo = null; }
     if (bild && ausser !== 'bild') { bild.remove(); bild = null; }
     if (rahmen && ausser !== 'rahmen') { rahmen.remove(); rahmen = null; }
+    if (bloecke && ausser !== 'bloecke') { bloecke.remove(); bloecke = null; }
+  }
+
+  /* ---- Blöcke in einer Zone ----------------------------------------
+     Zurzeit gibt es genau eine Blockart: die Stellenanzeige. Das ist
+     Absicht — was der Betreiber nicht braucht, kann er auch nicht falsch
+     einsetzen, und jede weitere Art verdoppelt eine Stilvorlage im
+     Server, die bei jeder Designaenderung nachzuziehen ist. */
+
+  function bloeckeLesen(zone) {
+    /* Der Server erzeugt die Bloecke in fester Form — deshalb laesst sich
+       aus dem Markup verlaesslich zurueckgelesen werden. */
+    return [].slice.call(zone.querySelectorAll('article')).map(function (a) {
+      var marke = a.querySelector('span');
+      return {
+        art: 'stelle',
+        titel: (a.querySelector('h3') || {}).textContent || '',
+        umfang: marke ? marke.textContent.trim() : '',
+        text: (a.querySelector('p') || {}).textContent || '',
+        punkte: [].slice.call(a.querySelectorAll('li')).map(function (l) { return l.textContent; })
+      };
+    });
+  }
+
+  function bloeckeUmschalten() {
+    if (bloecke) { bloecke.remove(); bloecke = null; return; }
+    ladenSchliessen();
+
+    var zone = document.querySelector('[data-ed-zone]');
+    if (!zone) return;
+    bloeckeNeu = bloeckeLesen(zone);
+    bloeckeStand = JSON.stringify(bloeckeNeu);
+
+    bloecke = el('div', 'dvg-schublade');
+    bloecke.setAttribute('role', 'group');
+    bloecke.setAttribute('aria-label', 'Stellenanzeigen');
+    var kopf = el('div', 'dvg-schublade-kopf');
+    kopf.appendChild(el('strong', null, 'Stellenanzeigen'));
+    kopf.appendChild(el('span', null,
+      'Hier stehen die offenen Stellen. Solange keine eingetragen ist, sagt die Karte ' +
+      'darüber, dass gerade keine Stelle frei ist — sobald Sie eine anlegen, passen Sie ' +
+      'diesen Text bitte an. Automatisch geht das nicht: nur Sie wissen, wie es dann ' +
+      'heißen soll.'));
+    bloecke.appendChild(kopf);
+    document.body.appendChild(bloecke);
+    bloeckeZeichnen();
+  }
+
+  function bloeckeZeichnen() {
+    /* Alles ausser dem Kopf neu aufbauen. */
+    while (bloecke.children.length > 1) bloecke.removeChild(bloecke.lastChild);
+
+    bloeckeNeu.forEach(function (b, i) {
+      var g = el('div', 'dvg-gruppe');
+      var kopf = el('div', 'dvg-gruppe-kopf');
+      kopf.appendChild(el('div', 'dvg-gruppe-titel', 'Stelle ' + (i + 1)));
+      var werkzeuge = el('div', 'dvg-block-werkzeuge');
+      [['↑', 'nach oben', i > 0, function () { tausche(i, i - 1); }],
+       ['↓', 'nach unten', i < bloeckeNeu.length - 1, function () { tausche(i, i + 1); }],
+       ['✕', 'entfernen', true, function () {
+          if (!window.confirm('Diese Stellenanzeige entfernen?')) return;
+          bloeckeNeu.splice(i, 1); bloeckeZeichnen();
+       }]
+      ].forEach(function (w) {
+        var k = el('button', 'dvg-knopf dvg-knopf-still dvg-mini', w[0]);
+        k.type = 'button';
+        k.setAttribute('aria-label', w[1]);
+        k.disabled = !w[2];
+        k.addEventListener('click', w[3]);
+        werkzeuge.appendChild(k);
+      });
+      kopf.appendChild(werkzeuge);
+      g.appendChild(kopf);
+
+      var feld = function (beschriftung, schl, zeilen, hinweis) {
+        var z = el('label', 'dvg-zeile');
+        z.appendChild(el('span', 'dvg-zeile-kennung', beschriftung));
+        var r = el('div', 'dvg-seo-feld');
+        var f = document.createElement('textarea');
+        f.className = 'dvg-feld';
+        f.rows = zeilen;
+        f.value = schl === 'punkte' ? (b.punkte || []).join('\n') : (b[schl] || '');
+        f.addEventListener('input', function () {
+          if (schl === 'punkte') {
+            b.punkte = f.value.split('\n').map(function (x) { return x.trim(); }).filter(Boolean);
+          } else {
+            b[schl] = f.value.replace(/[\r\n]+/g, ' ');
+            if (b[schl] !== f.value) f.value = b[schl];
+          }
+          bloeckeKnopfStand();
+        });
+        r.appendChild(f);
+        if (hinweis) r.appendChild(el('span', 'dvg-ampel', hinweis));
+        z.appendChild(r);
+        return z;
+      };
+
+      g.appendChild(feld('Stellenbezeichnung', 'titel', 1));
+      g.appendChild(feld('Umfang', 'umfang', 1, 'Zum Beispiel „Vollzeit" oder „Ausbildung ab August". Darf leer bleiben.'));
+      g.appendChild(feld('Beschreibung', 'text', 4));
+      g.appendChild(feld('Stichpunkte', 'punkte', 4, 'Eine Zeile je Punkt. Darf leer bleiben.'));
+      bloecke.appendChild(g);
+    });
+
+    if (!bloeckeNeu.length) {
+      bloecke.appendChild(el('div', 'dvg-ampel', 'Zurzeit ist keine Stelle eingetragen.'));
+    }
+
+    var leiste = el('div', 'dvg-seo-aktionen');
+    var neu = el('button', 'dvg-knopf dvg-knopf-still', '+ Stelle hinzufügen');
+    neu.type = 'button';
+    neu.addEventListener('click', function () {
+      bloeckeNeu.push({ art: 'stelle', titel: '', umfang: '', text: '', punkte: [] });
+      bloeckeZeichnen();
+      var felder = bloecke.querySelectorAll('.dvg-feld');
+      if (felder.length) felder[felder.length - 4].focus();
+    });
+    bloeckeMeldung = el('span', 'dvg-meldung');
+    bloeckeMeldung.setAttribute('role', 'status');
+    bloeckeSpeichern = el('button', 'dvg-knopf dvg-knopf-voll', 'Stellen speichern');
+    bloeckeSpeichern.type = 'button';
+    bloeckeSpeichern.addEventListener('click', bloeckeSenden);
+    leiste.appendChild(neu); leiste.appendChild(bloeckeMeldung); leiste.appendChild(bloeckeSpeichern);
+    bloecke.appendChild(leiste);
+    bloeckeKnopfStand();
+  }
+
+  function tausche(a, b) {
+    var t = bloeckeNeu[a]; bloeckeNeu[a] = bloeckeNeu[b]; bloeckeNeu[b] = t;
+    bloeckeZeichnen();
+  }
+
+  function bloeckeKnopfStand() {
+    if (!bloeckeSpeichern) return;
+    var anders = JSON.stringify(bloeckeNeu) !== bloeckeStand;
+    var luecke = bloeckeNeu.some(function (b) {
+      return !String(b.titel || '').trim() || !String(b.text || '').trim();
+    });
+    bloeckeSpeichern.disabled = !anders || luecke;
+    if (luecke) bloeckeSage('Bezeichnung und Beschreibung sind bei jeder Stelle nötig.', 'fehler');
+    else if (anders) bloeckeSage('', null);
+  }
+
+  function bloeckeSenden() {
+    bloeckeSpeichern.disabled = true;
+    bloeckeSage('Wird gespeichert …', null);
+    ruf({ was: 'bloecke-speichern', datei: dateiname(), zone: 'stellen', bloecke: bloeckeNeu })
+      .then(function (a) {
+        if (a.s === 401) { bloeckeSage('Die Anmeldung ist abgelaufen. Bitte neu anmelden.', 'fehler'); return; }
+        if (a.d && a.d.teilweise) {
+          bloeckeSage('Gespeichert, aber noch nicht veröffentlicht. Bitte melden Sie das.', 'fehler'); return;
+        }
+        if (a.s !== 200 || !a.d || !a.d.ok) {
+          bloeckeSpeichern.disabled = false;
+          bloeckeSage('Speichern fehlgeschlagen (' + a.s +
+            (a.d && a.d.fehler ? ' · ' + klartext(a.d.fehler) : '') + ').', 'fehler');
+          return;
+        }
+        bloeckeStand = JSON.stringify(bloeckeNeu);
+        bloeckeKnopfStand();
+        bloeckeSage('Gespeichert. In etwa einer Minute sichtbar — die Seite lädt gleich neu.', 'ok');
+        setTimeout(function () { location.reload(); }, 3000);
+      })
+      .catch(function (e) {
+        bloeckeSpeichern.disabled = false;
+        bloeckeSage('Keine Verbindung (' + (e && e.message) + '). Der Zustand ist unbekannt — ' +
+          'bitte die Seite neu laden und nachsehen.', 'fehler');
+      });
+  }
+
+  function bloeckeSage(text, art) {
+    if (!bloeckeMeldung) return;
+    bloeckeMeldung.textContent = text;
+    bloeckeMeldung.className = 'dvg-meldung' + (art ? ' dvg-meldung-' + art : '');
   }
 
   /* ---- Menü und Fußzeile -------------------------------------------
@@ -1141,7 +1326,11 @@
       bild_zu_gross: 'das Bild ist zu groß',
       bild_nicht_gefunden: 'dieses Bild gibt es in der Datei nicht mehr — bitte neu laden',
       rahmen_ungueltig: 'eine Angabe für Menü oder Fußzeile ist nicht gültig',
-      erzeugung_fehlgeschlagen: 'die Datei ließ sich nicht erzeugen — nichts wurde gespeichert'
+      erzeugung_fehlgeschlagen: 'die Datei ließ sich nicht erzeugen — nichts wurde gespeichert',
+      zone_nicht_gefunden: 'der Bereich für Stellen fehlt in der Datei — bitte neu laden',
+      block_titel_fehlt: 'eine Stelle hat keine Bezeichnung',
+      block_text_fehlt: 'eine Stelle hat keine Beschreibung',
+      zu_viele_bloecke: 'höchstens 20 Stellen'
     };
     return karte[f] || f;
   }
@@ -1255,6 +1444,11 @@
       '  transition:border-color .15s cubic-bezier(.4,0,.2,1)}',
       '.dvg-feld:focus{outline:2px solid #2C6E49;outline-offset:1px;border-color:#2C6E49}',
       '.dvg-feld-neu{border-color:#C77C1E;background:rgba(199,124,30,.07)}',
+
+      /* Bloecke */
+      '.dvg-gruppe-kopf{display:flex;align-items:center;justify-content:space-between;gap:12px}',
+      '.dvg-block-werkzeuge{display:flex;gap:6px}',
+      '.dvg-mini{min-height:30px;padding:4px 11px;font-size:14px;line-height:1}',
 
       /* Bilder */
       '.dvg-bearbeiten .dvg-bild{outline:2px dashed rgba(44,110,73,.5);outline-offset:4px;cursor:pointer;',

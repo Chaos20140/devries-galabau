@@ -23,7 +23,7 @@
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png?v=1">
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/outfit-600-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/outfit-400-latin.woff2" crossorigin>
-<link rel="stylesheet" href="assets/css/base.css?v=66">
+<link rel="stylesheet" href="assets/css/base.css?v=67">
 <style>
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;background:#EDF3E8;color:#12261A}
@@ -64,10 +64,16 @@
      nichts. Das Formular schickt die Bewerbung dagegen direkt ab. -->
           <a href="#bewerbung" style="display:inline-flex;align-items:center;gap:9px;background:#1B4332;color:#F3F7F0;border-radius:999px;padding:15px 26px;font-size:15px;font-weight:600" data-ed="offene-stellen-a">Initiativbewerbung senden →</a>
           <a href="tel:051531552" style="display:inline-flex;align-items:center;gap:9px;border-radius:999px;padding:15px 26px;font-size:15px;font-weight:500;color:#12261A;background:linear-gradient(155deg,rgba(255,255,255,.72),rgba(255,255,255,.42));backdrop-filter:blur(26px) saturate(1.45);border:1px solid rgba(255,255,255,.6);box-shadow:0 26px 54px -38px rgba(12,29,20,.34)" data-ed="offene-stellen-a2">05153 1552</a>
+          </div>
         </div>
+
+        <!-- Zone fuer Stellenanzeigen. Der Editor erzeugt ihren Inhalt
+             SERVERSEITIG neu aus geprueften Daten — es wird niemals
+             Markup aus dem Browser uebernommen. Leer heisst: es gibt
+             gerade keine offene Stelle, und die Karte darueber sagt das. -->
+        <div data-ed-zone="stellen" style="display:grid;gap:clamp(13px,1.5vw,20px);margin-top:clamp(13px,1.5vw,20px)"></div>
       </div>
-    </div>
-  </section>
+    </section>
 
   <section data-screen-label="Warum wir" style="position:relative;z-index:2;padding:clamp(50px,8vh,110px) clamp(20px,5vw,68px)">
     <div style="max-width:1240px;margin:0 auto">
@@ -162,14 +168,14 @@
   <garden-footer active="stellenangebote.html"></garden-footer>
 </div>
 <!-- Texte von Kopf- und Fusszeile. MUSS vor den Komponenten stehen. -->
-<script src="assets/js/rahmen-texte.js?v=66"></script>
-<script src="assets/js/garden-header.js?v=66"></script>
-<script src="assets/js/garden-footer.js?v=66"></script>
-<script src="assets/js/formular.js?v=66"></script>
-<script src="assets/js/stellenangebote.js?v=66"></script>
-<script src="assets/js/stellen-form.js?v=66"></script>
+<script src="assets/js/rahmen-texte.js?v=67"></script>
+<script src="assets/js/garden-header.js?v=67"></script>
+<script src="assets/js/garden-footer.js?v=67"></script>
+<script src="assets/js/formular.js?v=67"></script>
+<script src="assets/js/stellenangebote.js?v=67"></script>
+<script src="assets/js/stellen-form.js?v=67"></script>
 <!-- Seiten-Editor: laeuft NUR mit ?bearbeiten=1 UND gueltiger Anmeldung
      aus /admin/. Ohne beides beendet sich die Datei sofort. -->
-<script src="assets/js/editor.js?v=66"></script>
+<script src="assets/js/editor.js?v=67"></script>
 </body>
 </html>
