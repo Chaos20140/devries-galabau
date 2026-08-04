@@ -7,6 +7,34 @@
   function start() {
     var form = document.querySelector('form[data-bewerbung]');
     if (!form) return;
+    /* Der Knopf oben fuehrt ueber die Sprungmarke #bewerbung hierher. Das
+       allein genuegt: ohne JavaScript springt der Browser selbst. Mit
+       JavaScript machen wir zwei Dinge besser — sanft scrollen statt
+       springen, und den Schreibfokus gleich ins erste Feld setzen, damit
+       man sofort tippen kann. Ausserdem verschiebt sich die Sprungmarke,
+       solange ueber ihr noch Bilder nachladen; scrollIntoView rechnet im
+       Moment des Klicks. */
+    Array.prototype.forEach.call(document.querySelectorAll('a[href="#bewerbung"]'), function (a) {
+      a.addEventListener('click', function (e) {
+        var ziel = document.getElementById('bewerbung');
+        if (!ziel) return;
+        e.preventDefault();
+        var sanft = !(window.matchMedia &&
+          window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+        ziel.scrollIntoView({ behavior: sanft ? 'smooth' : 'auto', block: 'start' });
+        /* Erst nach dem Scrollen fokussieren, sonst springt der Browser
+           selbst noch einmal. */
+        setTimeout(function () {
+          var erstes = ziel.querySelector('[name="name"]');
+          /* Bewusst OHNE preventScroll: laeuft das weiche Scrollen aus
+             irgendeinem Grund nicht, holt das Fokussieren das Feld selbst
+             ins Bild. Hat es geklappt, steht es ohnehin schon da und der
+             Fokus bewegt nichts mehr. */
+          if (erstes) erstes.focus();
+        }, sanft ? 700 : 0);
+      });
+    });
+
     var hinweis = document.getElementById('bw-datei-hinweis');
     var eingabe = form.querySelector('[name="lebenslauf"]');
     var standardHinweis = hinweis ? hinweis.textContent : '';

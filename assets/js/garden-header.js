@@ -34,7 +34,11 @@
       const esc = (s) => String(s).replace(/[&<>"']/g, (c) => (
         { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
       ));
-      const cta = esc(this.getAttribute('cta') || 'kontakt.html');
+      /* Vorgabe ist die Anfrageseite: der Knopf heisst "Kostenlos anfragen",
+         also gehoert er dorthin und nicht auf die Kontaktseite. Seiten
+         koennen es mit cta="..." ueberschreiben (die Anfrageseite selbst
+         springt zu ihrem eigenen Formular). */
+      const cta = esc(this.getAttribute('cta') || 'anfrage.html');
       const on = l => active === l;
       const cur = l => (on(l) ? ' aria-current="page"' : '');
       const pill = (h, l) => '<a href="' + h + '"' + cur(l) + ' class="gh-link' + (on(l) ? ' gh-on' : '') + '">' + l + '</a>';

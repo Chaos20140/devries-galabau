@@ -103,13 +103,13 @@
             '<a href="bepflanzung.html" style="font-size:15px;color:#26382E;text-decoration:none">Bepflanzung</a>' +
             '</div></details>' +
             '<details class="gf-fold" open><summary>Ansichten<i aria-hidden="true">▾</i></summary><div class="gf-sub">' +
-            '<a href="index.html" style="font-size:15px;color:#26382E;text-decoration:none">Rundgang</a>' +
-            '<a href="ueber-uns.html" style="font-size:15px;color:#26382E;text-decoration:none">Über uns</a>' +
-            '<a href="referenzen.html" style="font-size:15px;color:#26382E;text-decoration:none">Referenzen</a>' +
-            '<a href="kontakt.html" style="font-size:15px;color:#26382E;text-decoration:none">Kontakt</a>' +
-            '<a href="stellenangebote.html" style="font-size:15px;color:#26382E;text-decoration:none">Stellenangebote</a>' +
-            '<a href="impressum.html" style="font-size:15px;color:#26382E;text-decoration:none">Impressum</a>' +
+                        '<a href="stellenangebote.html" style="font-size:15px;color:#26382E;text-decoration:none">Stellenangebote</a>' +
             '<a href="datenschutz.html" style="font-size:15px;color:#26382E;text-decoration:none">Datenschutz</a>' +
+            '<a href="referenzen.html" style="font-size:15px;color:#26382E;text-decoration:none">Referenzen</a>' +
+            '<a href="impressum.html" style="font-size:15px;color:#26382E;text-decoration:none">Impressum</a>' +
+'<a href="index.html" style="font-size:15px;color:#26382E;text-decoration:none">Rundgang</a>' +
+            '<a href="ueber-uns.html" style="font-size:15px;color:#26382E;text-decoration:none">Über uns</a>' +
+            '<a href="kontakt.html" style="font-size:15px;color:#26382E;text-decoration:none">Kontakt</a>' +
             '</div></details>' +
             '<div style="display:flex;flex-direction:column;gap:11px;min-width:0">' +
             '<div style="font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#46761F">Kontakt</div>' +

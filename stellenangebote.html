@@ -23,7 +23,7 @@
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png?v=1">
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/outfit-600-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/outfit-400-latin.woff2" crossorigin>
-<link rel="stylesheet" href="assets/css/base.css?v=40">
+<link rel="stylesheet" href="assets/css/base.css?v=43">
 <style>
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;background:#EDF3E8;color:#12261A}
@@ -38,7 +38,7 @@
 
   <div style="position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(70% 50% at 18% 8%,rgba(214,232,208,.7),rgba(237,243,232,0) 70%),radial-gradient(60% 46% at 92% 24%,rgba(226,240,214,.6),rgba(237,243,232,0) 72%)"></div>
 
-  <garden-header active="Stellenangebote" cta="kontakt.html"></garden-header>
+  <garden-header active="Stellenangebote" cta="anfrage.html"></garden-header>
 
   <section style="height:clamp(84px,10vh,108px)"></section>
 
@@ -58,7 +58,11 @@
         <p style="margin:16px 0 0;max-width:62ch;font-size:16px;line-height:1.62;color:#3C5145;text-wrap:pretty">Wir sagen es Ihnen lieber ehrlich: Im Moment haben wir keine offene Stelle im Garten- und Landschaftsbau zu besetzen.</p>
         <p style="margin:14px 0 0;max-width:62ch;font-size:16px;line-height:1.62;color:#3C5145;text-wrap:pretty">Trotzdem freuen wir uns immer über engagierte Menschen, die zu unserem Familienbetrieb passen. Schicken Sie uns gerne eine Initiativbewerbung per E-Mail — Betreff „Initiativbewerbung“, Kategorie Garten-Landschaftsbau. Sobald sich bei uns etwas ändert, melden wir uns bei Ihnen.</p>
         <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:26px">
-          <a href="mailto:info@devries-galabau.de?subject=Initiativbewerbung%20Garten-Landschaftsbau" style="display:inline-flex;align-items:center;gap:9px;background:#1B4332;color:#F3F7F0;border-radius:999px;padding:15px 26px;font-size:15px;font-weight:600">Initiativbewerbung senden →</a>
+          <!-- Fuehrt zum Formular weiter unten, nicht mehr per mailto. Ein
+     mailto-Knopf tut auf jedem Rechner ohne eingerichtetes
+     E-Mail-Programm sichtbar NICHTS — man klickt und es passiert
+     nichts. Das Formular schickt die Bewerbung dagegen direkt ab. -->
+          <a href="#bewerbung" style="display:inline-flex;align-items:center;gap:9px;background:#1B4332;color:#F3F7F0;border-radius:999px;padding:15px 26px;font-size:15px;font-weight:600">Initiativbewerbung senden →</a>
           <a href="tel:051531552" style="display:inline-flex;align-items:center;gap:9px;border-radius:999px;padding:15px 26px;font-size:15px;font-weight:500;color:#12261A;background:linear-gradient(155deg,rgba(255,255,255,.72),rgba(255,255,255,.42));backdrop-filter:blur(26px) saturate(1.45);border:1px solid rgba(255,255,255,.6);box-shadow:0 26px 54px -38px rgba(12,29,20,.34)">05153 1552</a>
         </div>
       </div>
@@ -157,10 +161,10 @@
 
   <garden-footer active="Stellenangebote"></garden-footer>
 </div>
-<script src="assets/js/garden-header.js?v=40"></script>
-<script src="assets/js/garden-footer.js?v=40"></script>
-<script src="assets/js/formular.js?v=40"></script>
-<script src="assets/js/stellenangebote.js?v=40"></script>
-<script src="assets/js/stellen-form.js?v=40"></script>
+<script src="assets/js/garden-header.js?v=43"></script>
+<script src="assets/js/garden-footer.js?v=43"></script>
+<script src="assets/js/formular.js?v=43"></script>
+<script src="assets/js/stellenangebote.js?v=43"></script>
+<script src="assets/js/stellen-form.js?v=43"></script>
 </body>
 </html>

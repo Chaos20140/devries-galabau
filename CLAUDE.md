@@ -1092,3 +1092,38 @@ erweitern statt parallele bauen → 4. Desktop+Mobile im selben Schritt → 5. B
   meldete `getComputedStyle` für das animierte `flex-grow` weiter `1`, obwohl inline `2.4`
   stand · zum Messen musste ich `transition:none` setzen. **Vor jeder Aussage über Bilder,
   Größen oder Farbwerte erst `document.hidden` prüfen.**
+
+- **2026-08-01 · Sechs Punkte aus der Durchsicht (v43).**
+  **1. Bepflanzung:** Insektenhotel → `ref-vorgarten2` (Hortensien, Ziergräser, Stauden,
+  Formgehölze). Zwei Kandidaten verworfen: `bepflanzung-pflanzen` ist reines Grün **und zeigt
+  einen Kundennamen auf einem Findling** — gehört nicht auf eine öffentliche Seite.
+  **2. „Initiativbewerbung senden" tat nichts.** Es war ein `mailto:` — derselbe stumme
+  Rückfall wie beim Formular. Zeigt jetzt auf `#bewerbung`, also das Formular derselben Seite.
+  Ohne JavaScript springt der Browser selbst; mit JavaScript sanft und mit Fokus ins erste
+  Feld. **Der Fokus ist bewusst OHNE `preventScroll`:** läuft das weiche Scrollen nicht,
+  holt er das Feld selbst ins Bild.
+  **3. Fußzeile:** Spalte „Ansichten" nach Länge sortiert, wie „Leistungen" es vormacht.
+  **4. Cookies:** Es gibt keine. Kein Cookie, kein Speicherzugriff, kein Banner — geprüft mit
+  `grep` über alle ausgelieferten Skripte. Die Datenschutzseite behauptete das Gegenteil.
+  **5. Impressum stimmt** (Adresse, Inhaber, Bauhof, USt-IdNr. — gegen `CONTENT_INVENTORY`
+  geprüft). **Die Datenschutzseite hatte vier Falschangaben**, alle aus der Vorlage der
+  alten WordPress-Seite übernommen:
+  · **Hosting „Strato AG"** — die Seite läuft auf **GitHub Pages**. Das war die schwerste:
+    der tatsächliche Auftragsverarbeiter war nicht genannt, ein nicht beteiligter dagegen
+    schon. Jetzt GitHub, Inc. mit Rechtsgrundlage und Drittlandübermittlung.
+    **Beim Umzug auf die eigene Domain muss dieser Abschnitt zurück auf Strato.**
+  · **Cookies** — es werden keine gesetzt; jetzt steht das ausdrücklich da, samt Begründung,
+    warum es kein Banner gibt (§ 25 Abs. 1 TDDDG).
+  · **Google Fonts** — die Schriften liegen selbst ausgeliefert im Projekt.
+  · **Facebook/Instagram** — es sind schlichte Links in der Fußzeile, keine eingebundenen
+    Elemente. Vorher stand dort „Auf dieser Website sind Elemente … integriert".
+  · Ergänzt: „Keine Analyse- und Werbedienste"; der Absatz, der eine statistische Auswertung
+    des Surf-Verhaltens ankündigte, ist berichtigt.
+  **6. „Kostenlos anfragen"** führte auf 7 Seiten zur Kontaktseite und auf 5 zu einem Anker.
+  `anfrage.html` (Kostenlose Anfrage mit Formular) gab es die ganze Zeit. Jetzt zeigt der
+  Knopf überall dorthin — die **Vorgabe der Kopfzeile** steht auf `anfrage.html`, damit auch
+  Seiten ohne eigenes `cta`-Attribut richtig liegen. Auf der Anfrageseite selbst springt er
+  zum Formular.
+  **Merke:** Rechtstexte aus einer Vorlage beschreiben die Technik der **Vorlage**, nicht die
+  eigene. Bei jedem Umbau der Auslieferung (Hoster, Schriften, Einbindungen) gehört die
+  Datenschutzseite mit auf die Liste.
