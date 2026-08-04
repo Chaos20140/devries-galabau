@@ -25,3 +25,15 @@ skills-lock.json
 # launch.json des Vorschauservers nennt den vollen Windows-Pfad und
 # damit den Benutzernamen; sie lag ueber GitHub Pages oeffentlich.
 
+# Interne Arbeitsunterlagen — gehoeren NICHT ins oeffentliche Repository.
+# Sie lagen bis v45 auf dem Arbeits-Branch oeffentlich lesbar auf GitHub,
+# obwohl sie aus dem Live-Branch "main" sorgfaeltig herausgehalten wurden:
+# beide Branches liegen im SELBEN oeffentlichen Repository. CLAUDE.md nennt
+# unter anderem das Muster des Verwaltungspassworts.
+# Sie bleiben auf der Platte, werden aber nicht mehr versioniert.
+CLAUDE.md
+CONTENT_INVENTORY.md
+DESIGN-AND-MOTION-SYSTEM.md
+IMAGE_SOURCES.md
+SUPABASE.md
+supabase/
