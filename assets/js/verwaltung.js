@@ -202,6 +202,8 @@
         if (f) { offen = f; zeigeDetail(); } else { offen = null; zeigeListe(false); }
       } else if (z.ansicht === 'liste' && z.bereich) {
         bereich = z.bereich; offen = null; notizEntwurf = null; zeigeListe(false);
+      } else if (z.ansicht === 'seiten') {
+        offen = null; notizEntwurf = null; zeigeSeiten();
       } else {
         offen = null; notizEntwurf = null; zeigeUebersicht(zaehleNeu());
       }
@@ -275,6 +277,18 @@
         '<div class="vw-kacheln">' +
           kachel('anfragen', 'Anfragen', '✉') +
           kachel('bewerbungen', 'Bewerbungen', '📄') +
+          /* Bearbeiten braucht Auswahl, Cursor und eine Werkzeugleiste —
+             auf dem Telefon ist das nicht sinnvoll bedienbar. Die Kachel
+             erscheint deshalb erst ab Rechnerbreite. Das ist eine
+             Bedienentscheidung, keine Sicherheitsgrenze. */
+          (amRechner()
+            ? '<button class="vw-kachel" data-seiten="1">' +
+                '<span class="vw-kachel__kopf"><span class="vw-symbol" aria-hidden="true">✍️</span>' +
+                '<span class="vw-kachel__titel">Seiten bearbeiten</span></span>' +
+                '<span class="vw-kachel__zahl">Texte ändern</span>' +
+                '<span class="vw-kachel__zeit">direkt auf der Seite</span>' +
+              '</button>'
+            : '') +
         '</div>' +
         '<p class="vw-hint vw-nurGross" style="margin-top:22px">' +
           'Die vollständige Verwaltung steht am Rechner zur Verfügung. Auf dem Telefon ' +
@@ -283,6 +297,11 @@
     $('#vw-abmelden').addEventListener('click', abmelden);
     fokusAufUeberschrift();
     startUhr();
+    var seitenKnopf = document.querySelector('[data-seiten]');
+    if (seitenKnopf) seitenKnopf.addEventListener('click', function () {
+      verlaufSetz({ ansicht: 'seiten' });
+      zeigeSeiten();
+    });
     Array.prototype.forEach.call(document.querySelectorAll('[data-geh]'), function (b) {
       b.addEventListener('click', function () {
         bereich = b.getAttribute('data-geh'); filter = 'alle'; suche = ''; offen = null;
@@ -290,6 +309,69 @@
         zeigeListe(true);
       });
     });
+  }
+
+  /* Ab dieser Breite gilt "Rechner". Dieselbe Grenze benutzt editor.js —
+     sonst gaebe es einen Streifen, in dem die Kachel erscheint, der
+     Editor sich aber weigert. */
+  function amRechner() { return window.innerWidth >= 1024; }
+
+  /* Welche Seiten sind fuer den Editor vorbereitet?
+     "vorbereitet" heisst: das Markup traegt die data-ed-Kennungen, ohne
+     die der Server nicht weiss, welche Stelle er ersetzen soll. Die
+     Liste steht hier bewusst im Klartext statt geraten zu werden — eine
+     Seite faelschlich als bearbeitbar anzubieten fuehrt zu einem Editor
+     ohne einzige bearbeitbare Stelle, und das sieht aus wie ein Fehler. */
+  var SEITEN = [
+    { datei: 'ueber-uns.html',        titel: 'Über uns',           bereit: true },
+    { datei: 'index.html',            titel: 'Startseite',         bereit: false },
+    { datei: 'gartengestaltung.html', titel: 'Gartengestaltung',   bereit: false },
+    { datei: 'gartenplanung.html',    titel: 'Gartenplanung',      bereit: false },
+    { datei: 'gartenpflege.html',     titel: 'Gartenpflege',       bereit: false },
+    { datei: 'bepflanzung.html',      titel: 'Bepflanzung',        bereit: false },
+    { datei: 'referenzen.html',       titel: 'Referenzen',         bereit: false },
+    { datei: 'kontakt.html',          titel: 'Kontakt',            bereit: false },
+    { datei: 'anfrage.html',          titel: 'Kostenlose Anfrage', bereit: false },
+    { datei: 'stellenangebote.html',  titel: 'Stellenangebote',    bereit: false }
+  ];
+
+  function zeigeSeiten() {
+    /* Der Editor liest sein Anmeldekennzeichen aus dem sessionStorage
+       DIESES Reiters. Deshalb darf der Verweis kein target="_blank"
+       tragen — ein neuer Reiter hat den Speicher nicht. */
+    var wurzel = location.pathname.replace(/admin\/?$/, '');
+    var karten = SEITEN.map(function (s) {
+      /* Bewusst die vorhandenen Zeilenklassen benutzen statt neue zu
+         erfinden — sonst haette die Verwaltung zwei fast gleiche
+         Zeilenbilder, die bei jeder Designaenderung auseinanderlaufen. */
+      var innen =
+        '<span class="vw-zeile__haupt">' +
+          '<span class="vw-zeile__name">' + esc(s.titel) + '</span>' +
+          '<span class="vw-zeile__meta">' + esc(s.datei) + '</span>' +
+        '</span>';
+      if (!s.bereit) {
+        return '<div class="vw-zeile vw-zeile--aus">' + innen +
+          '<span class="vw-zeile__meta">noch nicht vorbereitet</span></div>';
+      }
+      return '<a class="vw-zeile" href="' + esc(wurzel + s.datei) + '?bearbeiten=1">' + innen +
+        '<span class="vw-zeile__meta">bearbeiten →</span></a>';
+    }).join('');
+
+    $('#vw-app').innerHTML =
+      '<div class="vw-mitte">' +
+        '<button class="vw-zurueck" id="vw-zurueck">← Übersicht</button>' +
+        '<h1 class="vw-h1">Seiten bearbeiten</h1>' +
+        '<p class="vw-hint" style="margin:10px 0 20px;max-width:62ch">' +
+          'Wählen Sie eine Seite. Sie öffnet sich ganz normal — bearbeitbare Stellen sind ' +
+          'gestrichelt umrandet. Anklicken, tippen, unten speichern. Nach dem Speichern ' +
+          'dauert es etwa eine Minute, bis die Änderung für alle sichtbar ist.</p>' +
+        '<div class="vw-karte vw-karte--liste"><div class="vw-liste">' + karten + '</div></div>' +
+      '</div>';
+    $('#vw-zurueck').addEventListener('click', function () {
+      verlaufSetz({ ansicht: 'uebersicht' });
+      zeigeUebersicht(zaehleNeu());
+    });
+    fokusAufUeberschrift();
   }
 
   function abmelden() {
