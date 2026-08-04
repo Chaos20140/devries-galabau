@@ -52,6 +52,7 @@
   var felder = [];            // {el, alt}
   var geaendert = new Map();  // kennung -> neuer Text
   var leiste, zaehlerEl, meldungEl, speichernEl, verwerfenEl;
+  var schublade = null, schubladeKnopf = null;
 
   function start() {
     stilEinsetzen();
@@ -72,7 +73,18 @@
     });
     felder = [];
     nachKennung.forEach(function (els, kennung) {
-      felder.push({ el: els[0], klone: els.slice(1), kennung: kennung, alt: els[0].textContent });
+      var f = { el: els[0], klone: els.slice(1), kennung: kennung, alt: els[0].textContent };
+      /* Nicht gerendert? Dann laesst sich die Stelle auf der Seite nicht
+         anklicken — etwa die Stationstafeln des abgeschalteten Rundgangs
+         oder eine eingeklappte Frage. Sie bleiben trotzdem bearbeitbar,
+         nur ueber die Liste unten statt durch Klick im Text.
+
+         getClientRects().length ist hier der belastbare Test. Ein
+         Vergleich ueber Breite und Hoehe faengt auch Elemente ein, deren
+         Hoehe gerade noch nicht berechnet ist — gemessen: 59 statt der
+         tatsaechlichen 49. */
+      f.verborgen = els[0].getClientRects().length === 0;
+      felder.push(f);
     });
     if (!felder.length) { hinweisSeite('Diese Seite ist noch nicht vorbereitet', 'Für sie wurden noch keine bearbeitbaren Stellen eingerichtet.', true); return; }
     felder.forEach(bereitmachen);
@@ -94,6 +106,11 @@
 
   function bereitmachen(f) {
     var el = f.el;
+    /* Verborgene Stellen bekommen KEINEN Fokusrahmen und keine
+       Tastaturposition — man kaeme dort ohnehin nie hin, und ein
+       unerreichbarer Tabstopp waere nur ein Loch in der Bedienung.
+       Bearbeitet werden sie ueber die Liste. */
+    if (f.verborgen) return;
     el.classList.add('dvg-ed');
     el.setAttribute('tabindex', '0');
     el.setAttribute('role', 'textbox');
@@ -139,6 +156,7 @@
     }
     if (jetzt === f.alt) { geaendert.delete(f.kennung); f.el.classList.remove('dvg-ed-neu'); }
     else { geaendert.set(f.kennung, jetzt); f.el.classList.add('dvg-ed-neu'); }
+    if (f.feld) f.feld.classList.toggle('dvg-feld-neu', jetzt !== f.alt);
     zaehlerAktualisieren();
   }
 
@@ -167,10 +185,12 @@
 
     verwerfenEl = el('button', 'dvg-knopf dvg-knopf-still', 'Verwerfen');
     verwerfenEl.type = 'button';
+    verwerfenEl.id = 'dvg-verwerfen';
     verwerfenEl.addEventListener('click', alleVerwerfen);
 
     speichernEl = el('button', 'dvg-knopf dvg-knopf-voll', 'Speichern');
     speichernEl.type = 'button';
+    speichernEl.id = 'dvg-speichern';
     speichernEl.addEventListener('click', speichern);
 
     var raus = el('a', 'dvg-knopf dvg-knopf-still', 'Beenden');
@@ -178,6 +198,22 @@
 
     var rechts = el('div', 'dvg-leiste-rechts');
     rechts.appendChild(zaehlerEl); rechts.appendChild(meldungEl);
+
+    /* Stellen, die auf der Seite nicht angeklickt werden koennen, gehen
+       sonst verloren — man sieht sie nicht und weiss nicht, dass es sie
+       gibt. Der Knopf erscheint nur, wenn es welche gibt. */
+    var verborgene = felder.filter(function (f) { return f.verborgen; });
+    if (verborgene.length) {
+      schubladeKnopf = el('button', 'dvg-knopf dvg-knopf-still',
+        verborgene.length + ' nicht sichtbar');
+      schubladeKnopf.type = 'button';
+      schubladeKnopf.id = 'dvg-verborgen';
+      schubladeKnopf.setAttribute('aria-expanded', 'false');
+      schubladeKnopf.title = 'Diese Stellen gehören zur Seite, werden aber gerade nicht angezeigt.';
+      schubladeKnopf.addEventListener('click', schubladeUmschalten);
+      rechts.appendChild(schubladeKnopf);
+    }
+
     rechts.appendChild(verwerfenEl); rechts.appendChild(speichernEl); rechts.appendChild(raus);
 
     leiste.appendChild(links); leiste.appendChild(rechts);
@@ -191,6 +227,78 @@
     });
   }
 
+  /* ---- Schublade fuer die nicht sichtbaren Stellen ----------------- */
+
+  function schubladeUmschalten() {
+    if (schublade) {
+      schublade.remove(); schublade = null;
+      schubladeKnopf.setAttribute('aria-expanded', 'false');
+      return;
+    }
+    schublade = el('div', 'dvg-schublade');
+    schublade.setAttribute('role', 'group');
+    schublade.setAttribute('aria-label', 'Nicht sichtbare Textstellen');
+
+    var kopf = el('div', 'dvg-schublade-kopf');
+    kopf.appendChild(el('strong', null, 'Gerade nicht sichtbar'));
+    kopf.appendChild(el('span', null,
+      'Diese Texte gehören zur Seite, werden aber im Moment nicht angezeigt — ' +
+      'zum Beispiel die Tafeln des abgeschalteten Rundgangs oder eine eingeklappte Frage. ' +
+      'Hier lassen sie sich trotzdem ändern.'));
+    schublade.appendChild(kopf);
+
+    /* Nach dem naechsten Vorfahren mit id gruppieren — das ist die
+       verstaendlichste Ortsangabe, die das Markup hergibt. */
+    var gruppen = new Map();
+    felder.filter(function (f) { return f.verborgen; }).forEach(function (f) {
+      var c = f.el.closest('[id]');
+      var name = c ? bereichName(c.id) : 'Sonstiges';
+      if (!gruppen.has(name)) gruppen.set(name, []);
+      gruppen.get(name).push(f);
+    });
+
+    gruppen.forEach(function (liste, name) {
+      var g = el('div', 'dvg-gruppe');
+      g.appendChild(el('div', 'dvg-gruppe-titel', name + ' · ' + liste.length));
+      liste.forEach(function (f) {
+        var zeile = el('label', 'dvg-zeile');
+        zeile.appendChild(el('span', 'dvg-zeile-kennung', f.kennung));
+        var feld = document.createElement('textarea');
+        feld.className = 'dvg-feld';
+        feld.rows = Math.min(4, Math.ceil((f.el.textContent.length || 1) / 60));
+        feld.value = f.el.textContent;
+        feld.addEventListener('input', function () {
+          /* Zeilenumbrueche sind hier kein gueltiger Inhalt — im Markup
+             steht ein einzelner Textknoten. */
+          var wert = feld.value.replace(/[\r\n]+/g, ' ');
+          if (wert !== feld.value) feld.value = wert;
+          f.el.textContent = wert;
+          pruefe(f);
+        });
+        f.feld = feld;
+        zeile.appendChild(feld);
+        g.appendChild(zeile);
+      });
+      schublade.appendChild(g);
+    });
+
+    document.body.appendChild(schublade);
+    schubladeKnopf.setAttribute('aria-expanded', 'true');
+    var erstes = schublade.querySelector('textarea');
+    if (erstes) erstes.focus();
+  }
+
+  /* Aus einer id einen Namen machen, den ein Mensch versteht. */
+  function bereichName(id) {
+    var karte = {
+      'rg-stations': 'Tafeln des Gartenrundgangs',
+      'rg-rail': 'Punkteleiste des Gartenrundgangs',
+      'rg-sec-faq': 'Häufige Fragen (eingeklappt)',
+      'rg-walk': 'Gartenrundgang'
+    };
+    return karte[id] || id;
+  }
+
   function alleVerwerfen() {
     felder.forEach(function (f) {
       if (!geaendert.has(f.kennung)) return;
@@ -199,6 +307,11 @@
       if (f.klone) f.klone.forEach(function (k) {
         k.textContent = f.alt; k.classList.remove('dvg-ed-neu');
       });
+      /* Das Eingabefeld in der Schublade zeigt sonst weiter den
+         verworfenen Text — die Seite waere zurueckgesetzt, das Feld
+         nicht, und beim naechsten Tastendruck kaeme die Aenderung
+         zurueck. */
+      if (f.feld) { f.feld.value = f.alt; f.feld.classList.remove('dvg-feld-neu'); }
     });
     geaendert.clear();
     zaehlerAktualisieren();
@@ -346,6 +459,30 @@
       '.dvg-knopf-still:hover{background:rgba(16,35,26,.05)}',
       '.dvg-knopf:disabled{opacity:.42;cursor:not-allowed}',
       '.dvg-knopf:focus-visible{outline:2px solid var(--gr2);outline-offset:2px}',
+
+      /* Schublade: Stellen, die auf der Seite nicht anklickbar sind */
+      '.dvg-schublade{position:fixed;left:16px;right:16px;bottom:86px;z-index:2147483000;',
+      '  max-height:min(56vh,520px);overflow:auto;padding:18px 20px 20px;',
+      '  border-radius:var(--r);background:rgba(255,255,255,.97);',
+      '  backdrop-filter:blur(18px) saturate(1.4);border:1px solid rgba(16,35,26,.12);',
+      '  box-shadow:0 22px 60px -24px rgba(9,26,17,.5);',
+      '  animation:dvgEin 600ms cubic-bezier(.22,1,.36,1) both}',
+      '@media (prefers-reduced-motion:reduce){.dvg-schublade{animation-duration:1ms}}',
+      '.dvg-schublade-kopf{display:flex;flex-direction:column;gap:5px;margin-bottom:16px;',
+      '  padding-bottom:14px;border-bottom:1px solid rgba(16,35,26,.1)}',
+      '.dvg-schublade-kopf strong{font-size:15px;color:var(--ink)}',
+      '.dvg-schublade-kopf span{font-size:13px;line-height:1.5;color:var(--mut);max-width:82ch}',
+      '.dvg-gruppe{margin-bottom:18px}',
+      '.dvg-gruppe-titel{margin-bottom:8px;font-size:11px;font-weight:700;letter-spacing:.16em;',
+      '  text-transform:uppercase;color:#46761F}',
+      '.dvg-schublade .dvg-zeile{display:grid;grid-template-columns:minmax(0,190px) minmax(0,1fr);',
+      '  gap:12px;align-items:start;padding:7px 0}',
+      '.dvg-zeile-kennung{font-size:12px;color:var(--mut);overflow-wrap:anywhere;padding-top:9px}',
+      '.dvg-feld{width:100%;padding:9px 12px;border-radius:8px;border:1px solid rgba(16,35,26,.16);',
+      '  background:#fff;color:var(--ink);font:inherit;font-size:14px;line-height:1.5;resize:vertical;',
+      '  transition:border-color .15s cubic-bezier(.4,0,.2,1)}',
+      '.dvg-feld:focus{outline:2px solid #2C6E49;outline-offset:1px;border-color:#2C6E49}',
+      '.dvg-feld-neu{border-color:#C77C1E;background:rgba(199,124,30,.07)}',
 
       /* Hinweiskarte, wenn nicht bearbeitet werden kann */
       '.dvg-hinweis{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:2147483000;',
