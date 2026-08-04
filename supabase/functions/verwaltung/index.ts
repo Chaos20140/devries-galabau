@@ -117,6 +117,16 @@ function regexMaskieren(s: string): string {
    (.planning/werkzeug/marker.js): data-ed sitzt nur auf Elementen mit
    genau einem Textknoten. Findet der Ausdruck nichts, wird nicht etwa
    stillschweigend nichts geaendert — der Aufrufer bekommt es gesagt. */
+/* Was steht gerade an dieser Stelle in der Datei? Gibt den ROHEN,
+   maskierten Inhalt zurueck — genau so, wie er dort liegt. */
+function textLesen(html: string, kennung: string): string | null {
+  const re = new RegExp(
+    '<([a-zA-Z][\\w-]*)\\b[^>]*\\sdata-ed="' + regexMaskieren(kennung) + '"[^>]*>([^<]*)<\\/\\1>',
+  );
+  const m = re.exec(html);
+  return m ? m[2] : null;
+}
+
 function textErsetzen(html: string, kennung: string, neu: string): string | null {
   const re = new RegExp(
     '(<([a-zA-Z][\\w-]*)\\b[^>]*\\sdata-ed="' + regexMaskieren(kennung) + '"[^>]*>)([^<]*)(<\\/\\2>)',
@@ -260,15 +270,34 @@ function versuchWeg(wer: string): void {
 }
 
 function herkunftRoh(req: Request): string {
-  /* Der erste Eintrag in x-forwarded-for ist der urspruengliche Absender.
-     Er ist faelschbar — deshalb ist die Grenze je Herkunft auch nur die
-     erste Verteidigungslinie und nicht der einzige Schutz: das Passwort
-     wird weiterhin serverseitig geprueft, jeder Fehlversuch kostet
-     zusaetzlich Wartezeit, und ohne Treffer gibt es keine Daten. */
+  /* "cf-connecting-ip" ist hier die verlaessliche Quelle, nicht nur die
+     bequeme. Diese Funktion liegt hinter Cloudflare; die Kopfzeile wird
+     dort gesetzt, und ein Aufrufer, der sie selbst mitschickt, kommt gar
+     nicht erst durch. Gemessen am 04.08.2026 gegen die Live-Funktion:
+       ohne Kopfzeile            -> 401 nach 1,31 s
+       gefaelschtes cf-connecting-ip -> 403 von Cloudflare, erreicht uns nie
+       gefaelschtes x-forwarded-for  -> 401 nach 1,92 s
+     Der Anstieg von 1,31 auf 1,92 s belegt, dass beide Anfragen im
+     SELBEN Zaehler landeten — die gefaelschte Kopfzeile hat keinen
+     eigenen Eimer aufgemacht.
+
+     ⚠ Der Rueckfall darunter nahm frueher den ERSTEN Eintrag aus
+     x-forwarded-for. Cloudflare haengt die echte Adresse hinten an, der
+     erste Eintrag stammt also gegebenenfalls vom Aufrufer selbst. Solange
+     cf-connecting-ip da ist, laeuft dieser Zweig nie — faellt es aber je
+     weg (anderer Anbieter, geaenderte Plattform), waere die Bremse
+     lautlos umgehbar. Deshalb der LETZTE Eintrag: den setzt immer der
+     naechstgelegene, vertrauenswuerdige Proxy. */
   const cf = req.headers.get("cf-connecting-ip");
-  if (cf) return cf.trim();
+  if (cf && cf.trim()) return cf.trim();
+
   const xff = req.headers.get("x-forwarded-for");
-  if (xff && xff.trim()) return xff.split(",")[0].trim();
+  if (xff && xff.trim()) {
+    const teile = xff.split(",").map((s) => s.trim()).filter(Boolean);
+    if (teile.length) return teile[teile.length - 1];
+  }
+  /* Kein Kopf, keine Unterscheidung: dann teilen sich alle EINEN Zaehler.
+     Das ist die sichere Richtung — lieber zu streng als wirkungslos. */
   return "unbekannt";
 }
 
@@ -605,6 +634,12 @@ Deno.serve(async (req: Request) => {
         }
       }
 
+      /* Ausgangswerte, wie der Browser sie beim Oeffnen vorgefunden hat.
+         Optional — ohne sie verhaelt sich der Aufruf wie bisher. */
+      const vorher = (körper.vorher && typeof körper.vorher === "object" && !Array.isArray(körper.vorher))
+        ? körper.vorher as Record<string, string>
+        : null;
+
       /* Erst vollstaendig pruefen, dann schreiben. Ein Marker, den es
          nicht gibt, ist ein Fehler — nicht ein stilles Ueberspringen. */
       const stand: { branch: string; inhalt: string; sha: string }[] = [];
@@ -612,12 +647,33 @@ Deno.serve(async (req: Request) => {
         const { text, sha } = await ghHole(datei, branch);
         let neu = text;
         const fehlend: string[] = [];
+        const fremd: string[] = [];
         for (const k of kennungen) {
+          /* Hat jemand anders diese Stelle inzwischen geaendert?
+             Zwei offene Editorfenster schrieben sich sonst lautlos
+             gegenseitig um: beide lesen dieselbe Datei, beide speichern,
+             der zweite gewinnt — und der erste erfaehrt nie davon.
+             Der Datei-SHA allein hilft hier nicht, er faellt nur auf,
+             wenn BEIDE zwischen Lesen und Schreiben liegen. */
+          if (vorher && Object.prototype.hasOwnProperty.call(vorher, k)) {
+            const daSteht = textLesen(neu, k);
+            if (daSteht !== null && daSteht !== htmlMaskieren(String(vorher[k]))) {
+              fremd.push(k);
+              continue;
+            }
+          }
           const erg = textErsetzen(neu, k, String((texte as Record<string, string>)[k]));
           if (erg === null) fehlend.push(k); else neu = erg;
         }
         if (fehlend.length) {
           return json({ fehler: "marker_nicht_gefunden", kennungen: fehlend, branch }, 409);
+        }
+        if (fremd.length) {
+          return json({
+            fehler: "inzwischen_geaendert", kennungen: fremd, branch,
+            hinweis: "Diese Stellen wurden zwischenzeitlich anderswo geändert. " +
+              "Bitte die Seite neu laden und noch einmal ansehen.",
+          }, 409);
         }
         stand.push({ branch, inhalt: neu, sha });
       }
