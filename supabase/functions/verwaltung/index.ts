@@ -943,7 +943,9 @@ Deno.serve(async (req: Request) => {
           const stand = await ghHole(datei, branch);
           let neu = zoneSetzen(stand.text);
           if (neu === null) return json({ fehler: "zone_nicht_gefunden", zone, branch }, 409);
-          neu = leerhinweis(neu, bloecke.length === 0);
+          /* teile, nicht die Eingabe: massgeblich ist, was tatsaechlich in
+             der Seite landet. */
+          neu = leerhinweis(neu, teile.length === 0);
           if (neu === stand.text) { geschriebenB.push(branch); continue; }
           await ghSchreibe(datei, branch, neu, stand.sha,
             "Seiten-Editor: Blöcke in " + datei + " geändert");
