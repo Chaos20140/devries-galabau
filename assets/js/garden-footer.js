@@ -20,6 +20,51 @@
 
     build() {
       const active = this.getAttribute('active') || '';
+
+      /* Texte aus assets/js/rahmen-texte.js, damit der Seiten-Editor sie
+         erreicht — im Shadow DOM kommt er nicht an sie heran. Die
+         eingebauten Werte bleiben als Rueckfall stehen: fehlt oder bricht
+         die Datei, laeuft die Fusszeile unveraendert weiter. */
+      const T = (window.RAHMEN_TEXTE && typeof window.RAHMEN_TEXTE === 'object')
+        ? window.RAHMEN_TEXTE : {};
+      const esc = (x) => String(x).replace(/[&<>"']/g, (c) => (
+        { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+      ));
+      const wort = (wert, rueckfall) =>
+        (typeof wert === 'string' && wert.trim()) ? esc(wert) : rueckfall;
+      /* Eine Spalte nur uebernehmen, wenn Titel UND Verweise stimmen —
+         eine halbe Liste waere schlimmer als der Rueckfall. */
+      const spalte = (nr, titelFest, linksFest) => {
+        const sp = Array.isArray(T.fussSpalten) ? T.fussSpalten[nr] : null;
+        const ok = sp && typeof sp.titel === 'string' && sp.titel.trim() &&
+          Array.isArray(sp.links) && sp.links.length &&
+          sp.links.every(l => l && typeof l.datei === 'string' && typeof l.text === 'string');
+        if (!ok) return { titel: titelFest, links: linksFest };
+        return { titel: esc(sp.titel), links: sp.links.map(l => [esc(l.datei), esc(l.text)]) };
+      };
+      const linkZeile = (l) =>
+        '<a href="' + l[0] + '" style="font-size:15px;color:#26382E;text-decoration:none">' + l[1] + '</a>';
+      const SP1 = spalte(0, 'Leistungen', [
+        ['gartengestaltung.html', 'Gartengestaltung'],
+        ['gartenplanung.html', 'Gartenplanung'],
+        ['gartenpflege.html', 'Gartenpflege'],
+        ['bepflanzung.html', 'Bepflanzung']
+      ]);
+      const SP2 = spalte(1, 'Ansichten', [
+        ['stellenangebote.html', 'Stellenangebote'],
+        ['datenschutz.html', 'Datenschutz'],
+        ['referenzen.html', 'Referenzen'],
+        ['impressum.html', 'Impressum'],
+        ['index.html', 'Rundgang'],
+        ['ueber-uns.html', 'Über uns'],
+        ['kontakt.html', 'Kontakt']
+      ]);
+      const ABSATZ = wort(T.fussAbsatz, 'Garten- und Landschaftsbau in Salzhemmendorf. Gestaltung, Planung, Bepflanzung und Pflege — seit 1998 aus einer Hand.');
+      const KONTAKT_TITEL = wort(T.fussKontaktTitel, 'Kontakt');
+      const ZEITEN = wort(T.fussZeiten, 'Mo–Fr 8:00–16:00');
+      const ORT = wort(T.fussOrt, 'Salzhemmendorf, Niedersachsen');
+      const RECHTS = wort(T.fussRechts, 'de Vries Galabau · Garten- und Landschaftsbau');
+      const GEBIET = wort(T.fussGebiet, 'Salzhemmendorf · Hameln · Hildesheim');
       const R = this.attachShadow({ mode: 'open' });
       this.R = R;
       this.style.cssText = 'position:relative;display:block';
@@ -90,37 +135,28 @@
             '<img src="assets/img/rg-logo.webp" alt="" width="84" height="84" style="flex:none;width:clamp(52px,6vw,84px);height:clamp(52px,6vw,84px);border-radius:50%;object-fit:cover;display:block;border:2px solid rgba(255,255,255,.85);box-shadow:0 14px 30px -16px rgba(12,29,20,.45)">' +
             '<div class="gf-name" style="font-size:clamp(28px,4vw,54px);line-height:.94;font-weight:600;letter-spacing:-.045em;background:linear-gradient(120deg,#1B4332,#46761F);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent"><span style="display:block;white-space:nowrap">de Vries</span><span style="display:block;white-space:nowrap">GaLa-Bau</span></div>' +
             '</div>' +
-            '<p class="gf-lead" style="margin:16px 0 0;font-size:14.5px;line-height:1.6;color:#3C5145;max-width:32ch">Garten- und Landschaftsbau in Salzhemmendorf. Gestaltung, Planung, Bepflanzung und Pflege — seit 1998 aus einer Hand.</p>' +
+            '<p class="gf-lead" style="margin:16px 0 0;font-size:14.5px;line-height:1.6;color:#3C5145;max-width:32ch">' + ABSATZ + '</p>' +
             '<div class="gf-social" style="display:flex;gap:10px;margin-top:20px">' +
             '<a href="https://www.instagram.com/dv_devries/" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;padding:9px 16px;border-radius:999px;font-size:13px;font-weight:600;color:#1B4332;background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.7)">Instagram</a>' +
             '<a href="https://www.facebook.com/devriesdienstleistungen" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;padding:9px 16px;border-radius:999px;font-size:13px;font-weight:600;color:#1B4332;background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.7)">Facebook</a>' +
             '</div>' +
             '</div>' +
-            '<details class="gf-fold" open><summary>Leistungen<i aria-hidden="true">▾</i></summary><div class="gf-sub">' +
-            '<a href="gartengestaltung.html" style="font-size:15px;color:#26382E;text-decoration:none">Gartengestaltung</a>' +
-            '<a href="gartenplanung.html" style="font-size:15px;color:#26382E;text-decoration:none">Gartenplanung</a>' +
-            '<a href="gartenpflege.html" style="font-size:15px;color:#26382E;text-decoration:none">Gartenpflege</a>' +
-            '<a href="bepflanzung.html" style="font-size:15px;color:#26382E;text-decoration:none">Bepflanzung</a>' +
-            '</div></details>' +
-            '<details class="gf-fold" open><summary>Ansichten<i aria-hidden="true">▾</i></summary><div class="gf-sub">' +
-                        '<a href="stellenangebote.html" style="font-size:15px;color:#26382E;text-decoration:none">Stellenangebote</a>' +
-            '<a href="datenschutz.html" style="font-size:15px;color:#26382E;text-decoration:none">Datenschutz</a>' +
-            '<a href="referenzen.html" style="font-size:15px;color:#26382E;text-decoration:none">Referenzen</a>' +
-            '<a href="impressum.html" style="font-size:15px;color:#26382E;text-decoration:none">Impressum</a>' +
-'<a href="index.html" style="font-size:15px;color:#26382E;text-decoration:none">Rundgang</a>' +
-            '<a href="ueber-uns.html" style="font-size:15px;color:#26382E;text-decoration:none">Über uns</a>' +
-            '<a href="kontakt.html" style="font-size:15px;color:#26382E;text-decoration:none">Kontakt</a>' +
-            '</div></details>' +
+            '<details class="gf-fold" open><summary>' + SP1.titel + '<i aria-hidden="true">▾</i></summary><div class="gf-sub">' +
+              SP1.links.map(linkZeile).join('') +
+              '</div></details>' +
+            '<details class="gf-fold" open><summary>' + SP2.titel + '<i aria-hidden="true">▾</i></summary><div class="gf-sub">' +
+              SP2.links.map(linkZeile).join('') +
+              '</div></details>' +
             '<div style="display:flex;flex-direction:column;gap:11px;min-width:0">' +
-            '<div style="font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#46761F">Kontakt</div>' +
+            '<div style="font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#46761F">' + KONTAKT_TITEL + '</div>' +
             '<a href="tel:051531552" style="font-size:19px;font-weight:600;color:#1B4332;letter-spacing:-.01em">05153 1552</a>' +
             '<a href="mailto:info@devries-galabau.de" style="font-size:15px;color:#26382E;text-decoration:none">info@devries-galabau.de</a>' +
-            '<div style="font-size:14.5px;line-height:1.6;color:#3C5145">Mo–Fr 8:00–16:00<br>Salzhemmendorf, Niedersachsen</div>' +
+            '<div style="font-size:14.5px;line-height:1.6;color:#3C5145">' + ZEITEN + '<br>' + ORT + '</div>' +
             '</div>' +
             '</div>' +
             '<div style="margin-top:clamp(24px,3.4vh,40px);padding-top:20px;border-top:1px solid rgba(16,35,26,.1);display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;font-size:13px;color:#4A5D51">' +
-            '<span>© <span data-year>2026</span> de Vries Galabau · Garten- und Landschaftsbau</span>' +
-            '<span>Salzhemmendorf · Hameln · Hildesheim</span>' +
+            '<span>© <span data-year>2026</span> ' + RECHTS + '</span>' +
+            '<span>' + GEBIET + '</span>' +
             /* Der einzige Verweis nach aussen auf dieser Seite. "noopener"
                ist Pflicht: ohne das bekaeme die geoeffnete Seite ueber
                window.opener Zugriff auf dieses Fenster. */
