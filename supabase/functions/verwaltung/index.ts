@@ -803,6 +803,139 @@ Deno.serve(async (req: Request) => {
       return json({ ok: true, datei, anzahl: kennungen.length, branches: geschrieben });
     }
 
+    /* ---- Seiten-Editor: Blöcke in einer Zone --------------------------
+       DER KERN DIESER AKTION: Der Server nimmt KEIN Markup entgegen. Er
+       bekommt Daten, prueft sie, und erzeugt den gesamten Inhalt der Zone
+       daraus neu. Damit gibt es keinen Weg, ueber einen Block Markup in
+       die Seite zu bringen — auch nicht fuer jemanden mit gueltiger
+       Anmeldung. */
+    if (was === "bloecke-speichern") {
+      if (!GH_TOKEN) return json({ fehler: "kein_schreibrecht" }, 501);
+      const datei = String(körper.datei ?? "");
+      if (!SEITEN_ERLAUBT.has(datei)) return json({ fehler: "seite_nicht_freigegeben", datei }, 400);
+
+      const zone = String(körper.zone ?? "");
+      if (!/^[a-z0-9-]{1,40}$/.test(zone)) return json({ fehler: "zone_ungueltig" }, 400);
+
+      const roh = körper.bloecke;
+      if (!Array.isArray(roh)) return json({ fehler: "bloecke_fehlen" }, 400);
+      if (roh.length > 20) return json({ fehler: "zu_viele_bloecke" }, 400);
+
+      const sauber = (v: unknown, max: number) => {
+        if (typeof v !== "string") return null;
+        const t = v.trim();
+        if (!t || t.length > max) return null;
+        for (let i = 0; i < t.length; i++) {
+          const c = t.charCodeAt(i);
+          if (c < 32 || c === 127) return null;
+        }
+        return t;
+      };
+
+      /* Genau EINE Blockart, bewusst. Was der Betreiber nicht braucht,
+         kann er auch nicht falsch einsetzen — und jede weitere Art
+         verdoppelt eine Inline-Stil-Vorlage, die bei jeder
+         Designaenderung nachzuziehen ist. */
+      const teile: string[] = [];
+      for (const b of roh) {
+        if (!b || typeof b !== "object") return json({ fehler: "block_ungueltig" }, 400);
+        const x = b as Record<string, unknown>;
+        if (String(x.art) !== "stelle") return json({ fehler: "blockart_unbekannt", art: String(x.art) }, 400);
+
+        const titel = sauber(x.titel, 90);
+        if (!titel) return json({ fehler: "block_titel_fehlt" }, 400);
+        const umfang = sauber(x.umfang, 60) ?? "";
+        const text = sauber(x.text, 900);
+        if (!text) return json({ fehler: "block_text_fehlt" }, 400);
+
+        const punkteRoh = Array.isArray(x.punkte) ? x.punkte : [];
+        if (punkteRoh.length > 10) return json({ fehler: "zu_viele_punkte" }, 400);
+        const punkte: string[] = [];
+        for (const p of punkteRoh) {
+          const t = sauber(p, 160);
+          if (!t) return json({ fehler: "punkt_ungueltig" }, 400);
+          punkte.push(t);
+        }
+
+        /* Gestaltung wie die uebrigen Karten dieser Seite: Glaskarte,
+           Radius 26, dieselbe Palette. */
+        teile.push(
+          '<article data-reveal style="border-radius:26px;padding:clamp(22px,2.6vw,36px);' +
+          'background:linear-gradient(155deg,rgba(255,255,255,.72),rgba(255,255,255,.42));' +
+          'backdrop-filter:blur(26px) saturate(1.45);border:1px solid rgba(255,255,255,.6);' +
+          'box-shadow:0 26px 54px -38px rgba(12,29,20,.34)">' +
+          (umfang
+            ? '<span style="display:inline-block;padding:7px 14px;border-radius:999px;' +
+              'background:rgba(142,207,79,.24);font-size:11px;font-weight:700;letter-spacing:.16em;' +
+              'text-transform:uppercase;color:#31611A">' + htmlMaskieren(umfang) + "</span>"
+            : "") +
+          '<h3 style="margin:' + (umfang ? "14px" : "0") + ' 0 0;font-size:clamp(20px,2.4vw,30px);' +
+          'line-height:1.12;letter-spacing:-.03em;font-weight:600;color:#0F2318">' +
+          htmlMaskieren(titel) + "</h3>" +
+          '<p style="margin:12px 0 0;max-width:62ch;font-size:16px;line-height:1.62;color:#3C5145;' +
+          'text-wrap:pretty">' + htmlMaskieren(text) + "</p>" +
+          (punkte.length
+            ? '<ul style="margin:14px 0 0;padding-left:20px;display:grid;gap:6px">' +
+              punkte.map((p) =>
+                '<li style="font-size:15px;line-height:1.55;color:#4A5F52">' + htmlMaskieren(p) + "</li>"
+              ).join("") + "</ul>"
+            : "") +
+          '<div style="margin-top:20px"><a href="#bewerbung" style="display:inline-flex;' +
+          'align-items:center;gap:9px;background:#1B4332;color:#F3F7F0;border-radius:999px;' +
+          'padding:14px 24px;font-size:15px;font-weight:600">Auf diese Stelle bewerben →</a></div>' +
+          "</article>",
+        );
+      }
+      const inhalt = teile.join("");
+
+      /* Zone finden und ihren INHALT ersetzen.
+         Hier wird die Verschachtelung GEZAEHLT, nicht vorausgesetzt.
+         Die erste Fassung nahm den Bereich bis zum naechsten </div> mit
+         einem nicht-gierigen Ausdruck. Das ging genau einmal gut: Beim
+         ersten Speichern ist die Zone leer, also ist das naechste </div>
+         auch das richtige. Danach steht in der Zone die Huelle des
+         Bewerben-Knopfs — ein <div> —, und das naechste </div> ist ihres.
+         Der Rest der Zone samt </article> waere aus der Zone gefallen und
+         die Seite zerschnitten. Gefunden von .planning/werkzeug/pruefe-bloecke.js
+         (Pruefung 9/10/12), nicht beim Lesen. */
+      const zoneSetzen = (html: string): string | null => {
+        const auf = new RegExp(
+          '<div\\b[^>]*\\sdata-ed-zone="' + regexMaskieren(zone) + '"[^>]*>',
+        );
+        const start = auf.exec(html);
+        if (!start) return null;
+        const ab = start.index + start[0].length;
+        const marken = /<div\b[^>]*>|<\/div\s*>/g;
+        marken.lastIndex = ab;
+        let tiefe = 1;
+        let m: RegExpExecArray | null;
+        while ((m = marken.exec(html))) {
+          tiefe += m[0][1] === "/" ? -1 : 1;
+          if (tiefe === 0) return html.slice(0, ab) + inhalt + html.slice(m.index);
+        }
+        return null; /* kein passendes Ende — lieber nichts schreiben */
+      };
+
+      const geschriebenB: string[] = [];
+      for (const branch of BRANCHES) {
+        try {
+          const stand = await ghHole(datei, branch);
+          const neu = zoneSetzen(stand.text);
+          if (neu === null) return json({ fehler: "zone_nicht_gefunden", zone, branch }, 409);
+          if (neu === stand.text) { geschriebenB.push(branch); continue; }
+          await ghSchreibe(datei, branch, neu, stand.sha,
+            "Seiten-Editor: Blöcke in " + datei + " geändert");
+          geschriebenB.push(branch);
+        } catch (e) {
+          const grund = e instanceof Error ? e.message : String(e);
+          if (geschriebenB.length === 0) return json({ fehler: "nicht_gespeichert", grund }, 502);
+          return json({ ok: false, teilweise: true, geschrieben: geschriebenB, grund,
+            hinweis: "Gespeichert, aber nicht veröffentlicht." }, 502);
+        }
+      }
+      return json({ ok: true, datei, zone, anzahl: teile.length, branches: geschriebenB });
+    }
+
     /* ---- Seiten-Editor: Menü und Fußzeile -----------------------------
        Diese Datei wird VOLLSTAENDIG neu erzeugt, nicht geflickt. Sie
        liegt auf allen 14 Seiten und wird VOR den Komponenten geladen —
