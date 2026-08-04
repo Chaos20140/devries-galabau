@@ -117,6 +117,46 @@ function regexMaskieren(s: string): string {
    (.planning/werkzeug/marker.js): data-ed sitzt nur auf Elementen mit
    genau einem Textknoten. Findet der Ausdruck nichts, wird nicht etwa
    stillschweigend nichts geaendert — der Aufrufer bekommt es gesagt. */
+/* Fuer ATTRIBUTWERTE, nicht fuer Elementinhalt. Der Unterschied ist
+   nicht kosmetisch: ein Anfuehrungszeichen im Text wuerde das Attribut
+   vorzeitig schliessen und alles dahinter zu Markup machen. */
+function attributMaskieren(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+/* Setzt den content-Wert eines <meta>, das ueber name= oder property=
+   bestimmt ist. Gibt null zurueck, wenn es das Feld nicht gibt — der
+   Aufrufer soll es erfahren, nicht stillschweigend nichts tun. */
+function metaSetzen(html: string, art: "name" | "property", schluessel: string, wert: string): string | null {
+  const re = new RegExp(
+    '(<meta\\s+' + art + '="' + regexMaskieren(schluessel) + '"[^>]*?content=")([^"]*)(")',
+    "i",
+  );
+  if (!re.test(html)) return null;
+  return html.replace(re, (_m, auf, _alt, zu) => auf + attributMaskieren(wert) + zu);
+}
+
+function metaLesen(html: string, art: "name" | "property", schluessel: string): string | null {
+  const re = new RegExp(
+    '<meta\\s+' + art + '="' + regexMaskieren(schluessel) + '"[^>]*?content="([^"]*)"',
+    "i",
+  );
+  const m = re.exec(html);
+  return m ? m[1] : null;
+}
+
+function titelSetzen(html: string, wert: string): string | null {
+  const re = /(<title>)([^<]*)(<\/title>)/i;
+  if (!re.test(html)) return null;
+  return html.replace(re, (_m, auf, _alt, zu) => auf + htmlMaskieren(wert) + zu);
+}
+
+function titelLesen(html: string): string | null {
+  const m = /<title>([^<]*)<\/title>/i.exec(html);
+  return m ? m[1] : null;
+}
+
 /* Was steht gerade an dieser Stelle in der Datei? Gibt den ROHEN,
    maskierten Inhalt zurueck — genau so, wie er dort liegt. */
 function textLesen(html: string, kennung: string): string | null {
@@ -700,6 +740,90 @@ Deno.serve(async (req: Request) => {
         }
       }
       return json({ ok: true, datei, anzahl: kennungen.length, branches: geschrieben });
+    }
+
+    /* ---- Seiten-Editor: Titel und Google-Beschreibung ------------------
+       Beide stehen je Seite an ZWEI Stellen: <title> spiegelt sich in
+       og:title, description in og:description. Eine Aenderung muss beide
+       treffen, sonst zeigt Google einen anderen Text als eine geteilte
+       Vorschau in WhatsApp oder Facebook.
+
+       "canonical" ist bewusst NICHT bearbeitbar: es steht fest im Markup
+       und leitet sich aus dem Dateinamen ab. Ein Fehlklick dort nimmt
+       eine Seite aus dem Suchindex — das ist kein Textfeld wert. */
+    if (was === "seo-speichern") {
+      if (!GH_TOKEN) return json({ fehler: "kein_schreibrecht" }, 501);
+      const datei = String(körper.datei ?? "");
+      if (!SEITEN_ERLAUBT.has(datei)) return json({ fehler: "seite_nicht_freigegeben", datei }, 400);
+
+      const titel = String(körper.titel ?? "");
+      const beschreibung = String(körper.beschreibung ?? "");
+      if (!titel.trim()) return json({ fehler: "titel_leer" }, 400);
+      if (!beschreibung.trim()) return json({ fehler: "beschreibung_leer" }, 400);
+      /* Grosszuegige HARTE Grenzen. Was Google davon anzeigt, ist eine
+         Frage der Empfehlung — die gibt die Oberflaeche als Ampel aus,
+         nicht dieser Server. Verhindert werden soll nur Unsinn. */
+      if (titel.length > 200) return json({ fehler: "titel_zu_lang" }, 400);
+      if (beschreibung.length > 400) return json({ fehler: "beschreibung_zu_lang" }, 400);
+      for (const w of [titel, beschreibung]) {
+        for (let i = 0; i < w.length; i++) {
+          const c = w.charCodeAt(i);
+          if (c < 32 || c === 127) return json({ fehler: "steuerzeichen" }, 400);
+        }
+      }
+
+      const vorherSeo = (körper.vorher && typeof körper.vorher === "object" && !Array.isArray(körper.vorher))
+        ? körper.vorher as Record<string, string>
+        : null;
+
+      const stand: { branch: string; inhalt: string; sha: string }[] = [];
+      for (const branch of BRANCHES) {
+        const { text, sha } = await ghHole(datei, branch);
+
+        /* Hat jemand anders inzwischen etwas geaendert? */
+        if (vorherSeo) {
+          const jetztTitel = titelLesen(text);
+          const jetztBeschr = metaLesen(text, "name", "description");
+          if ((jetztTitel !== null && jetztTitel !== htmlMaskieren(String(vorherSeo.titel ?? ""))) ||
+              (jetztBeschr !== null && jetztBeschr !== attributMaskieren(String(vorherSeo.beschreibung ?? "")))) {
+            return json({
+              fehler: "inzwischen_geaendert", branch,
+              hinweis: "Titel oder Beschreibung wurden zwischenzeitlich anderswo geändert. " +
+                "Bitte die Seite neu laden.",
+            }, 409);
+          }
+        }
+
+        let neu: string | null = text;
+        const schritte: [string, (h: string) => string | null][] = [
+          ["title", (h) => titelSetzen(h, titel)],
+          ["og:title", (h) => metaSetzen(h, "property", "og:title", titel)],
+          ["description", (h) => metaSetzen(h, "name", "description", beschreibung)],
+          ["og:description", (h) => metaSetzen(h, "property", "og:description", beschreibung)],
+        ];
+        const fehlend: string[] = [];
+        for (const [name, tu] of schritte) {
+          const erg = tu(neu as string);
+          if (erg === null) fehlend.push(name); else neu = erg;
+        }
+        if (fehlend.length) return json({ fehler: "feld_nicht_gefunden", felder: fehlend, branch }, 409);
+        stand.push({ branch, inhalt: neu as string, sha });
+      }
+
+      const nachricht = "Seiten-Editor: Titel und Beschreibung von " + datei + " geändert";
+      const geschriebenSeo: string[] = [];
+      for (const s of stand) {
+        try {
+          await ghSchreibe(datei, s.branch, s.inhalt, s.sha, nachricht);
+          geschriebenSeo.push(s.branch);
+        } catch (e) {
+          const grund = e instanceof Error ? e.message : String(e);
+          if (geschriebenSeo.length === 0) return json({ fehler: "nicht_gespeichert", grund }, 502);
+          return json({ ok: false, teilweise: true, geschrieben: geschriebenSeo, grund,
+            hinweis: "Gespeichert, aber nicht veröffentlicht." }, 502);
+        }
+      }
+      return json({ ok: true, datei, branches: geschriebenSeo });
     }
 
     /* ---- Seiten-Editor: frühere Fassungen ------------------------------
