@@ -18,5 +18,10 @@ supabase/.temp/
 # Das Higgsfield-Zugangstoken liegt NICHT hier, sondern unter
 # ~/.config/higgsfield/credentials.json — also ausserhalb des Projekts.
 .agents/
-.claude/skills/
+.claude/
 skills-lock.json
+
+# Hinweis: .claude/ steht ganz hier, nicht nur .claude/skills/.
+# launch.json des Vorschauservers nennt den vollen Windows-Pfad und
+# damit den Benutzernamen; sie lag ueber GitHub Pages oeffentlich.
+
