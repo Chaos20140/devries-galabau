@@ -92,16 +92,45 @@
     leisteBauen();
     document.documentElement.classList.add('dvg-bearbeiten');
 
-    /* Im Bearbeitungsmodus fuehren Verweise NICHT weg.
-       Ohne das kostet ein Klick auf "Kontakt aufnehmen →" — der selbst
-       eine bearbeitbare Beschriftung traegt — alle ungespeicherten
-       Aenderungen. Die Werkzeugleiste ist ausgenommen, ueber sie
-       verlaesst man den Modus ja absichtlich. */
-    document.addEventListener('click', function (ev) {
-      var a = ev.target && ev.target.closest && ev.target.closest('a[href]');
-      if (!a || a.closest('.dvg-leiste') || a.closest('.dvg-hinweis')) return;
+    /* Im Bearbeitungsmodus ist die Seite zum LESEN und TIPPEN da, nicht
+       zum Bedienen. Stillgelegt werden deshalb:
+
+       · Verweise — ein Klick auf "Kontakt aufnehmen →", der selbst eine
+         bearbeitbare Beschriftung traegt, kostete sonst alle
+         ungespeicherten Aenderungen.
+       · Absende-Knoepfe — acht davon tragen einen Marker. Ein Klick
+         verschickte eine ECHTE Anfrage aus dem Formular des Betriebs.
+       · alle uebrigen Knoepfe — "Karte laden" auf der Kontaktseite
+         entfernt die Vorschau aus dem Dokument, und mit ihr sechs
+         bearbeitbare Textstellen. Der Absenden-Weg schreibt ausserdem
+         die Statuszeile neu, in der ein Marker sitzt.
+
+       Ausgenommen ist nur die Werkzeugleiste des Editors selbst. */
+    var stillLegen = function (ev) {
+      var t = ev.target;
+      if (!t || !t.closest) return;
+      if (t.closest('.dvg-leiste') || t.closest('.dvg-hinweis') || t.closest('.dvg-schublade')) return;
+      var ziel = t.closest('a[href], button, input[type="submit"], input[type="button"], input[type="file"]');
+      if (!ziel) return;
       ev.preventDefault();
-      melde('Verweise sind beim Bearbeiten stillgelegt — sonst wären Ihre Änderungen weg. Zum Wechseln erst speichern oder beenden.', null);
+      ev.stopPropagation();
+      melde(ziel.tagName === 'A'
+        ? 'Verweise sind beim Bearbeiten stillgelegt — sonst wären Ihre Änderungen weg.'
+        : 'Knöpfe sind beim Bearbeiten stillgelegt, damit nichts versehentlich abgeschickt wird.', null);
+    };
+    document.addEventListener('click', stillLegen, true);
+    /* Der Griff ueber die Tastatur (Enter/Leertaste im Formular) laeuft
+       nicht zwingend ueber click — deshalb zusaetzlich am submit. */
+    document.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      /* stopImmediatePropagation, nicht nur preventDefault: die Seite hat
+         EIGENE submit-Horcher (kontakt.js, anfrage.js, stellen-form.js),
+         die den Versand selbst ausloesen. preventDefault verhindert nur
+         die eingebaute Formularabsendung — die Horcher laufen trotzdem.
+         Gemessen: ohne diese Zeile ging beim Test eine echte Anfrage an
+         den Server. */
+      ev.stopImmediatePropagation();
+      melde('Formulare sind beim Bearbeiten stillgelegt — es wird nichts abgeschickt.', null);
     }, true);
   }
 
@@ -363,9 +392,16 @@
         window.alert(a.d.hinweis);
         return;
       }
+      if (a.d && a.d.teilweise) {
+        knopf.textContent = 'Teilweise';
+        melde('Zurückgesetzt, aber noch nicht veröffentlicht. Auf der Live-Seite steht der ' +
+          'alte Stand noch. Bitte melden Sie das.', 'fehler');
+        return;
+      }
       if (a.s !== 200 || !a.d || !a.d.ok) {
         knopf.disabled = false; knopf.textContent = 'Wiederherstellen';
-        melde('Zurücksetzen fehlgeschlagen (' + a.s + ').', 'fehler');
+        melde('Zurücksetzen fehlgeschlagen (' + a.s +
+          (a.d && a.d.fehler ? ' · ' + klartext(a.d.fehler) : '') + ').', 'fehler');
         return;
       }
       knopf.textContent = 'Zurückgesetzt';
@@ -443,6 +479,20 @@
        loest eine CORS-Vorabfrage aus, die diese Funktion nicht beantwortet.
        Gemessen: der Aufruf scheiterte mit "Failed to fetch", waehrend
        derselbe Aufruf ohne die Kopfzeile sauber mit 401 antwortete. */
+    /* Ein leer gemachtes Feld verschwindet auf der Seite spurlos — die
+       Ueberschrift ist dann fort, und beim naechsten Bearbeiten gibt es
+       nichts mehr anzuklicken, was man wieder fuellen koennte. Deshalb
+       nachfragen statt es geschehen zu lassen. */
+    var leere = [];
+    geaendert.forEach(function (wert, kennung) { if (!String(wert).trim()) leere.push(kennung); });
+    if (leere.length && !window.confirm(
+      leere.length + ' Stelle(n) sind jetzt leer und verschwinden damit von der Seite. ' +
+      'Sie lassen sich später nur noch über „Frühere Fassung" zurückholen. Trotzdem speichern?')) {
+      speichernEl.disabled = false;
+      melde('Nicht gespeichert. Die leeren Stellen sind orange markiert.', null);
+      return;
+    }
+
     var nutzlast = { was: 'texte-speichern', datei: dateiname(), texte: {} };
     geaendert.forEach(function (wert, kennung) { nutzlast.texte[kennung] = wert; });
 
@@ -457,8 +507,26 @@
         melde('Speichern ist noch nicht freigeschaltet — dafür fehlt dem Server das Schreibrecht am Repository. Ihre Änderungen stehen noch auf dem Bildschirm, sind aber NICHT gespeichert.', 'fehler');
         speichernEl.disabled = false; return;
       }
+      /* Teilerfolg ist NICHT dasselbe wie Scheitern. Der Server sagt
+         ausdruecklich, wenn der Arbeitsstand die Aenderung schon traegt,
+         die veroeffentlichte Fassung aber nicht. Wer hier "fehlgeschlagen"
+         liest, haelt es fuer folgenlos und geht — und beim naechsten
+         Veroeffentlichen geht die geglaubt-verworfene Aenderung
+         ungeprueft live. Der Knopf bleibt gesperrt, damit nicht doppelt
+         committet wird. */
+      if (a.d && a.d.teilweise) {
+        melde('Gespeichert, aber noch nicht veröffentlicht. Die Änderung ist gesichert (' +
+          (a.d.geschrieben || []).join(', ') + '), auf der Live-Seite steht sie noch nicht. ' +
+          'Bitte melden Sie das — erneutes Speichern hilft hier nicht.', 'fehler');
+        return;
+      }
       if (a.s !== 200 || !a.d || !a.d.ok) {
-        melde('Speichern fehlgeschlagen (' + a.s + (a.d && a.d.fehler ? ' · ' + a.d.fehler : '') + ').', 'fehler');
+        /* Welche Stelle schuld ist, weiss der Server — ein blosser Code
+           laesst den Betreiber unter bis zu 200 Feldern suchen. */
+        var wo = a.d && (a.d.kennung || (a.d.kennungen || []).join(', '));
+        melde('Speichern fehlgeschlagen (' + a.s +
+          (a.d && a.d.fehler ? ' · ' + klartext(a.d.fehler) : '') +
+          (wo ? ' · betrifft: ' + wo : '') + ').', 'fehler');
         speichernEl.disabled = false; return;
       }
       /* Ab jetzt gilt der neue Text als Ausgangszustand. */
@@ -480,6 +548,22 @@
   }
 
   /* ---------------------------------------------------------------- */
+
+  /* Die Fehlerworte des Servers sind fuer Entwickler geschrieben. */
+  function klartext(f) {
+    var karte = {
+      steuerzeichen: 'unerlaubtes Sonderzeichen im Text',
+      text_zu_lang: 'Text zu lang (höchstens 2000 Zeichen)',
+      wert_kein_text: 'ungültiger Wert',
+      kennung_ungueltig: 'ungültige Kennung',
+      zu_viele_texte: 'zu viele Änderungen auf einmal',
+      marker_nicht_gefunden: 'diese Stelle gibt es in der Datei nicht mehr — bitte die Seite neu laden',
+      seite_nicht_freigegeben: 'diese Seite ist für den Editor nicht freigegeben',
+      stand_nicht_angeboten: 'diese Fassung gehört nicht zum Verlauf dieser Seite',
+      nicht_gespeichert: 'der Server konnte nicht schreiben'
+    };
+    return karte[f] || f;
+  }
 
   function melde(text, art) {
     meldungEl.textContent = text;
