@@ -1127,3 +1127,45 @@ erweitern statt parallele bauen → 4. Desktop+Mobile im selben Schritt → 5. B
   **Merke:** Rechtstexte aus einer Vorlage beschreiben die Technik der **Vorlage**, nicht die
   eigene. Bei jedem Umbau der Auslieferung (Hoster, Schriften, Einbindungen) gehört die
   Datenschutzseite mit auf die Liste.
+
+- **2026-08-04 · Karte auf der Kontaktseite, Zwei-Klick-Lösung (v44).** Wunsch: eine Google-Maps-
+  Karte mit Klick ins Navi. **Nicht fest eingebettet**, denn eine eingebettete Karte lädt beim
+  Seitenaufruf von Google-Servern und überträgt die IP-Adresse jedes Besuchers in die USA — ohne
+  Einwilligung. Diese Seite hat bewusst kein Einwilligungsbanner, und in der Datenschutzerklärung
+  stand seit v43 ausdrücklich, dass keine Kartendienste eingebunden sind. Ein stiller Einbau hätte
+  gleich beides gebrochen.
+  **Gebaut:** eigene Vorschau (Flurskizze als Inline-SVG, komplett vom eigenen Server), Karte erst
+  auf Klick auf „Karte laden". Der Knopf **„Route planen"** ist davon unabhängig und immer da — ein
+  einfacher Link auf `google.com/maps/dir/?api=1&destination=…`, der auf dem Handy die Karten-App
+  öffnet. Das ist der Teil, der eigentlich gefragt war; er überträgt vor dem Klick nichts.
+  **Bewusst KEINE Speicherung der Zustimmung** — kein Cookie, kein `localStorage`. Ein Klick je
+  Besuch ist der Preis dafür, dass der Satz „Diese Website setzt keine Cookies" wahr bleibt.
+  **Kontrast nachgerechnet statt geschätzt:** Der Text stand zuerst direkt auf der Zeichnung. Über
+  deren dunkleren Flächen (Feld + Kreis übereinander ≈ `#A8CC96`) kam das 11-px-Label auf
+  **3,42 : 1**, im günstigen Fall 4,63 : 1 — nötig sind 4,5. Deshalb sitzt der Text jetzt auf einer
+  eigenen Glaskarte (`rgba(255,255,255,.86)`): **5,91 : 1** für das Label, 8,27 : 1 für die
+  Hinweiszeile. **Merke: eine Zeichnung mit wechselnder Helligkeit trägt keinen Kleintext.**
+  **`loading="lazy"` am Rahmen wieder entfernt.** Er entsteht erst im Moment des Klicks, es gibt
+  nichts aufzuschieben — aber „lazy" kann den Start verzögern, wenn der Ausschnitt gerade nicht im
+  Bild steht. Dann täte der Knopf sichtbar nichts.
+  **CSP nur auf dieser einen Seite gelockert** (`frame-src https://maps.google.com
+  https://www.google.com`; beide, weil `maps.google.com` auf `www.google.com` weiterleitet und
+  `frame-src` auch das Ziel der Weiterleitung prüft). Die anderen 13 Seiten bleiben `'none'`.
+  **Datenschutzerklärung nachgezogen** — ohne sie wäre die Karte ein Rechtsmangel: eigener
+  Abschnitt „Google Maps" (Anbieter, Zwei-Klick, Rechtsgrundlage Art. 6 Abs. 1 lit. a DSGVO und
+  § 25 Abs. 1 TDDDG, Widerruf durch Neuladen, Drittlandübermittlung), dazu im Cookie-Abschnitt der
+  ehrliche Zusatz, dass **Google** nach dem Klick eigene Cookies setzen kann — wir tun es weiterhin
+  nicht.
+  **Geprüft:** vor dem Klick **kein Google-Element im Dokument** und 0 Google-Anfragen bei
+  8 protokollierten lokalen · nach echtem Mausklick lädt die Karte und zeigt die richtige Adresse
+  (Ortsteil Lauenstein) · 0 Konsolenfehler, also keine CSP-Verletzung · 1280 px und 390 px ohne
+  Überlauf, Rahmen deckt die Bühne exakt (348×392) · Bedienelemente 45 und 49 px hoch.
+  **Zwei Messfallen, beide schon bekannt und trotzdem wieder hineingelaufen:** (1) Das Werkzeug
+  hängt sich zeitweise an ein **veraltetes Dokument** — `location.href` meldete die neue Adresse,
+  der DOM war der alte. Sah aus wie „Karte lädt von selbst". Erst ein 65-Sekunden-Fenster mit
+  Protokollierung im Klick-Ereignis zeigte: kein Klick, kein Rahmen, alles in Ordnung. **Bei einem
+  unerklärlichen Zustand zuerst `performance.now()` gegen die eigene Zeitrechnung halten.**
+  (2) Der Netzwerkmitschnitt protokolliert **keine Rahmen-Navigation** — „keine Google-Anfrage"
+  nach dem Klick war kein Befund. Belegt wurde das Laden über das `load`-Ereignis plus
+  `SecurityError` beim Zugriff auf `contentWindow` (fremder Ursprung); bei CSP-Blockade bliebe der
+  Rahmen auf `about:blank` und wäre auslesbar.

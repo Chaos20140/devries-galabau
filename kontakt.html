@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; connect-src 'self' https://pvcbgwzqjnzzpehwuywi.supabase.co; frame-src 'none'; form-action 'self' mailto:">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; connect-src 'self' https://pvcbgwzqjnzzpehwuywi.supabase.co; frame-src https://maps.google.com https://www.google.com; form-action 'self' mailto:">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kontakt – de Vries Galabau in Salzhemmendorf</title>
@@ -23,7 +23,7 @@
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png?v=1">
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/outfit-600-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/outfit-400-latin.woff2" crossorigin>
-<link rel="stylesheet" href="assets/css/base.css?v=43">
+<link rel="stylesheet" href="assets/css/base.css?v=44">
 <style>
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;background:#EDF3E8;color:#12261A}
@@ -68,6 +68,73 @@
           <div style="font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#46761F">Standort</div>
           <div style="margin-top:12px;font-size:16px;line-height:1.6;color:#26382E">de Vries GaLa-Bau<br>An den Flachsrotten 2<br>31020 Salzhemmendorf</div>
           <div style="margin-top:10px;font-size:14.5px;color:#4A5F52">Bauhof: Salzhemmendorfer Straße 2 · Einsatzgebiet: Salzhemmendorf, Hameln, Hildesheim und Umland</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="anfahrt" data-screen-label="Anfahrt" style="position:relative;z-index:2;padding:0 clamp(20px,5vw,68px) clamp(40px,6vh,80px)">
+    <div style="max-width:1240px;margin:0 auto">
+      <h2 data-reveal style="margin:0;font-size:clamp(25px,3.4vw,50px);line-height:1.05;letter-spacing:-.035em;font-weight:600;max-width:26ch;color:#0F2318;text-wrap:pretty">So finden Sie uns.</h2>
+      <p data-reveal style="margin:16px 0 0;max-width:62ch;font-size:16px;line-height:1.6;color:#3C5145;text-wrap:pretty">Unser Büro liegt An den Flachsrotten 2 in Salzhemmendorf. „Route planen“ öffnet die Navigation — auf dem Handy direkt in der Karten-App.</p>
+
+      <div data-reveal style="margin-top:clamp(26px,4vh,44px);border-radius:clamp(22px,2.6vw,30px);overflow:hidden;background:linear-gradient(155deg,rgba(255,255,255,.72),rgba(255,255,255,.42));backdrop-filter:blur(26px) saturate(1.45);border:1px solid rgba(255,255,255,.6);box-shadow:0 30px 62px -42px rgba(12,29,20,.42)">
+
+        <!-- Buehne: zeigt zuerst die eigene Vorschau. Die Google-Karte wird
+             erst auf Klick eingesetzt — vorher geht keine einzige Anfrage
+             an Google. Siehe assets/js/kontakt.js -> karte(). -->
+        <div id="karte-buehne" tabindex="-1" style="position:relative;height:clamp(392px,46vh,480px);background:#DCEBD2;outline:none">
+          <div id="karte-vorschau" style="position:absolute;inset:0">
+
+            <!-- Rein zeichnerische Flurskizze, kein Abbild echter Straßen:
+                 sie soll den Ort einordnen, nicht ihn behaupten. -->
+            <svg viewBox="0 0 1200 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false" style="position:absolute;inset:0;width:100%;height:100%;display:block">
+              <defs><linearGradient id="kv-boden" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E3EFDA"/><stop offset="1" stop-color="#C2DCB3"/></linearGradient></defs>
+              <rect width="1200" height="600" fill="url(#kv-boden)"/>
+              <g opacity=".5" fill="#A9CC96">
+                <rect x="40" y="-40" width="260" height="200" rx="24" transform="rotate(-7 170 60)"/>
+                <rect x="880" y="20" width="300" height="220" rx="26" transform="rotate(5 1030 130)"/>
+                <rect x="110" y="330" width="240" height="250" rx="24" transform="rotate(4 230 455)"/>
+                <rect x="700" y="380" width="330" height="250" rx="28" transform="rotate(-4 865 505)"/>
+              </g>
+              <g opacity=".34" fill="#8FBC79"><circle cx="520" cy="112" r="72"/><circle cx="298" cy="252" r="46"/><circle cx="972" cy="332" r="54"/></g>
+              <path d="M-40 250 C 200 210, 330 300, 560 300 S 940 220, 1240 262" fill="none" stroke="#F5F9F2" stroke-width="26" stroke-linecap="round" opacity=".92"/>
+              <path d="M-40 250 C 200 210, 330 300, 560 300 S 940 220, 1240 262" fill="none" stroke="#CFE3C2" stroke-width="2" stroke-dasharray="12 14" opacity=".85"/>
+              <path d="M420 -40 C 452 160, 380 300, 430 460 S 520 620, 505 660" fill="none" stroke="#F5F9F2" stroke-width="18" stroke-linecap="round" opacity=".78"/>
+              <path d="M-40 470 C 260 430, 470 520, 760 470 S 1080 400, 1240 430" fill="none" stroke="#EAF3E2" stroke-width="12" stroke-linecap="round" opacity=".72"/>
+              <g fill="none" stroke="#7FA96B" stroke-width="1.4" opacity=".28">
+                <path d="M-40 118 C 240 88, 420 148, 700 118 S 1020 68, 1240 98"/>
+                <path d="M-40 540 C 240 512, 420 570, 700 542 S 1020 494, 1240 522"/>
+              </g>
+            </svg>
+
+            <!-- Der Text steht bewusst NICHT direkt auf der Zeichnung: ueber
+                 deren dunkleren Flaechen kaeme das 11-px-Label nur auf
+                 3,4 : 1. Auf dieser Karte sind es 5,9 : 1. -->
+            <div style="position:relative;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(10px,1.4vh,16px);text-align:center;padding:clamp(18px,4vw,30px)">
+              <svg width="40" height="50" viewBox="0 0 46 58" aria-hidden="true" focusable="false" style="display:block;flex:none;filter:drop-shadow(0 10px 18px rgba(12,29,20,.3))">
+                <path d="M23 1C11.4 1 2 10.4 2 22c0 15 21 35 21 35s21-20 21-35C44 10.4 34.6 1 23 1z" fill="#1B4332"/>
+                <circle cx="23" cy="21" r="7.5" fill="#8ECF4F"/>
+              </svg>
+              <div style="max-width:min(100%,44ch);border-radius:20px;padding:clamp(18px,2.4vw,26px) clamp(18px,2.6vw,30px);background:rgba(255,255,255,.86);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.7);box-shadow:0 22px 46px -34px rgba(12,29,20,.42)">
+                <div style="font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#2C6E49">de Vries GaLa-Bau</div>
+                <div style="margin-top:7px;font-size:clamp(16px,1.8vw,20px);font-weight:600;letter-spacing:-.02em;color:#0F2318;text-wrap:balance">An den Flachsrotten 2, 31020 Salzhemmendorf</div>
+                <button type="button" id="karte-laden" style="display:inline-flex;align-items:center;gap:9px;margin-top:15px;border:1px solid rgba(27,67,50,.3);border-radius:999px;padding:14px 26px;font:600 15px/1 Outfit,Helvetica,Arial,sans-serif;color:#12261A;background:#FFFFFF;cursor:pointer">Karte laden</button>
+                <p style="margin:13px 0 0;font-size:12.5px;line-height:1.5;color:#3C5145">Beim Laden wird eine Verbindung zu Google hergestellt und Ihre IP-Adresse dorthin übertragen. Näheres im <a href="datenschutz.html#karte" style="text-decoration:underline">Datenschutz</a>.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px clamp(16px,2vw,28px);padding:clamp(16px,2vw,22px) clamp(18px,2.4vw,28px)">
+          <div>
+            <div style="font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#46761F">Büro</div>
+            <div style="margin-top:6px;font-size:15.5px;line-height:1.5;color:#26382E">An den Flachsrotten 2 · 31020 Salzhemmendorf</div>
+          </div>
+          <!-- Fuehrt direkt in die Navigation; auf dem Handy oeffnet die
+               Karten-App. Erst dieser Klick stellt eine Verbindung zu Google
+               her, deshalb ohne Einwilligungsschranke. -->
+          <a href="https://www.google.com/maps/dir/?api=1&amp;destination=An%20den%20Flachsrotten%202%2C%2031020%20Salzhemmendorf" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:9px;background:#1B4332;color:#F3F7F0;border-radius:999px;padding:15px 26px;font-size:15px;font-weight:600">Route planen<span aria-hidden="true">→</span><span class="sr-only">(öffnet Google Maps in einem neuen Tab)</span></a>
         </div>
       </div>
     </div>
@@ -129,9 +196,9 @@
 
   <garden-footer active="Kontakt"></garden-footer>
 </div>
-<script src="assets/js/garden-header.js?v=43"></script>
-<script src="assets/js/garden-footer.js?v=43"></script>
-<script src="assets/js/formular.js?v=43"></script>
-<script src="assets/js/kontakt.js?v=43"></script>
+<script src="assets/js/garden-header.js?v=44"></script>
+<script src="assets/js/garden-footer.js?v=44"></script>
+<script src="assets/js/formular.js?v=44"></script>
+<script src="assets/js/kontakt.js?v=44"></script>
 </body>
 </html>
