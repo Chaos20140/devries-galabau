@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; connect-src 'self'; frame-src 'none'; form-action 'self' mailto:">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; connect-src 'self' https://pvcbgwzqjnzzpehwuywi.supabase.co; frame-src 'none'; form-action 'self' mailto:">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Impressum | de Vries Galabau</title>
@@ -23,7 +23,7 @@
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png?v=1">
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/outfit-600-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/outfit-400-latin.woff2" crossorigin>
-<link rel="stylesheet" href="assets/css/base.css?v=50">
+<link rel="stylesheet" href="assets/css/base.css?v=51">
 <style>
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;background:#EDF3E8;color:#12261A}
@@ -53,9 +53,9 @@
 
   <section data-screen-label="Hero Impressum" style="position:relative;z-index:2;padding:clamp(44px,8vh,104px) clamp(20px,5vw,68px) clamp(30px,4vh,56px)">
     <div style="max-width:1240px;margin:0 auto">
-      <p data-reveal style="margin:0 0 18px;font-size:12px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:#2C6E49">Impressum</p>
-      <h1 data-reveal style="margin:0;font-size:clamp(36px,6.4vw,92px);line-height:.96;letter-spacing:-.04em;font-weight:600;max-width:20ch;color:#0F2318;text-wrap:balance">Angaben gemäß <span style="display:inline-block;padding:.12em .1em .2em;margin:-.12em -.1em -.2em;font-family:'Instrument Serif',Georgia,serif;font-style:italic;font-weight:400;background:linear-gradient(120deg,#2C6E49,#8ECF4F);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent">§ 5 TMG</span>.</h1>
-      <p data-reveal style="margin:clamp(22px,3vh,34px) 0 0;max-width:62ch;font-size:clamp(16px,1.4vw,20px);line-height:1.6;color:#3C5145;text-wrap:pretty">Anbieterkennzeichnung der de Vries GaLa-Bau, Garten- und Landschaftsbau in Salzhemmendorf.</p>
+      <p data-reveal style="margin:0 0 18px;font-size:12px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:#2C6E49" data-ed="hero-impressum-p">Impressum</p>
+      <h1 data-reveal style="margin:0;font-size:clamp(36px,6.4vw,92px);line-height:.96;letter-spacing:-.04em;font-weight:600;max-width:20ch;color:#0F2318;text-wrap:balance"><span data-ed="hero-impressum-t">Angaben gemäß</span> <span style="display:inline-block;padding:.12em .1em .2em;margin:-.12em -.1em -.2em;font-family:'Instrument Serif',Georgia,serif;font-style:italic;font-weight:400;background:linear-gradient(120deg,#2C6E49,#8ECF4F);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent" data-ed="hero-impressum-span">§ 5 TMG</span><span data-ed="hero-impressum-t2">.</span></h1>
+      <p data-reveal style="margin:clamp(22px,3vh,34px) 0 0;max-width:62ch;font-size:clamp(16px,1.4vw,20px);line-height:1.6;color:#3C5145;text-wrap:pretty" data-ed="hero-impressum-p2">Anbieterkennzeichnung der de Vries GaLa-Bau, Garten- und Landschaftsbau in Salzhemmendorf.</p>
     </div>
   </section>
 
@@ -63,59 +63,62 @@
     <div style="max-width:1240px;margin:0 auto">
       <div style="border-radius:26px;padding:clamp(24px,3vw,44px);background:linear-gradient(155deg,rgba(255,255,255,.72),rgba(255,255,255,.42));backdrop-filter:blur(26px) saturate(1.45);border:1px solid rgba(255,255,255,.6);box-shadow:0 26px 54px -38px rgba(12,29,20,.34)">
         <div data-reveal data-angabe style="display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr);gap:clamp(12px,2vw,32px);padding:18px 0;border-top:1px solid rgba(16,35,26,.1)">
-          <div style="font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#46761F">Unternehmen</div>
-          <div style="font-size:15.5px;line-height:1.6;color:#26382E">de Vries GaLa-Bau<br>Garten- und Landschaftsbau</div>
+          <div style="font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#46761F" data-ed="angaben-div">Unternehmen</div>
+          <div style="font-size:15.5px;line-height:1.6;color:#26382E"><span data-ed="angaben-t">de Vries GaLa-Bau</span><br><span data-ed="angaben-t2">Garten- und Landschaftsbau</span></div>
         </div>
         <div data-reveal data-angabe style="display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr);gap:clamp(12px,2vw,32px);padding:18px 0;border-top:1px solid rgba(16,35,26,.1)">
-          <div style="font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#46761F">Anschrift</div>
-          <div style="font-size:15.5px;line-height:1.6;color:#26382E">An den Flachsrotten 2<br>31020 Salzhemmendorf</div>
+          <div style="font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#46761F" data-ed="angaben-div2">Anschrift</div>
+          <div style="font-size:15.5px;line-height:1.6;color:#26382E"><span data-ed="angaben-t3">An den Flachsrotten 2</span><br><span data-ed="angaben-t4">31020 Salzhemmendorf</span></div>
         </div>
         <div data-reveal data-angabe style="display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr);gap:clamp(12px,2vw,32px);padding:18px 0;border-top:1px solid rgba(16,35,26,.1)">
-          <div style="font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#46761F">Vertreten durch</div>
-          <div style="font-size:15.5px;line-height:1.6;color:#26382E">Andreas de Vries</div>
+          <div style="font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#46761F" data-ed="angaben-div3">Vertreten durch</div>
+          <div style="font-size:15.5px;line-height:1.6;color:#26382E" data-ed="angaben-div4">Andreas de Vries</div>
         </div>
         <div data-reveal data-angabe style="display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr);gap:clamp(12px,2vw,32px);padding:18px 0;border-top:1px solid rgba(16,35,26,.1)">
-          <div style="font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#46761F">Telefon</div>
-          <div style="font-size:15.5px;line-height:1.6;color:#26382E"><a href="tel:051531552" style="color:#1B4332;font-weight:600">05153 1552</a></div>
+          <div style="font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#46761F" data-ed="angaben-div5">Telefon</div>
+          <div style="font-size:15.5px;line-height:1.6;color:#26382E"><a href="tel:051531552" style="color:#1B4332;font-weight:600" data-ed="angaben-a">05153 1552</a></div>
         </div>
         <div data-reveal data-angabe style="display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr);gap:clamp(12px,2vw,32px);padding:18px 0;border-top:1px solid rgba(16,35,26,.1)">
-          <div style="font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#46761F">E-Mail</div>
-          <div style="font-size:15.5px;line-height:1.6;color:#26382E"><a href="mailto:info@devries-galabau.de" style="color:#1B4332;font-weight:600">info@devries-galabau.de</a></div>
+          <div style="font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#46761F" data-ed="angaben-div6">E-Mail</div>
+          <div style="font-size:15.5px;line-height:1.6;color:#26382E"><a href="mailto:info@devries-galabau.de" style="color:#1B4332;font-weight:600" data-ed="angaben-a2">info@devries-galabau.de</a></div>
         </div>
         <div data-reveal data-angabe style="display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr);gap:clamp(12px,2vw,32px);padding:18px 0;border-top:1px solid rgba(16,35,26,.1)">
-          <div style="font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#46761F">Bauhof</div>
-          <div style="font-size:15.5px;line-height:1.6;color:#26382E">Salzhemmendorfer Straße 2<br>31020 Salzhemmendorf</div>
+          <div style="font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#46761F" data-ed="angaben-div7">Bauhof</div>
+          <div style="font-size:15.5px;line-height:1.6;color:#26382E"><span data-ed="angaben-t5">Salzhemmendorfer Straße 2</span><br><span data-ed="angaben-t6">31020 Salzhemmendorf</span></div>
         </div>
         <div data-reveal data-angabe style="display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr);gap:clamp(12px,2vw,32px);padding:18px 0;border-top:1px solid rgba(16,35,26,.1)">
-          <div style="font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#46761F">USt-IdNr.</div>
-          <div style="font-size:15.5px;line-height:1.6;color:#26382E">DE192201141</div>
+          <div style="font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#46761F" data-ed="angaben-div8">USt-IdNr.</div>
+          <div style="font-size:15.5px;line-height:1.6;color:#26382E" data-ed="angaben-div9">DE192201141</div>
         </div>
         <div data-reveal data-angabe style="display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr);gap:clamp(12px,2vw,32px);padding:18px 0;border-top:1px solid rgba(16,35,26,.1)">
-          <div style="font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#46761F">Verantwortlich für den Inhalt</div>
-          <div style="font-size:15.5px;line-height:1.6;color:#26382E">Andreas de Vries<br>An den Flachsrotten 2<br>31020 Salzhemmendorf</div>
+          <div style="font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#46761F" data-ed="angaben-div10">Verantwortlich für den Inhalt</div>
+          <div style="font-size:15.5px;line-height:1.6;color:#26382E"><span data-ed="angaben-t7">Andreas de Vries</span><br><span data-ed="angaben-t8">An den Flachsrotten 2</span><br><span data-ed="angaben-t9">31020 Salzhemmendorf</span></div>
         </div>
         <div data-reveal data-angabe style="display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr);gap:clamp(12px,2vw,32px);padding:18px 0;border-top:1px solid rgba(16,35,26,.1)">
-          <div style="font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#46761F">Öffnungszeiten</div>
-          <div style="font-size:15.5px;line-height:1.6;color:#26382E">Montag bis Freitag, 8:00–16:00 Uhr</div>
+          <div style="font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#46761F" data-ed="angaben-div11">Öffnungszeiten</div>
+          <div style="font-size:15.5px;line-height:1.6;color:#26382E" data-ed="angaben-div12">Montag bis Freitag, 8:00–16:00 Uhr</div>
         </div>
       </div>
       <div data-reveal style="display:flex;flex-wrap:wrap;gap:12px;margin-top:24px">
-        <a href="kontakt.html" style="display:inline-flex;align-items:center;gap:9px;background:#1B4332;color:#F3F7F0;border-radius:999px;padding:15px 26px;font-size:15px;font-weight:600">Zum Kontakt →</a>
-        <a href="datenschutz.html" style="display:inline-flex;align-items:center;gap:9px;border-radius:999px;padding:15px 26px;font-size:15px;font-weight:500;color:#12261A;background:linear-gradient(155deg,rgba(255,255,255,.72),rgba(255,255,255,.42));backdrop-filter:blur(26px) saturate(1.45);border:1px solid rgba(255,255,255,.6);box-shadow:0 26px 54px -38px rgba(12,29,20,.34)">Datenschutzerklärung</a>
+        <a href="kontakt.html" style="display:inline-flex;align-items:center;gap:9px;background:#1B4332;color:#F3F7F0;border-radius:999px;padding:15px 26px;font-size:15px;font-weight:600" data-ed="angaben-a3">Zum Kontakt →</a>
+        <a href="datenschutz.html" style="display:inline-flex;align-items:center;gap:9px;border-radius:999px;padding:15px 26px;font-size:15px;font-weight:500;color:#12261A;background:linear-gradient(155deg,rgba(255,255,255,.72),rgba(255,255,255,.42));backdrop-filter:blur(26px) saturate(1.45);border:1px solid rgba(255,255,255,.6);box-shadow:0 26px 54px -38px rgba(12,29,20,.34)" data-ed="angaben-a4">Datenschutzerklärung</a>
       </div>
     </div>
   </section>
   <section data-screen-label="Hinweis" style="position:relative;z-index:2;padding:0 clamp(20px,5vw,68px) clamp(50px,8vh,110px)">
     <div style="max-width:1240px;margin:0 auto">
-      <h2 data-reveal style="margin:0;font-size:clamp(25px,3.4vw,50px);line-height:1.05;letter-spacing:-.035em;font-weight:600;max-width:26ch;color:#0F2318;text-wrap:pretty">Haftung und Urheberrecht.</h2>
-      <p data-reveal style="margin:16px 0 0;max-width:62ch;font-size:16px;line-height:1.6;color:#3C5145;text-wrap:pretty">Die Inhalte dieser Seiten wurden mit Sorgfalt erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte können wir jedoch keine Gewähr übernehmen. Für Inhalte externer Links sind ausschließlich deren Betreiber verantwortlich; zum Zeitpunkt der Verlinkung waren keine Rechtsverstöße erkennbar.</p>
-      <p data-reveal style="margin:14px 0 0;max-width:62ch;font-size:16px;line-height:1.6;color:#3C5145;text-wrap:pretty">Die auf dieser Website gezeigten Projektfotos stammen aus eigenen Bauvorhaben der de Vries GaLa-Bau. Texte, Bilder und Gestaltung unterliegen dem Urheberrecht; eine Verwendung außerhalb der gesetzlich zugelassenen Fälle bedarf unserer vorherigen Zustimmung.</p>
+      <h2 data-reveal style="margin:0;font-size:clamp(25px,3.4vw,50px);line-height:1.05;letter-spacing:-.035em;font-weight:600;max-width:26ch;color:#0F2318;text-wrap:pretty" data-ed="hinweis-h2">Haftung und Urheberrecht.</h2>
+      <p data-reveal style="margin:16px 0 0;max-width:62ch;font-size:16px;line-height:1.6;color:#3C5145;text-wrap:pretty" data-ed="hinweis-p">Die Inhalte dieser Seiten wurden mit Sorgfalt erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte können wir jedoch keine Gewähr übernehmen. Für Inhalte externer Links sind ausschließlich deren Betreiber verantwortlich; zum Zeitpunkt der Verlinkung waren keine Rechtsverstöße erkennbar.</p>
+      <p data-reveal style="margin:14px 0 0;max-width:62ch;font-size:16px;line-height:1.6;color:#3C5145;text-wrap:pretty" data-ed="hinweis-p2">Die auf dieser Website gezeigten Projektfotos stammen aus eigenen Bauvorhaben der de Vries GaLa-Bau. Texte, Bilder und Gestaltung unterliegen dem Urheberrecht; eine Verwendung außerhalb der gesetzlich zugelassenen Fälle bedarf unserer vorherigen Zustimmung.</p>
     </div>
   </section>
   <garden-footer active="Impressum"></garden-footer>
 </div>
-<script src="assets/js/garden-header.js?v=50"></script>
-<script src="assets/js/garden-footer.js?v=50"></script>
-<script src="assets/js/impressum.js?v=50"></script>
+<script src="assets/js/garden-header.js?v=51"></script>
+<script src="assets/js/garden-footer.js?v=51"></script>
+<script src="assets/js/impressum.js?v=51"></script>
+<!-- Seiten-Editor: laeuft NUR mit ?bearbeiten=1 UND gueltiger Anmeldung
+     aus /admin/. Ohne beides beendet sich die Datei sofort. -->
+<script src="assets/js/editor.js?v=51"></script>
 </body>
 </html>

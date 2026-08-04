@@ -36,4 +36,9 @@ CONTENT_INVENTORY.md
 DESIGN-AND-MOTION-SYSTEM.md
 IMAGE_SOURCES.md
 SUPABASE.md
-supabase/
+
+# supabase/ wird bewusst WIEDER versioniert (Entscheidung des Betreibers).
+# Darin steht kein Geheimnis: Passwort, Dienstschluessel, GitHub-Token und
+# SMTP-Zugang kommen alle aus Deno.env.get(), liegen also als Supabase-Secret.
+# supabase/.temp/ bleibt ausgeschlossen (Zeile weiter oben) — dort liegt eine
+# PostgreSQL-Verbindungszeichenfolge MIT Zugangsdaten.
