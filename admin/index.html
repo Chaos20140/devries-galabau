@@ -26,7 +26,7 @@ if (window.top !== window.self) { window.top.location = window.self.location; }
 </script>
 <link rel="icon" type="image/png" sizes="32x32" href="../assets/img/favicon-32.png?v=1">
 <link rel="apple-touch-icon" href="../assets/img/apple-touch-icon.png?v=1">
-<link rel="stylesheet" href="../assets/css/base.css?v=46">
+<link rel="stylesheet" href="../assets/css/base.css?v=50">
 <style>
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;background:#EDF3E8;color:#12261A;
@@ -97,10 +97,18 @@ if (window.top !== window.self) { window.top.location = window.self.location; }
 
   .vw-liste{list-style:none;margin:0;padding:0}
   .vw-liste li+li{border-top:1px solid rgba(16,35,26,.09)}
+  /* Die Seitenliste haengt ihre Zeilen direkt ein, nicht in <li>. */
+  .vw-liste>.vw-zeile+.vw-zeile{border-top:1px solid rgba(16,35,26,.09)}
   .vw-zeile{display:flex;align-items:center;justify-content:space-between;gap:14px;width:100%;
     padding:16px clamp(16px,2.4vw,24px);background:none;border:none;font:inherit;text-align:left;
     cursor:pointer;min-height:64px}
   .vw-zeile:hover{background:rgba(142,207,79,.1)}
+  /* Seiten, die der Editor noch nicht bedienen kann: sichtbar, aber
+     erkennbar nicht anklickbar. Ein ausgegrauter Eintrag sagt mehr
+     als ein fehlender — sonst sucht man die Seite. */
+  .vw-zeile--aus{opacity:.55;cursor:default}
+  .vw-zeile--aus:hover{background:transparent}
+  a.vw-zeile{text-decoration:none;color:inherit}
   .vw-zeile__haupt{display:flex;flex-direction:column;gap:3px;min-width:0}
   .vw-zeile__name{font-size:16px;font-weight:600;color:#0F2318}
   .vw-zeile__meta{font-size:13px;color:#5B6F63}
@@ -197,6 +205,6 @@ if (window.top !== window.self) { window.top.location = window.self.location; }
 <body>
 <a class="skip" href="#vw-app">Zum Inhalt springen</a>
 <main id="vw-app"></main>
-<script src="../assets/js/verwaltung.js?v=46"></script>
+<script src="../assets/js/verwaltung.js?v=50"></script>
 </body>
 </html>
