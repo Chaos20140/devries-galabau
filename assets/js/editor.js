@@ -61,6 +61,8 @@
   var leiste, zaehlerEl, meldungEl, speichernEl, verwerfenEl;
   var schublade = null, schubladeKnopf = null;
   var verlauf = null;
+  var seo = null, seoMeldung = null, seoSpeichern = null;
+  var seoWerte = {}, seoStart = null;
 
   function start() {
     stilEinsetzen();
@@ -259,6 +261,13 @@
       rechts.appendChild(schubladeKnopf);
     }
 
+    var seoKnopf = el('button', 'dvg-knopf dvg-knopf-still', 'Titel & Beschreibung');
+    seoKnopf.type = 'button';
+    seoKnopf.id = 'dvg-seo';
+    seoKnopf.title = 'Wie diese Seite in Suchergebnissen erscheint';
+    seoKnopf.addEventListener('click', seoUmschalten);
+    rechts.appendChild(seoKnopf);
+
     var verlaufKnopf = el('button', 'dvg-knopf dvg-knopf-still', 'Frühere Fassung');
     verlaufKnopf.type = 'button';
     verlaufKnopf.id = 'dvg-verlauf';
@@ -285,6 +294,7 @@
     /* Beide Listen liegen an derselben Stelle ueber der Leiste —
        zwei offene wuerden sich ueberlagern. */
     if (verlauf) { verlauf.remove(); verlauf = null; }
+    if (seo) { seo.remove(); seo = null; }
     if (schublade) {
       schublade.remove(); schublade = null;
       schubladeKnopf.setAttribute('aria-expanded', 'false');
@@ -343,6 +353,139 @@
     if (erstes) erstes.focus();
   }
 
+  /* ---- Titel und Google-Beschreibung -------------------------------
+     Beurteilt wird in Klartext, nicht mit einem Zeichenzähler. „58 von
+     60" sagt einem Handwerksmeister nichts; „Google schneidet den Titel
+     wahrscheinlich ab" schon. */
+
+  function seoUmschalten() {
+    if (seo) { seo.remove(); seo = null; return; }
+    if (schublade) { schublade.remove(); schublade = null;
+      if (schubladeKnopf) schubladeKnopf.setAttribute('aria-expanded', 'false'); }
+    if (verlauf) { verlauf.remove(); verlauf = null; }
+
+    var titelJetzt = document.title;
+    var m = document.querySelector('meta[name="description"]');
+    var beschrJetzt = m ? m.getAttribute('content') || '' : '';
+    seoStart = { titel: titelJetzt, beschreibung: beschrJetzt };
+
+    seo = el('div', 'dvg-schublade');
+    seo.setAttribute('role', 'group');
+    seo.setAttribute('aria-label', 'Titel und Google-Beschreibung');
+    var kopf = el('div', 'dvg-schublade-kopf');
+    kopf.appendChild(el('strong', null, 'Titel und Google-Beschreibung'));
+    kopf.appendChild(el('span', null,
+      'So erscheint diese Seite in den Suchergebnissen und beim Teilen. ' +
+      'Die Adresse der Seite (canonical) lässt sich hier bewusst nicht ändern — ' +
+      'ein falscher Wert nähme die Seite aus dem Suchindex.'));
+    seo.appendChild(kopf);
+
+    var felderSeo = [
+      { schl: 'titel', beschriftung: 'Titel', wert: titelJetzt, zeilen: 2,
+        kurz: 30, lang: 60,
+        zuKurz: 'Der Titel ist sehr kurz — mit Ort und Leistung findet Google Sie besser.',
+        zuLang: 'Der Titel ist zu lang, Google schneidet ihn in der Ergebnisliste wahrscheinlich ab.',
+        gut: 'Gute Länge.' },
+      { schl: 'beschreibung', beschriftung: 'Beschreibung', wert: beschrJetzt, zeilen: 4,
+        kurz: 70, lang: 160,
+        zuKurz: 'Die Beschreibung ist kurz — ein bis zwei ganze Sätze wirken in der Ergebnisliste besser.',
+        zuLang: 'Die Beschreibung ist zu lang und wird in der Ergebnisliste abgeschnitten.',
+        gut: 'Gute Länge.' }
+    ];
+
+    felderSeo.forEach(function (fd) {
+      var zeile = el('label', 'dvg-zeile');
+      zeile.appendChild(el('span', 'dvg-zeile-kennung', fd.beschriftung));
+      var rechts = el('div', 'dvg-seo-feld');
+      var feld = document.createElement('textarea');
+      feld.className = 'dvg-feld';
+      feld.rows = fd.zeilen;
+      feld.value = fd.wert;
+      var ampel = el('span', 'dvg-ampel');
+      var werte = function () {
+        var t = feld.value.replace(/[\r\n]+/g, ' ');
+        if (t !== feld.value) feld.value = t;
+        seoWerte[fd.schl] = t;
+        var n = t.trim().length;
+        var art = n === 0 ? 'rot' : n < fd.kurz ? 'gelb' : n > fd.lang ? 'gelb' : 'gruen';
+        ampel.className = 'dvg-ampel dvg-ampel-' + art;
+        ampel.textContent = n === 0 ? 'Darf nicht leer bleiben.'
+          : n < fd.kurz ? fd.zuKurz : n > fd.lang ? fd.zuLang : fd.gut;
+        feld.classList.toggle('dvg-feld-neu', t !== fd.wert);
+        seoKnopfStand();
+      };
+      feld.addEventListener('input', werte);
+      rechts.appendChild(feld); rechts.appendChild(ampel);
+      zeile.appendChild(rechts);
+      seo.appendChild(zeile);
+      seoWerte[fd.schl] = fd.wert;
+      werte();
+    });
+
+    var leisteSeo = el('div', 'dvg-seo-aktionen');
+    seoMeldung = el('span', 'dvg-meldung');
+    seoMeldung.setAttribute('role', 'status');
+    seoSpeichern = el('button', 'dvg-knopf dvg-knopf-voll', 'Titel und Beschreibung speichern');
+    seoSpeichern.type = 'button';
+    seoSpeichern.addEventListener('click', seoSenden);
+    leisteSeo.appendChild(seoMeldung); leisteSeo.appendChild(seoSpeichern);
+    seo.appendChild(leisteSeo);
+
+    document.body.appendChild(seo);
+    seoKnopfStand();
+    var erstes = seo.querySelector('textarea');
+    if (erstes) erstes.focus();
+  }
+
+  function seoKnopfStand() {
+    if (!seoSpeichern) return;
+    var geaendertSeo = seoStart &&
+      (seoWerte.titel !== seoStart.titel || seoWerte.beschreibung !== seoStart.beschreibung);
+    var vollstaendig = String(seoWerte.titel || '').trim() && String(seoWerte.beschreibung || '').trim();
+    seoSpeichern.disabled = !geaendertSeo || !vollstaendig;
+  }
+
+  function seoSenden() {
+    seoSpeichern.disabled = true;
+    seoMeldung.textContent = 'Wird gespeichert …';
+    seoMeldung.className = 'dvg-meldung';
+    ruf({ was: 'seo-speichern', datei: dateiname(),
+          titel: seoWerte.titel, beschreibung: seoWerte.beschreibung,
+          vorher: seoStart })
+      .then(function (a) {
+        if (a.s === 401) { seoSage('Die Anmeldung ist abgelaufen. Bitte neu anmelden.', 'fehler'); return; }
+        if (a.d && a.d.teilweise) {
+          seoSage('Gespeichert, aber noch nicht veröffentlicht. Bitte melden Sie das.', 'fehler');
+          return;
+        }
+        if (a.s !== 200 || !a.d || !a.d.ok) {
+          seoSpeichern.disabled = false;
+          seoSage('Speichern fehlgeschlagen (' + a.s +
+            (a.d && a.d.fehler ? ' · ' + klartext(a.d.fehler) : '') + ').', 'fehler');
+          return;
+        }
+        seoStart = { titel: seoWerte.titel, beschreibung: seoWerte.beschreibung };
+        document.title = seoWerte.titel;
+        var mm = document.querySelector('meta[name="description"]');
+        if (mm) mm.setAttribute('content', seoWerte.beschreibung);
+        Array.prototype.forEach.call(seo.querySelectorAll('.dvg-feld'), function (x) {
+          x.classList.remove('dvg-feld-neu');
+        });
+        seoSage('Gespeichert. In etwa einer Minute ist es für alle sichtbar. ' +
+          'Bis Google die Änderung übernimmt, können einige Tage vergehen.', 'ok');
+      })
+      .catch(function (e) {
+        seoSpeichern.disabled = false;
+        seoSage('Keine Verbindung (' + (e && e.message) + '). Der Zustand ist unbekannt — ' +
+          'bitte die Seite neu laden und nachsehen.', 'fehler');
+      });
+  }
+
+  function seoSage(text, art) {
+    seoMeldung.textContent = text;
+    seoMeldung.className = 'dvg-meldung' + (art ? ' dvg-meldung-' + art : '');
+  }
+
   /* ---- Frühere Fassungen ------------------------------------------
      Git haelt die Staende ohnehin — der Betreiber soll sie sehen, ohne
      von Commits wissen zu muessen. Beschriftet wird deshalb mit Datum
@@ -350,6 +493,7 @@
 
   function verlaufUmschalten() {
     if (verlauf) { verlauf.remove(); verlauf = null; return; }
+    if (seo) { seo.remove(); seo = null; }
     if (schublade) {
       schublade.remove(); schublade = null;
       if (schubladeKnopf) schubladeKnopf.setAttribute('aria-expanded', 'false');
@@ -583,7 +727,12 @@
       seite_nicht_freigegeben: 'diese Seite ist für den Editor nicht freigegeben',
       stand_nicht_angeboten: 'diese Fassung gehört nicht zum Verlauf dieser Seite',
       nicht_gespeichert: 'der Server konnte nicht schreiben',
-      inzwischen_geaendert: 'diese Stelle wurde zwischenzeitlich anderswo geändert — bitte die Seite neu laden'
+      inzwischen_geaendert: 'diese Stelle wurde zwischenzeitlich anderswo geändert — bitte die Seite neu laden',
+      titel_leer: 'der Titel darf nicht leer sein',
+      beschreibung_leer: 'die Beschreibung darf nicht leer sein',
+      titel_zu_lang: 'der Titel ist zu lang',
+      beschreibung_zu_lang: 'die Beschreibung ist zu lang',
+      feld_nicht_gefunden: 'ein SEO-Feld fehlt im Markup dieser Seite'
     };
     return karte[f] || f;
   }
@@ -697,6 +846,15 @@
       '  transition:border-color .15s cubic-bezier(.4,0,.2,1)}',
       '.dvg-feld:focus{outline:2px solid #2C6E49;outline-offset:1px;border-color:#2C6E49}',
       '.dvg-feld-neu{border-color:#C77C1E;background:rgba(199,124,30,.07)}',
+
+      /* Titel und Beschreibung */
+      '.dvg-seo-feld{display:flex;flex-direction:column;gap:6px;min-width:0}',
+      '.dvg-ampel{font-size:12.5px;line-height:1.45}',
+      '.dvg-ampel-gruen{color:#2C6E49}',
+      '.dvg-ampel-gelb{color:#8A5A12}',
+      '.dvg-ampel-rot{color:var(--rot);font-weight:600}',
+      '.dvg-seo-aktionen{display:flex;align-items:center;justify-content:flex-end;gap:16px;',
+      '  flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid rgba(16,35,26,.1)}',
 
       /* Liste der frueheren Staende */
       '.dvg-stand{display:flex;align-items:center;justify-content:space-between;gap:16px;',
