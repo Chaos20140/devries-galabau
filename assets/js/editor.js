@@ -55,8 +55,24 @@
 
   function start() {
     stilEinsetzen();
-    felder = [].slice.call(document.querySelectorAll('[data-ed]')).map(function (el) {
-      return { el: el, kennung: el.getAttribute('data-ed'), alt: el.textContent };
+    /* Nach Kennung gruppieren, NICHT je Element.
+       Manche Stellen stehen zur Laufzeit mehrfach im Dokument: das
+       Materialband der Startseite wird vom Skript geklont, damit es
+       endlos laufen kann — 18 Kennungen liegen dort viermal. In der
+       DATEI gibt es sie nur einmal, gespeichert wird also ohnehin
+       richtig. Ohne diese Gruppierung aber bearbeitete der Betreiber
+       eine Kopie, waehrend die drei anderen sichtbar stehen blieben.
+       Jetzt ist die erste Kopie das Eingabefeld, die uebrigen ziehen
+       mit. */
+    var nachKennung = new Map();
+    [].slice.call(document.querySelectorAll('[data-ed]')).forEach(function (el) {
+      var k = el.getAttribute('data-ed');
+      if (!nachKennung.has(k)) nachKennung.set(k, []);
+      nachKennung.get(k).push(el);
+    });
+    felder = [];
+    nachKennung.forEach(function (els, kennung) {
+      felder.push({ el: els[0], klone: els.slice(1), kennung: kennung, alt: els[0].textContent });
     });
     if (!felder.length) { hinweisSeite('Diese Seite ist noch nicht vorbereitet', 'Für sie wurden noch keine bearbeitbaren Stellen eingerichtet.', true); return; }
     felder.forEach(bereitmachen);
@@ -112,6 +128,15 @@
 
   function pruefe(f) {
     var jetzt = f.el.textContent;
+    /* Kopien mitziehen, damit die Seite waehrend des Tippens stimmig
+       bleibt. textContent, nie innerHTML — der Wert kommt aus einem
+       Eingabefeld. */
+    if (f.klone && f.klone.length) {
+      f.klone.forEach(function (k) {
+        k.textContent = jetzt;
+        k.classList.toggle('dvg-ed-neu', jetzt !== f.alt);
+      });
+    }
     if (jetzt === f.alt) { geaendert.delete(f.kennung); f.el.classList.remove('dvg-ed-neu'); }
     else { geaendert.set(f.kennung, jetzt); f.el.classList.add('dvg-ed-neu'); }
     zaehlerAktualisieren();
@@ -171,6 +196,9 @@
       if (!geaendert.has(f.kennung)) return;
       f.el.textContent = f.alt;
       f.el.classList.remove('dvg-ed-neu');
+      if (f.klone) f.klone.forEach(function (k) {
+        k.textContent = f.alt; k.classList.remove('dvg-ed-neu');
+      });
     });
     geaendert.clear();
     zaehlerAktualisieren();
@@ -214,7 +242,12 @@
         speichernEl.disabled = false; return;
       }
       /* Ab jetzt gilt der neue Text als Ausgangszustand. */
-      felder.forEach(function (f) { if (geaendert.has(f.kennung)) { f.alt = f.el.textContent; f.el.classList.remove('dvg-ed-neu'); } });
+      felder.forEach(function (f) {
+        if (!geaendert.has(f.kennung)) return;
+        f.alt = f.el.textContent;
+        f.el.classList.remove('dvg-ed-neu');
+        if (f.klone) f.klone.forEach(function (k) { k.classList.remove('dvg-ed-neu'); });
+      });
       geaendert.clear();
       zaehlerAktualisieren();
       /* Ehrlich bleiben: GitHub Pages braucht rund eine Minute. Ein

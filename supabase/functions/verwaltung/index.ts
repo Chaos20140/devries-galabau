@@ -79,6 +79,7 @@ const BRANCHES = ["redesign/gartenrundgang", "main"];
    .github/ und supabase/. Wer hier etwas ergaenzt, gibt dem
    Verwaltungspasswort Schreibrecht darauf. */
 const SEITEN_ERLAUBT = new Set([
+  "index.html",
   "ueber-uns.html",
   "gartengestaltung.html",
   "gartenplanung.html",

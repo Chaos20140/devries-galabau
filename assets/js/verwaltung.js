@@ -323,7 +323,7 @@
      Seite faelschlich als bearbeitbar anzubieten fuehrt zu einem Editor
      ohne einzige bearbeitbare Stelle, und das sieht aus wie ein Fehler. */
   var SEITEN = [
-    { datei: 'index.html',          titel: 'Startseite',          bereit: false },
+    { datei: 'index.html',          titel: 'Startseite',          bereit: true  },
     { datei: 'ueber-uns.html',      titel: 'Über uns',            bereit: true  },
     { datei: 'gartengestaltung.html', titel: 'Gartengestaltung',    bereit: true  },
     { datei: 'gartenplanung.html',  titel: 'Gartenplanung',       bereit: true  },
