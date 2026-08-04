@@ -23,7 +23,7 @@
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png?v=1">
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/outfit-600-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/outfit-400-latin.woff2" crossorigin>
-<link rel="stylesheet" href="assets/css/base.css?v=44">
+<link rel="stylesheet" href="assets/css/base.css?v=45">
 <style>
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;background:#EDF3E8;color:#12261A}
@@ -119,8 +119,19 @@
               <div style="max-width:min(100%,44ch);border-radius:20px;padding:clamp(18px,2.4vw,26px) clamp(18px,2.6vw,30px);background:rgba(255,255,255,.86);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.7);box-shadow:0 22px 46px -34px rgba(12,29,20,.42)">
                 <div style="font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#2C6E49">de Vries GaLa-Bau</div>
                 <div style="margin-top:7px;font-size:clamp(16px,1.8vw,20px);font-weight:600;letter-spacing:-.02em;color:#0F2318;text-wrap:balance">An den Flachsrotten 2, 31020 Salzhemmendorf</div>
-                <button type="button" id="karte-laden" style="display:inline-flex;align-items:center;gap:9px;margin-top:15px;border:1px solid rgba(27,67,50,.3);border-radius:999px;padding:14px 26px;font:600 15px/1 Outfit,Helvetica,Arial,sans-serif;color:#12261A;background:#FFFFFF;cursor:pointer">Karte laden</button>
-                <p style="margin:13px 0 0;font-size:12.5px;line-height:1.5;color:#3C5145">Beim Laden wird eine Verbindung zu Google hergestellt und Ihre IP-Adresse dorthin übertragen. Näheres im <a href="datenschutz.html#karte" style="text-decoration:underline">Datenschutz</a>.</p>
+                <!-- Steht bis zum Start des Skripts auf "hidden": Der Knopf
+                     wirkt ausschliesslich ueber kontakt.js. Ohne JavaScript
+                     stuende hier sonst eine Schaltflaeche, die auf Klick
+                     nichts tut, samt einer Erklaerung zu einem Vorgang, den
+                     es dann gar nicht gibt. "Route planen" darunter ist ein
+                     schlichter Link und funktioniert immer.
+                     Das Attribut sitzt bewusst auf dieser Huelle und nicht
+                     am Knopf: dessen eigenes display im style-Attribut
+                     wuerde [hidden] des Browsers ueberstimmen. -->
+                <div id="karte-zustimmung" hidden>
+                  <button type="button" id="karte-laden" style="display:inline-flex;align-items:center;gap:9px;margin-top:15px;border:1px solid rgba(27,67,50,.3);border-radius:999px;padding:14px 26px;font:600 15px/1 Outfit,Helvetica,Arial,sans-serif;color:#12261A;background:#FFFFFF;cursor:pointer">Karte laden</button>
+                  <p style="margin:13px 0 0;font-size:12.5px;line-height:1.5;color:#3C5145">Beim Laden wird eine Verbindung zu Google hergestellt und Ihre IP-Adresse dorthin übertragen. Näheres im <a href="datenschutz.html#karte" style="text-decoration:underline">Datenschutz</a>.</p>
+                </div>
               </div>
             </div>
           </div>
@@ -133,8 +144,12 @@
           </div>
           <!-- Fuehrt direkt in die Navigation; auf dem Handy oeffnet die
                Karten-App. Erst dieser Klick stellt eine Verbindung zu Google
-               her, deshalb ohne Einwilligungsschranke. -->
-          <a href="https://www.google.com/maps/dir/?api=1&amp;destination=An%20den%20Flachsrotten%202%2C%2031020%20Salzhemmendorf" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:9px;background:#1B4332;color:#F3F7F0;border-radius:999px;padding:15px 26px;font-size:15px;font-weight:600">Route planen<span aria-hidden="true">→</span><span class="sr-only">(öffnet Google Maps in einem neuen Tab)</span></a>
+               her, deshalb ohne Einwilligungsschranke.
+               Ziel ist Firmenname + Anschrift, damit die Route auf den
+               Unternehmenseintrag laeuft und nicht auf den
+               Geokodierungspunkt der Hausnummer daneben. Dieselbe
+               Zeichenfolge steht in assets/js/kontakt.js -> karte(). -->
+          <a href="https://www.google.com/maps/dir/?api=1&amp;destination=de%20Vries%20Garten-%20und%20Landschaftsbau%2C%20An%20den%20Flachsrotten%202%2C%2031020%20Salzhemmendorf" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:9px;background:#1B4332;color:#F3F7F0;border-radius:999px;padding:15px 26px;font-size:15px;font-weight:600">Route planen<span aria-hidden="true">→</span><span class="sr-only">(öffnet Google Maps in einem neuen Tab)</span></a>
         </div>
       </div>
     </div>
@@ -196,9 +211,9 @@
 
   <garden-footer active="Kontakt"></garden-footer>
 </div>
-<script src="assets/js/garden-header.js?v=44"></script>
-<script src="assets/js/garden-footer.js?v=44"></script>
-<script src="assets/js/formular.js?v=44"></script>
-<script src="assets/js/kontakt.js?v=44"></script>
+<script src="assets/js/garden-header.js?v=45"></script>
+<script src="assets/js/garden-footer.js?v=45"></script>
+<script src="assets/js/formular.js?v=45"></script>
+<script src="assets/js/kontakt.js?v=45"></script>
 </body>
 </html>

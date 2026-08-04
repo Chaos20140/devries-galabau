@@ -736,7 +736,12 @@ erweitern statt parallele bauen → 4. Desktop+Mobile im selben Schritt → 5. B
   **Merke: bei „Formular tut nichts" zuerst `connect-src` DIESER Seite prüfen.** Die CSP steht
   je Seite im `<meta>`, es gibt keine gemeinsame Quelle, also fällt eine vergessene Seite
   niemandem auf. Prüfbefehl:
-  `for f in *.html; do grep -q dvFormular "$f" && { printf "%-24s " "$f"; grep -oE "connect-src [^;\"]*" "$f"; }; done`
+  `for f in *.html; do grep -q formular.js "$f" && { printf "%-24s " "$f"; grep -oE "connect-src [^;\"]*" "$f"; }; done`
+  **⚠ Der Befehl stand bis v45 mit `dvFormular` statt `formular.js` da und lieferte seit dem
+  Umbau NULL Treffer** — die Absicherung gegen genau diesen Fehler war also selbst blind.
+  `dvFormular` ist der Name des Objekts *im Skript*, im Markup steht der Dateiname. Gegenprobe
+  nach jeder Änderung: die Ausgabe muss **acht** Zeilen haben (anfrage, bepflanzung,
+  gartengestaltung, gartenpflege, gartenplanung, index, kontakt, stellenangebote).
   **2. Der Rückfall war völlig stumm.** `formular.js` setzt bei einem Fehler
   `window.location.href` auf eine `mailto:`-Adresse. Ist **kein E-Mail-Programm hinterlegt** —
   auf vielen Rechnern und in **jedem** Testbrowser der Fall — passiert daraufhin sichtbar
@@ -1169,3 +1174,70 @@ erweitern statt parallele bauen → 4. Desktop+Mobile im selben Schritt → 5. B
   nach dem Klick war kein Befund. Belegt wurde das Laden über das `load`-Ereignis plus
   `SecurityError` beim Zugriff auf `contentWindow` (fremder Ursprung); bei CSP-Blockade bliebe der
   Rahmen auf `about:blank` und wäre auslesbar.
+
+- **2026-08-04 · Kartenmarker auf den Firmeneintrag, Rundgang-Schalter dreistufig (v45).**
+  **1. Der rote Punkt saß auf der falschen Stelle.** Gesucht wurde nur die Anschrift; Google setzt
+  die Nadel dann auf den **Geokodierungspunkt der Hausnummer**, während der Unternehmenseintrag
+  „de Vries Garten- und Landschaftsbau" ein Stück daneben unbeschriftet lag. Jetzt sucht die
+  Einbettung **Firmenname + Anschrift** (`z=15` → `z=17`); im Browser geprüft: die Nadel trägt die
+  Beschriftung des Eintrags. Das Routenziel in `kontakt.html` wurde mitgezogen — die Zeichenfolge
+  steht an **zwei** Stellen (kontakt.js und kontakt.html), beide tragen jetzt gegenseitige Hinweise.
+  **Nicht vollständig geprüft:** ob der `dir`-Link am Ende auf denselben Eintrag führt. Google
+  schiebt eine Einwilligungsseite dazwischen, die ich nicht wegklicke. Belegt ist, dass das Ziel
+  unverändert durchgereicht wird und dieselbe Zeichenfolge in der Karte den Eintrag trifft.
+  **2. Rundgang-Schalter jetzt dreistufig:** `'aus' | 'nur-rechner' | 'an'`, dazu
+  `RUNDGANG_AB_BREITE = 820` (dieselbe Grenze wie `applyMobile`, sonst gäbe es einen Streifen, in
+  dem die Seite im Handy-Layout steht und der Rundgang sich für erlaubt hält) und
+  `rundgangHierErlaubt()` — bewusst eine **Funktion**, keine einmal berechnete Konstante, weil sich
+  die Breite beim Drehen ändert. Gesetzt bleibt `'aus'`: der Rundgang war bereits überall
+  abgeschaltet, ihn ungefragt am Rechner wieder einzuschalten wäre eine Änderung, die niemand
+  verlangt hat.
+  **`rundgangAbschalten('schmal')` ist umkehrbar**, `'schalter'` endgültig. Das Ein- und Ausblenden
+  läuft über `rundgangTeileZeigen()`, das den Ausgangswert **sichert und zurückschreibt** —
+  `rg-canvas` trägt `display:block` im Markup, ein `style.display = ''` würde das **löschen**.
+  Dieselbe Falle wie bei der Galerie in v38.
+  **Gemessen, vier Fälle:** `'aus'` Rechner und Handy exakt wie vorher (14585 / 15649 px) ·
+  `'nur-rechner'` Handy: kein Knopf, keine Leinwand, **0 Anfragen an three.js** auch nach einem
+  erzwungenen Klick auf den versteckten Knopf · `'nur-rechner'` Rechner: three.js geladen, Bahn
+  1800vh · schmal geladen → Fenster aufgezogen: Teile kommen zurück, Bahn 112vh → 1800vh, 0 Fehler.
+  **Bewusst nicht behandelt:** eine bereits laufende Szene wird beim Schmalerziehen nicht abgebaut.
+  Ein Telefon kommt dort nie hin, und ein Abbau müsste das entfernte Standbild wiederherstellen.
+  **Vorbestehend und weiterhin offen:** dabei springt die Bahn 1800vh → 1000vh, `tp` rückt vor und
+  die Kamera setzt mitten im Garten neu an.
+  **3. Drei Befunde aus der Gegenprüfung behoben** (16 Prüfagenten, jeder Befund von einer
+  Gegeninstanz auf Widerlegung geprüft — 5 bestätigt, 11 widerlegt):
+  · **Die Hinweiszeile kam nicht zurück.** `rundgangAbschalten()` setzt sie auf `display:none`,
+    `zeigeStartknopf()` schrieb aber nur `textContent`. Nach dem Aufziehen des Fensters stand der
+    Knopf ohne jede Erklärung da. **Merke: wer etwas versteckt, muss den Weg zurück mitschreiben.**
+  · **Vierter, ungeschützter Einstieg in die Szene.** `tick` baut sie neu, sobald `window.THREE`
+    existiert — ohne jede Schalterprüfung. Heute folgenlos, weil three.js bei abgeschaltetem
+    Rundgang nie geladen wird; bei `'nur-rechner'` genügt ein breiter Seitenaufruf, damit THREE im
+    Speicher steht. Jetzt an `rundgangAn || rundgangHierErlaubt()` gehängt.
+  · **„Karte laden" war ohne JavaScript ein toter Knopf.** Steht jetzt samt Erklärung in einer
+    Hülle mit `hidden`, die `kontakt.js` freigibt. **Das Attribut muss an die Hülle**, nicht an den
+    Knopf: dessen eigenes `display` im `style`-Attribut überstimmt sonst `[hidden]` des Browsers —
+    im Test bestätigt, der Knopf rechnete weiter `inline-flex`.
+  **4. Sicherheitsdurchgang, drei geschlossene Lücken:**
+  · **Der dokumentierte CSP-Prüfbefehl war selbst blind.** Er suchte `dvFormular` — das ist der
+    Name des Objekts *im Skript*, im Markup steht der Dateiname. Seit dem v8-Umbau **null Treffer**,
+    also genau die Absicherung tot, die den `stellenangebote.html`-Fehler künftig verhindern
+    sollte. Jetzt `formular.js`, Sollwert **acht** Zeilen. Alle acht stimmen.
+  · **Kein Clickjacking-Schutz für die Verwaltung.** `X-Frame-Options` und `frame-ancestors` stehen
+    nur in `.htaccess`, die GitHub Pages nicht auswertet; im `<meta>` wirkt `frame-ancestors`
+    nicht. Ein fremdes Dokument hätte die Verwaltung unsichtbar überlagern können, um einem
+    angemeldeten Betreiber Klicks auf „Löschen" unterzuschieben. Jetzt eine Zeile im `<head>`,
+    vor allem anderen. Kein Ersatz für die Kopfzeile (ein `sandbox`-Rahmen hebelt sie aus), aber
+    sie deckt den Normalfall ab.
+  · **`.claude/launch.json` lag öffentlich** und nennt den vollen Windows-Pfad samt Benutzernamen.
+    `.gitignore` deckte nur `.claude/skills/` ab; jetzt `.claude/` ganz.
+  **Geprüft und in Ordnung:** kein Wert aus Eingabe, `location` oder Speicher fließt in die
+  iframe-Adresse · `referrerPolicy` steht, **bevor** das Element ins Dokument kommt · kein
+  `target="_blank"` ohne `noopener` im ganzen Projekt · an der CSP wurde nur `frame-src` geändert,
+  `img-src` bewusst **nicht** geweitet (die Kartenbilder lädt das fremde Dokument).
+  **Kein `sandbox` am Kartenrahmen** — es nähme Google Maps die Skripte und die Navigation des
+  Fensters, also genau die Funktion; die Trennung leistet hier bereits der fremde Ursprung.
+  **Offen, unverändert:** der Formularversand geht **live** an die Abnahmeadresse
+  `tolunayusul@gmail.com` (`formular.js`, auch auf `main`) — vor dem Livegang zurückstellen ·
+  **keine strukturierten Daten mehr im ganzen Baum** (0 Treffer für `ld+json` über alle 36
+  HTML-Dateien); v7 hatte `LocalBusiness`, `BreadcrumbList`, `Service` und `CollectionPage`, der
+  v8-Umbau hat sie ersatzlos verloren.

@@ -7,16 +7,18 @@
   "use strict";
 
   /* ===================================================================
-     SCHALTER: Rundgang voruebergehend abgeschaltet
+     SCHALTER: Wo laeuft der Gartenrundgang?
 
-     Zum WIEDER EINSCHALTEN nur diese eine Zeile auf false setzen:
-         var RUNDGANG_AUS = false;
+     Nur diese eine Zeile aendern. Drei Werte sind moeglich:
+
+         'aus'          nirgends — heutiger Stand
+         'nur-rechner'  am Rechner ja, auf dem Handy nie
+         'an'           ueberall (Stand bis v39)
 
      Es ist NICHTS geloescht. Der gesamte Rundgang — Szene, Stationen,
-     Kamerafahrt — steht unveraendert in dieser Datei und schaltet sich
-     mit dieser Zeile wieder zu.
+     Kamerafahrt — steht unveraendert in dieser Datei.
 
-     Was der Schalter bewirkt:
+     Was 'aus' bewirkt:
      · three.js wird gar nicht erst geladen (spart 148 KB)
      · die Scrollbahn bleibt kurz (112vh statt 1800vh), die Startseite
        ist damit rund 18 statt 34 Bildschirmhoehen lang
@@ -24,8 +26,27 @@
        und ohne die Zeile "startet jetzt"
      · Leinwand, Stationstafeln und die Punkteleiste am rechten Rand
        bleiben ausgeblendet
+
+     'nur-rechner' bewirkt genau dasselbe, aber nur unterhalb von
+     RUNDGANG_AB_BREITE. Oberhalb laeuft alles wie gehabt.
      =================================================================== */
-  var RUNDGANG_AUS = true;
+  var RUNDGANG = 'aus';
+
+  /* Dieselbe Grenze, die applyMobile() fuer die gesamte Seite benutzt
+     (dort "w < 820"). Beide muessen uebereinstimmen, sonst gaebe es einen
+     Streifen, in dem die Seite im Handy-Layout steht, der Rundgang sich
+     aber fuer erlaubt haelt. */
+  var RUNDGANG_AB_BREITE = 820;
+
+  /* Darf der Rundgang bei der AKTUELLEN Fensterbreite laufen?
+     Bewusst eine Funktion und keine einmal berechnete Konstante: die
+     Breite aendert sich beim Drehen des Geraets und beim Ziehen am
+     Fenster, und dann muss die Antwort mitgehen. */
+  function rundgangHierErlaubt() {
+    if (RUNDGANG === 'an') return true;
+    if (RUNDGANG === 'nur-rechner') return window.innerWidth >= RUNDGANG_AB_BREITE;
+    return false;
+  }
 
   /* Systemeinstellung "Bewegung reduzieren" — im Design nicht vorgesehen. */
   var __reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -70,8 +91,11 @@ class Component extends DCLogic {
        Der Rundgang startet am Rechner von selbst, sobald die Seite
        gezeichnet ist und feststeht, dass die Grafik ihn auch tragen kann. */
     this.zeigeStandbild();
-    if (RUNDGANG_AUS) this.rundgangAbschalten();
-    else if (window.innerWidth >= 820) this.planeAutostart();
+    /* 'schmal' heisst: nur diese Fensterbreite verbietet ihn. Das ist
+       umkehrbar — wer am Rechner das Fenster wieder aufzieht, bekommt ihn
+       angeboten. Bei 'aus' ist die Abschaltung dagegen endgueltig. */
+    if (!rundgangHierErlaubt()) this.rundgangAbschalten(RUNDGANG === 'aus' ? 'schalter' : 'schmal');
+    else if (window.innerWidth >= RUNDGANG_AB_BREITE) this.planeAutostart();
     this.raf = requestAnimationFrame(this.tick);
   }
 
@@ -138,7 +162,7 @@ class Component extends DCLogic {
     this.threeLaedt = new Promise((res, rej) => {
       if (window.THREE) return res();
       const s = document.createElement('script');
-      s.src = 'assets/js/three.min.js?v=43';
+      s.src = 'assets/js/three.min.js?v=45';
       s.async = true;
       s.onload = () => (window.THREE ? res() : rej(new Error('three geladen, aber nicht da')));
       s.onerror = () => rej(new Error('three konnte nicht geladen werden'));
@@ -147,18 +171,41 @@ class Component extends DCLogic {
     return this.threeLaedt;
   }
 
-  /* Der Rundgang ist ueber den Schalter am Dateianfang abgeschaltet.
-     Hier wird nur aufgeraeumt, was sonst leer herumstuende. */
-  rundgangAbschalten() {
-    /* dreiDAus haelt die Bahn kurz und verhindert jeden Selbststart —
-       auch den beim Wechsel der Fensterbreite. */
-    this.dreiDAus = true;
+  /* Blendet Leinwand und Stationstafeln aus (an=false) oder wieder ein
+     (an=true).
+
+     ⚠ Der Ausgangswert wird GESICHERT und zurueckgeschrieben, nicht
+     geleert. "rg-canvas" traegt display:block im Markup, "rg-rail"
+     display:flex. Ein style.display = '' wuerde diese Angaben LOESCHEN
+     statt sie wiederherzustellen — genau der Fehler, der die Galerie
+     "Fuenf Bereiche" auf 0 px zusammenfallen liess (v38). */
+  rundgangTeileZeigen(an) {
+    ['rg-canvas', 'rg-stations'].forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (el.dataset.dDisplay === undefined) el.dataset.dDisplay = el.style.display;
+      el.style.display = an ? el.dataset.dDisplay : 'none';
+    });
+    /* rg-rail bewusst nicht hier: dessen Sichtbarkeit regelt applyMobile
+       ohnehin nach Fensterbreite und schaltet sie unter 820 px immer ab.
+       Zwei Stellen, die dasselbe Element setzen, wuerden sich ueberholen. */
+    const rail = document.getElementById('rg-rail');
+    if (rail && !an) rail.style.display = 'none';
+  }
+
+  /* Der Rundgang laeuft hier nicht. Aufraeumen, was sonst leer
+     herumstuende.
+
+     grund === 'schmal'  → nur diese Fensterbreite verbietet ihn.
+                           Umkehrbar: dreiDAus bleibt ungesetzt, damit
+                           applyMobile() ihn beim Aufziehen des Fensters
+                           ueber planeAutostart() wieder anbietet.
+     sonst               → endgueltig fuer diesen Seitenaufruf. */
+  rundgangAbschalten(grund) {
+    if (grund !== 'schmal') this.dreiDAus = true;
     if (this.walk) this.walk.style.height = this.bahnHoehe();
 
-    const weg = (id) => { const el = document.getElementById(id); if (el) el.style.display = 'none'; };
-    weg('rg-canvas');     // leere Leinwand unter der Seite
-    weg('rg-stations');   // Tafeln der sieben Stationen
-    weg('rg-rail');       // Punkteleiste am rechten Rand
+    this.rundgangTeileZeigen(false);
 
     /* Kein Knopf und keine Zeile "startet jetzt" — beides waere unwahr. */
     if (this.standbild) {
@@ -239,6 +286,10 @@ class Component extends DCLogic {
      wieder sichtbar werden — sonst kaeme niemand mehr hinein. */
   zeigeStartknopf(knopfText, hinweisText) {
     if (!this.standbild) return;
+    /* Wo der Rundgang nicht laufen darf, waere ein Startknopf eine
+       Einladung ins Leere: starteRundgang() weist den Klick ohnehin ab,
+       der Besucher tippte also auf einen Knopf, der nichts tut. */
+    if (!rundgangHierErlaubt()) return;
     const knopf = this.standbild.querySelector('[data-start]');
     const hinweis = this.standbild.querySelector('[data-hinweis]');
     if (knopf) {
@@ -246,7 +297,18 @@ class Component extends DCLogic {
       knopf.disabled = false;
       if (knopfText) knopf.textContent = knopfText;
     }
-    if (hinweis && hinweisText) hinweis.textContent = hinweisText;
+    if (hinweis) {
+      /* rundgangAbschalten() hat die Zeile auf display:none gesetzt. Wird
+         der Knopf wieder angeboten — etwa nachdem das Fenster ueber
+         RUNDGANG_AB_BREITE aufgezogen wurde —, muss sie mit zurueck,
+         sonst stuende der Knopf ohne jede Erklaerung da.
+         Hier ist '' richtig: das <p> traegt im Markup keine
+         display-Angabe (zeigeStandbild), es gibt also nichts zu
+         ueberschreiben — anders als bei rg-canvas, siehe
+         rundgangTeileZeigen(). */
+      hinweis.style.display = '';
+      if (hinweisText) hinweis.textContent = hinweisText;
+    }
   }
 
   /* Wenn der Rundgang nicht laufen kann, soll das Standbild nicht so tun,
@@ -441,11 +503,17 @@ class Component extends DCLogic {
   }
 
   starteRundgang(automatisch) {
-    if (RUNDGANG_AUS || this.rundgangAn) return;
+    /* Zweite Sperre neben dem ausgeblendeten Knopf: Auch ein Tippen auf
+       einen alten, noch sichtbaren Knopf oder ein Aufruf aus dem
+       Fenstergroessen-Zweig laeuft hier durch. */
+    if (!rundgangHierErlaubt() || this.rundgangAn) return;
     const knopf = this.startLeiste && this.startLeiste.querySelector('[data-start]');
     if (knopf && !automatisch) { knopf.disabled = true; knopf.textContent = 'Wird geladen …'; }
     this.ladeTHREE().then(() => {
       if (!this.alive) return;
+      /* Falls die Teile wegen zu schmalen Fensters ausgeblendet waren:
+         ohne sichtbare Leinwand liefe die Szene ins Leere. */
+      this.rundgangTeileZeigen(true);
       this.rundgangAn = true;
       this.initScene();
       if (this.renderer) this.resizeGL();
@@ -963,13 +1031,37 @@ class Component extends DCLogic {
     if (this.headCta) this.headCta.style.display = m ? 'none' : 'inline-flex';
     if (!m && this.menu) { this.menu.style.display = 'none'; this.menu.style.opacity = '0'; this.menuOpen = false; document.documentElement.style.overflow = ''; }
     if (this.rail) this.rail.style.display = m ? 'none' : 'flex';
+
+    /* Rundgang nur am Rechner: die Fensterbreite kann sich waehrend des
+       Besuchs aendern (Drehen, Fenster ziehen), also muss die
+       Entscheidung mitgehen.
+
+       Nach UNTEN (schmaler): ausblenden, Bahn kurz, kein Knopf — aber mit
+       'schmal', also umkehrbar.
+       Nach OBEN (breiter): Teile wieder einblenden; den Start uebernimmt
+       der Zweig darunter ueber planeAutostart().
+
+       Bewusst NICHT behandelt: eine bereits LAUFENDE Szene wird beim
+       Schmalerziehen nicht abgebaut. Das beträfe nur, wer am Rechner
+       mitten im Rundgang sein Fenster verkleinert — ein Telefon kommt dort
+       nie hin. Ein Abbau muesste ausserdem das bereits entfernte Standbild
+       wiederherstellen. Der Rundgang hat ein eigenes Handy-Layout und
+       laeuft deshalb weiter, statt kaputtzugehen. */
+    if (RUNDGANG === 'nur-rechner' && !this.rundgangAn && !this.dreiDAus) {
+      if (!rundgangHierErlaubt()) this.rundgangAbschalten('schmal');
+      else this.rundgangTeileZeigen(true);
+    }
+    /* Die Zeile oben setzt die Punkteleiste am Rechner wieder auf 'flex'.
+       Wo der Rundgang nicht laeuft, hat sie dort nichts zu suchen. */
+    if (this.rail && !rundgangHierErlaubt()) this.rail.style.display = 'none';
+
     if (this.walk) this.walk.style.height = this.bahnHoehe();
     /* Beim Wechsel aufs Breitbild nachziehen — aber ueber denselben Weg
        wie beim Laden, nicht daran vorbei. Vorher hat dieser Zweig die
        Szene direkt gebaut und das Standbild sofort entfernt: bei
        fehlender oder unbeschleunigter Grafik blieb dann wieder eine
        schwarze Flaeche zurueck. */
-    if (!RUNDGANG_AUS && !m && !this.threeLaedt && !this.rundgangAn && !this.dreiDAus) {
+    if (rundgangHierErlaubt() && !m && !this.threeLaedt && !this.rundgangAn && !this.dreiDAus) {
       this.planeAutostart();
     }
 
@@ -3281,13 +3373,22 @@ class Component extends DCLogic {
     this.raf = requestAnimationFrame(this.tick);
     const canvas = document.getElementById('rg-canvas');
     if (!canvas) return;
+    /* Wachposten. Die beiden Zweige darunter bauen die Szene neu, sobald
+       window.THREE existiert — sie kannten den Schalter bisher nicht und
+       waeren damit ein Weg an der Handysperre vorbei. Heute faellt das
+       nicht auf, weil three.js bei abgeschaltetem Rundgang gar nicht
+       geladen wird; bei 'nur-rechner' genuegt aber ein einziger breiter
+       Seitenaufruf, damit THREE im Speicher steht.
+       "rundgangAn" gehoert mit hinein: eine bereits laufende Szene darf
+       nach dem Neuaufbau des Kopfbereichs nicht tot zurueckbleiben. */
+    const darfBauen = this.rundgangAn || rundgangHierErlaubt();
     if (!this.walk || !this.walk.isConnected) {
       this.reacquire();
-      if (window.THREE) this.initScene();
+      if (window.THREE && darfBauen) this.initScene();
       if (this.renderer) this.resizeGL();
       return;
     }
-    if (window.THREE && (!this.renderer || this.renderer.domElement !== canvas)) {
+    if (window.THREE && darfBauen && (!this.renderer || this.renderer.domElement !== canvas)) {
       this.initScene();
       if (this.renderer) this.resizeGL();
       return;

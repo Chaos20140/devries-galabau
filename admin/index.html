@@ -7,9 +7,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Verwaltung | de Vries Galabau</title>
 <meta name="robots" content="noindex, nofollow">
+<script>
+/* Schutz gegen Clickjacking.
+   Eigentlich Aufgabe der Kopfzeilen "X-Frame-Options" und
+   "frame-ancestors". Beide stehen in .htaccess — die wertet GitHub Pages
+   aber nicht aus, und "frame-ancestors" wirkt in einem <meta> nachweislich
+   nicht (siehe CLAUDE.md §17/v9). Solange die Seite dort liegt, gibt es
+   also KEINEN Kopfzeilenschutz, und ein fremdes Dokument koennte diese
+   Verwaltung unsichtbar ueberlagern, um einem angemeldeten Betreiber
+   Klicks auf "Loeschen" unterzuschieben.
+
+   Diese Zeile steht bewusst VOR allem anderen und ohne Abhaengigkeiten,
+   damit sie greift, bevor irgendetwas gezeichnet wird. Sie ist kein
+   Ersatz fuer die Kopfzeile — ein Rahmen mit "sandbox" kann sie
+   aushebeln —, aber sie deckt den Normalfall ab und kostet nichts.
+   Beim Umzug auf die eigene Domain wirkt zusaetzlich die .htaccess. */
+if (window.top !== window.self) { window.top.location = window.self.location; }
+</script>
 <link rel="icon" type="image/png" sizes="32x32" href="../assets/img/favicon-32.png?v=1">
 <link rel="apple-touch-icon" href="../assets/img/apple-touch-icon.png?v=1">
-<link rel="stylesheet" href="../assets/css/base.css?v=44">
+<link rel="stylesheet" href="../assets/css/base.css?v=45">
 <style>
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;background:#EDF3E8;color:#12261A;
@@ -180,6 +197,6 @@
 <body>
 <a class="skip" href="#vw-app">Zum Inhalt springen</a>
 <main id="vw-app"></main>
-<script src="../assets/js/verwaltung.js?v=44"></script>
+<script src="../assets/js/verwaltung.js?v=45"></script>
 </body>
 </html>

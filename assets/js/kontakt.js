@@ -83,14 +83,28 @@ class Component extends DCLogic {
     const buehne = document.getElementById('karte-buehne');
     if (!knopf || !buehne) return;
 
+    /* Erst jetzt zeigen: ab hier haengt der Horcher, ab hier tut der Knopf
+       auch etwas. Ohne JavaScript bleibt er verborgen. */
+    const zustimmung = document.getElementById('karte-zustimmung');
+    if (zustimmung) zustimmung.hidden = false;
+
     knopf.addEventListener('click', () => {
       const vorschau = document.getElementById('karte-vorschau');
-      const ziel = 'An den Flachsrotten 2, 31020 Salzhemmendorf';
+      /* Bewusst nach dem FIRMENNAMEN suchen, nicht nur nach der Anschrift.
+         Sucht man allein die Adresse, setzt Google die Stecknadel auf den
+         Geokodierungspunkt der Hausnummer — der liegt hier ein Stueck
+         neben dem Betriebsgelaende, und der Unternehmenseintrag
+         "de Vries Garten- und Landschaftsbau" stand unbeschriftet daneben.
+         Mit Name + Anschrift trifft die Nadel den Eintrag selbst.
+         ⚠ Dieselbe Zeichenfolge steht als Routenziel in kontakt.html
+         (Link "Route planen") — beide zusammen aendern. */
+      const ziel = 'de Vries Garten- und Landschaftsbau, ' +
+                   'An den Flachsrotten 2, 31020 Salzhemmendorf';
       const f = document.createElement('iframe');
       /* maps.google.com leitet auf www.google.com weiter — deshalb stehen
          beide Hosts in der frame-src dieser Seite. */
       f.src = 'https://maps.google.com/maps?q=' + encodeURIComponent(ziel) +
-              '&hl=de&z=15&output=embed';
+              '&hl=de&z=17&output=embed';
       f.title = 'Karte: ' + ziel;
       /* Bewusst OHNE loading="lazy": der Rahmen entsteht erst im Moment
          des Klicks, es gibt also nichts aufzuschieben. Umgekehrt kann
