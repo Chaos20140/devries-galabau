@@ -6,14 +6,19 @@
    · aria-expanded am Burger, aria-current am aktiven Link, Escape schließt */
 (function () {
   const LOGO = 'assets/img/rg-logo.webp';
-  const MAIN = [
+
+  /* Eingebaute Werte als RUECKFALL. Die gepflegten Texte stehen in
+     assets/js/rahmen-texte.js, damit der Seiten-Editor sie erreicht — im
+     Shadow DOM kommt er nicht an sie heran. Fehlt oder bricht die Datei,
+     laeuft die Kopfzeile mit diesen Werten weiter. */
+  const MAIN_FEST = [
     ['index.html', 'Rundgang'],
     ['gartengestaltung.html', 'Gestaltung'],
     ['gartenplanung.html', 'Planung'],
     ['gartenpflege.html', 'Pflege'],
     ['bepflanzung.html', 'Bepflanzung']
   ];
-  const MORE = [
+  const MORE_FEST = [
     ['ueber-uns.html', 'Über uns'],
     ['referenzen.html', 'Referenzen'],
     ['kontakt.html', 'Kontakt'],
@@ -21,6 +26,7 @@
     ['impressum.html', 'Impressum'],
     ['datenschutz.html', 'Datenschutz']
   ];
+
 
   class GardenHeader extends HTMLElement {
     connectedCallback() {
@@ -39,6 +45,31 @@
          koennen es mit cta="..." ueberschreiben (die Anfrageseite selbst
          springt zu ihrem eigenen Formular). */
       const cta = esc(this.getAttribute('cta') || 'anfrage.html');
+
+    const T = (window.RAHMEN_TEXTE && typeof window.RAHMEN_TEXTE === 'object')
+      ? window.RAHMEN_TEXTE : {};
+    /* Nur uebernehmen, was wirklich brauchbar ist: eine leere oder halbe
+       Liste waere schlimmer als der Rueckfall. */
+    const liste = (wert, rueckfall) => (Array.isArray(wert) && wert.length &&
+        wert.every(e => e && typeof e.datei === 'string' && typeof e.text === 'string'))
+      ? wert.map(e => [e.datei, e.text]) : rueckfall;
+    const wort = (wert, rueckfall) =>
+      (typeof wert === 'string' && wert.trim()) ? wert : rueckfall;
+
+    const MAIN = liste(T.menue, MAIN_FEST);
+    const MORE = liste(T.menueMehr, MORE_FEST);
+    const MEHR_TITEL = wort(T.menueMehrTitel, 'Unternehmen');
+    const KNOPF = wort(T.knopf, 'Kostenlos anfragen');
+    /* Der Knopf am Rechner blendet sein erstes Wort auf schmalen Schirmen
+       aus ("Kostenlos anfragen" -> "anfragen"). Damit das erhalten bleibt,
+       wird die Beschriftung am ersten Leerzeichen geteilt statt zwei Felder
+       zu verlangen. Ein einzelnes Wort bleibt ungeteilt. */
+    const KNOPF_TEIL = (function () {
+      const i = KNOPF.indexOf(' ');
+      return i < 0 ? { vorn: '', rest: KNOPF }
+                   : { vorn: KNOPF.slice(0, i + 1), rest: KNOPF.slice(i + 1) };
+    })();
+
       /* Verglichen wird der DATEINAME, nicht die Beschriftung.
          Frueher stand hier "active === l" mit l = Beschriftung. Das war
          solange richtig, wie die Beschriftungen fest im Code standen —
@@ -148,12 +179,12 @@
           '<nav class="gh-nav" aria-label="Hauptmenü"><span class="gh-pill">' +
             MAIN.map(m => pill(m[0], m[1])).join('') +
             '<span class="gh-more" data-more>' +
-              '<button class="gh-tog' + (moreActive ? ' gh-on' : '') + '" type="button" aria-expanded="false" aria-label="Weitere Seiten">Unternehmen <span aria-hidden="true">▾</span></button>' +
+              '<button class="gh-tog' + (moreActive ? ' gh-on' : '') + '" type="button" aria-expanded="false" aria-label="Weitere Seiten">' + esc(MEHR_TITEL) + ' <span aria-hidden="true">▾</span></button>' +
               '<span class="gh-drop">' + MORE.map(m => item(m[0], m[1])).join('') + '</span>' +
             '</span>' +
           '</span></nav>' +
           '<button class="gh-burger" type="button" aria-label="Menü öffnen" aria-expanded="false"><i><b></b><b></b><b></b></i></button>' +
-          '<a class="gh-cta" href="' + cta + '"><em></em><i></i><span class="gh-ctalabel"><span class="gh-ctaword">Kostenlos </span>anfragen</span></a>' +
+          '<a class="gh-cta" href="' + cta + '"><em></em><i></i><span class="gh-ctalabel"><span class="gh-ctaword">' + esc(KNOPF_TEIL.vorn) + '</span>' + esc(KNOPF_TEIL.rest) + '</span></a>' +
         '</header>' +
         '<div class="gh-menu" role="dialog" aria-modal="true" aria-label="Menü">' +
           '<div class="gh-mtop">' +
@@ -187,7 +218,7 @@
             /* Referenzen steht in der Fusszeile; das Menue bleibt schlank. */
           '</div>' +
           '<div class="gh-mcta">' +
-            '<a href="' + cta + '" style="background:linear-gradient(140deg,#2A6E42,#123324);color:#F4F9F0">Kostenlos anfragen</a>' +
+            '<a href="' + cta + '" style="background:linear-gradient(140deg,#2A6E42,#123324);color:#F4F9F0">' + esc(KNOPF) + '</a>' +
             '<a href="tel:051531552" style="border:1px solid rgba(16,35,26,.18);color:#0F2418">05153 1552</a>' +
           '</div>' +
         '</div>';
