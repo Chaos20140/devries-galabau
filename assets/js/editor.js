@@ -424,10 +424,10 @@
     var kopf = el('div', 'dvg-schublade-kopf');
     kopf.appendChild(el('strong', null, 'Stellenanzeigen'));
     kopf.appendChild(el('span', null,
-      'Hier stehen die offenen Stellen. Solange keine eingetragen ist, sagt die Karte ' +
-      'darüber, dass gerade keine Stelle frei ist — sobald Sie eine anlegen, passen Sie ' +
-      'diesen Text bitte an. Automatisch geht das nicht: nur Sie wissen, wie es dann ' +
-      'heißen soll.'));
+      'Hier stehen die offenen Stellen. Die Karte darüber („Zurzeit sind keine Stellen ' +
+      'ausgeschrieben“) blendet sich beim Speichern von selbst aus, sobald hier eine ' +
+      'Stelle steht — und kommt zurück, wenn Sie die letzte wieder entfernen. Ihren ' +
+      'Text können Sie weiterhin ändern; er steht dann unter „nicht sichtbar“.'));
     bloecke.appendChild(kopf);
     document.body.appendChild(bloecke);
     bloeckeZeichnen();
