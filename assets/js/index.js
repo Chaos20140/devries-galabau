@@ -948,26 +948,23 @@ class Component extends DCLogic {
   measureFlowLen() {
     if (!this.flowLine || !this.flowLine.isConnected) return;
     this.flowLenU = this.flowLine.getTotalLength();
-    const m = this.flowLine.getScreenCTM();
-    let L = 0;
-    if (m && (m.a !== 1 || m.d !== 1)) {
-      let px = 0, py = 0;
-      for (let i = 0; i <= 260; i++) {
-        const p = this.flowLine.getPointAtLength(this.flowLenU * i / 260);
-        const x = m.a * p.x + m.c * p.y + m.e;
-        const y = m.b * p.x + m.d * p.y + m.f;
-        if (i) L += Math.hypot(x - px, y - py);
-        px = x; py = y;
-      }
-    }
-    /* Ist die Matrix noch die Einheitsmatrix, war das SVG beim Messen
-       nicht ausgelegt. Dann NICHT uebernehmen — lieber beim naechsten
-       Anlauf noch einmal messen, als einen falschen Wert festschreiben. */
-    if (L <= 1) { this.flowGemessenBei = null; return; }
-    this.flowLen = L;
+    /* Der Pfad traegt pathLength="1" — er zaehlt sich selbst von 0 bis 1.
+       Damit sind Strichmuster und Versatz reine Anteile: dasharray 1,
+       Versatz (1 - Fortschritt). Es wird NICHTS mehr gemessen.
+
+       Warum das der eigentliche Fix ist: Vorher wurde die Laenge in
+       Bildpunkten ermittelt (der Pfad traegt non-scaling-stroke, das war
+       fuer sich richtig) und einmal festgeschrieben. Passte dieser Wert
+       nicht exakt zur spaeteren Darstellung — andere Fensterbreite,
+       Messung vor dem endgueltigen Umbruch, Bildlaufleiste da oder nicht —,
+       dann lief die gezeichnete Linie dem Fortschritt hinterher. Die
+       Blaetter haengen an reinen Anteilen und liefen weiter; sichtbar war
+       das als "die Linie bleibt bei Karte 03 haengen".
+
+       Mit pathLength kann dieser Unterschied gar nicht mehr entstehen. */
+    this.flowLine.style.strokeDasharray = '1';
+    this.flowLine.style.strokeDashoffset = '1';
     this.flowGemessenBei = window.innerWidth;
-    this.flowLine.style.strokeDasharray = L.toFixed(1);
-    this.flowLine.style.strokeDashoffset = L.toFixed(1);
   }
 
   setupMap() {
@@ -1318,7 +1315,9 @@ class Component extends DCLogic {
          bevor Karte 04 ueberhaupt im Bild war, und danach wuchs nichts
          mehr. Mit 0,92 kommt die Bluete an, wenn die letzte Karte steht. */
       const qg = Math.min(1, q / 0.92);
-      if (this.flowLine) this.flowLine.style.strokeDashoffset = (this.flowLen * (1 - qg)).toFixed(1);
+      /* Reiner Anteil dank pathLength="1" — kein gemessener Wert mehr,
+         der zur Darstellung passen muesste. */
+      if (this.flowLine) this.flowLine.style.strokeDashoffset = (1 - qg).toFixed(4);
       if (this.flowLeaves) {
         for (const lf of this.flowLeaves) {
           const lv = Math.min(1, Math.max(0, (qg - lf.fr - 0.02) / 0.05));
