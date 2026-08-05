@@ -1450,13 +1450,29 @@ class Component extends DCLogic {
        28 px sind bewusst wenig: mehr wuerde bei 360 px Breite trotz
        overflow-x:clip auffallen und die Seite wackeln lassen. */
     const seitlich = window.innerWidth < 820 && !__reduce;
+
+    /* WAS SCHON IM BILD STEHT, DARF NICHT MEHR VERSTECKT WERDEN.
+       Vorher bekam JEDES Element opacity:0 — auch der Hero, der zu
+       diesem Zeitpunkt laengst gezeichnet auf dem Schirm stand. Der
+       sichtbare Ablauf war deshalb: HTML malt den Hero, index.js (185 KB)
+       laedt, nimmt ihn wieder weg, blendet ihn 0,9 s spaeter erneut ein.
+       Das sieht aus, als lade die Seite ein zweites Mal — genau so ist es
+       gemeldet worden. Die zehn Unterseitenskripte hatten diesen Schutz
+       von Anfang an; nur hier fehlte er.
+
+       Erst ALLE Masse lesen, dann ALLE schreiben. Beides abwechselnd in
+       einer Schleife zwingt den Browser bei 57 Elementen zu 57 erzwungenen
+       Layoutdurchgaengen. */
+    const untenDrunter = els.map(el => el.getBoundingClientRect().top > window.innerHeight * 0.92);
     els.forEach((el, i) => {
-      el.style.opacity = '0';
-      /* 44 statt 28 px: bei 28 war die Bewegung so klein, dass sie beim
-         Scrollen kaum auffiel. Mehr geht nicht, sonst wird bei 360 px
-         Breite trotz overflow-x:clip die Seite unruhig. */
-      if (seitlich) el.style.transform = 'translateX(' + (i % 2 ? 44 : -44) + 'px)';
-      else if (!__reduce) el.style.transform = 'translateY(26px)';
+      if (untenDrunter[i]) {
+        el.style.opacity = '0';
+        /* 44 statt 28 px: bei 28 war die Bewegung so klein, dass sie beim
+           Scrollen kaum auffiel. Mehr geht nicht, sonst wird bei 360 px
+           Breite trotz overflow-x:clip die Seite unruhig. */
+        if (seitlich) el.style.transform = 'translateX(' + (i % 2 ? 44 : -44) + 'px)';
+        else if (!__reduce) el.style.transform = 'translateY(26px)';
+      }
       el.style.transition = __reduce
         ? 'opacity .35s ease'
         : 'opacity .9s cubic-bezier(.16,1,.3,1), transform .9s cubic-bezier(.16,1,.3,1)';
