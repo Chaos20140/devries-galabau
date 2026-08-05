@@ -110,21 +110,21 @@
     kasten.setAttribute('aria-labelledby', 'dvg-karte-titel');
     kasten.setAttribute('aria-describedby', 'dvg-karte-text');
 
+    /* Bewusst KURZ und ohne Zweckangabe — so hat der Betreiber es
+       gewollt. Der Text bleibt trotzdem wahr: "nur wenn Sie zustimmen"
+       stimmt, weil ohne Zustimmung nichts geladen und nichts gesetzt
+       wird. Wozu die Zustimmung dient, steht ausfuehrlich in der
+       Datenschutzerklaerung; der Verweis darauf ist deshalb Pflicht und
+       nicht Zierde. */
     var h = el('h2', 'margin:0 0 8px;font:600 17px/1.3 Outfit,system-ui,sans-serif;color:#0C1D14',
-      'Karte von Google Maps');
+      'Cookies');
     h.id = 'dvg-karte-titel';
     h.tabIndex = -1;
 
-    var p = el('p', 'margin:0 0 6px;font:400 14px/1.55 Outfit,system-ui,sans-serif;color:#26382E',
-      'Auf der Seite „Kontakt“ können wir Ihnen eine Karte mit unserem Standort ' +
-      'zeigen. Sie wird von Google geladen; dabei erfährt Google Ihre IP-Adresse ' +
-      'und übermittelt sie in die USA. Ohne Ihre Zustimmung geschieht das nicht.');
+    var p = el('p', 'margin:0 0 16px;font:400 14px/1.55 Outfit,system-ui,sans-serif;color:#26382E',
+      'Wir setzen Cookies nur ein, wenn Sie zustimmen. Ihre Entscheidung ' +
+      'merken wir uns auf diesem Gerät.');
     p.id = 'dvg-karte-text';
-
-    var hin = el('p', 'margin:0 0 14px;font:400 13px/1.5 Outfit,system-ui,sans-serif;color:#41564A',
-      'Wir merken uns dafür Ihre Entscheidung auf diesem Gerät. Sonst nichts — ' +
-      'diese Website nutzt weder Analyse noch Werbung. Ändern können Sie das ' +
-      'jederzeit auf der Seite Kontakt.');
 
     var reihe = el('div', 'display:flex;flex-wrap:wrap;gap:10px;align-items:center');
 
@@ -133,7 +133,7 @@
     nein.type = 'button';
     nein.id = 'dvg-karte-nein';
 
-    var ja = el('button', KNOPF + ';background:#2C6E49;color:#fff;border:1px solid #2C6E49', 'Karte zulassen');
+    var ja = el('button', KNOPF + ';background:#2C6E49;color:#fff;border:1px solid #2C6E49', 'Zustimmen');
     ja.type = 'button';
     ja.id = 'dvg-karte-ja';
 
@@ -143,13 +143,12 @@
     var link = el('p', 'margin:12px 0 0;font:400 13px/1.5 Outfit,system-ui,sans-serif;color:#41564A');
     var a = el('a', 'color:#2C6E49;text-decoration:underline', 'Datenschutzerklärung');
     a.href = (location.pathname.indexOf('/admin/') > -1 ? '../' : '') + 'datenschutz.html#karte';
-    link.appendChild(el('span', null, 'Einzelheiten in der '));
+    link.appendChild(el('span', null, 'Mehr in der '));
     link.appendChild(a);
     link.appendChild(el('span', null, '.'));
 
     kasten.appendChild(h);
     kasten.appendChild(p);
-    kasten.appendChild(hin);
     kasten.appendChild(reihe);
     kasten.appendChild(link);
 
