@@ -27,15 +27,16 @@
     tabelleBewerbung: 'galabau_bewerbungen'
   };
 
-  /* ⚠ VORUEBERGEHEND: Formularpost geht NICHT an die Adresse aus dem
-     Impressum, sondern zur Abnahme an eine andere. Das gilt fuer den
-     mailto-Weg; die Benachrichtigung aus der Datenbank haengt am Secret
-     MAIL_TO im Supabase-Projekt und ist dort gleich gesetzt.
-     Zum Zurueckstellen: hier auf info@devries-galabau.de aendern und
-     supabase secrets set MAIL_TO=info@devries-galabau.de ausfuehren.
-     Die im Impressum, in der Fusszeile und auf der Kontaktseite
-     ANGEZEIGTE Adresse bleibt unveraendert die des Betriebs. */
-  var EMPFAENGER = 'tolunayusul@gmail.com';
+  /* Empfaenger der Formularpost — die Adresse des Betriebs, dieselbe wie
+     im Impressum, in der Fusszeile und auf der Kontaktseite.
+     Dieser Wert gilt fuer den mailto-Rueckfall (wenn die Datenbank nicht
+     erreichbar ist). Die Benachrichtigung aus der Datenbank haengt am
+     Secret MAIL_TO im Supabase-Projekt und muss dort GLEICH gesetzt sein —
+     bei einer Aenderung immer beide Stellen anfassen:
+     supabase secrets set MAIL_TO=<adresse> --project-ref pvcbgwzqjnzzpehwuywi
+     (Bis zum 5. August 2026 stand hier zur Abnahme voruebergehend eine
+     andere Adresse; seitdem wieder die des Betriebs.) */
+  var EMPFAENGER = 'info@devries-galabau.de';
 
   /* Laengen entsprechen den CHECK-Bedingungen in schema.sql. Hier wird
      nur gekuerzt, damit gar nicht erst Unsinn losgeschickt wird — die
