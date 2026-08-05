@@ -16,7 +16,9 @@
 
 import { LOGO_CID } from "./logo.ts";
 
-export type Feld = [string, unknown];
+/* Ein Feld ist [Bezeichnung, Wert]. Frueher eine TypeScript-Angabe;
+   die Datei ist jetzt reines JavaScript, damit das Pruefskript sie
+   LADEN und die Vorlage wirklich rendern kann statt sie nachzubauen. */
 
 const GRUEN_DUNKEL = "#1B4332";
 const GRUEN = "#2C6E49";
@@ -25,13 +27,13 @@ const PAPIER = "#EDF3E8";
 const TEXT = "#26382E";
 const LABEL = "#46761F";
 
-export function maskieren(wert: unknown): string {
+export function maskieren(wert) {
   return String(wert ?? "").replace(/[&<>"']/g, (c) => (
-    { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] as string
+    { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
   ));
 }
 
-function zeile([bez, wert]: Feld): string {
+function zeile([bez, wert]) {
   const w = String(wert ?? "").trim();
   if (!w) return "";
   return `
@@ -39,7 +41,7 @@ function zeile([bez, wert]: Feld): string {
           <!-- 118 statt 150 px: die laengste Beschriftung ("Auftraggeber")
                braucht rund 98 px, der Rest der Breite ist im Wertfeld
                besser aufgehoben. -->
-          <td style="padding:11px 0;border-bottom:1px solid rgba(16,35,26,.09);vertical-align:top;width:118px;
+          <td class="dv-label" style="padding:11px 0;border-bottom:1px solid rgba(16,35,26,.09);vertical-align:top;width:118px;
               font:600 11px/1.4 Arial,Helvetica,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:${LABEL}">
             ${maskieren(bez)}
           </td>
@@ -47,7 +49,7 @@ function zeile([bez, wert]: Feld): string {
                ganze Karte auf 347 px Mindestbreite; auf einem 320-px-Telefon
                steht die Mail dann schief. "word-wrap" ist die Fassung, die
                auch Outlook (Word-Engine) versteht. -->
-          <td style="padding:11px 0;border-bottom:1px solid rgba(16,35,26,.09);vertical-align:top;
+          <td class="dv-wert" style="padding:11px 0;border-bottom:1px solid rgba(16,35,26,.09);vertical-align:top;
               word-wrap:break-word;overflow-wrap:anywhere;
               font:400 15px/1.6 Arial,Helvetica,sans-serif;color:${TEXT}">
             ${maskieren(w).replace(/\n/g, "<br>")}
@@ -63,15 +65,7 @@ function zeile([bez, wert]: Feld): string {
  * @param nachricht Freitext des Absenders (eigener Block)
  * @param antwortAn Adresse fuer den Antworten-Knopf, leer wenn unplausibel
  */
-export function html(o: {
-  art: "anfrage" | "bewerbung";
-  titel: string;
-  vorspann: string;
-  felder: Feld[];
-  nachricht?: string;
-  antwortAn?: string;
-  eingegangen?: string;
-}): string {
+export function html(o) {
   const nachricht = String(o.nachricht ?? "").trim();
   const knopf = o.antwortAn
     ? `
@@ -87,7 +81,24 @@ export function html(o: {
   return `<!DOCTYPE html>
 <html lang="de"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${maskieren(o.titel)}</title></head>
+<title>${maskieren(o.titel)}</title>
+<!-- Auf schmalen Schirmen Beschriftung ÜBER den Wert statt daneben.
+     Gemessen bei 320 px: Die feste 118-px-Spalte liess dem Wert nur rund
+     140 px, und "Landschaftsgärtnerin" brach mitten im Wort um. Gestapelt
+     steht die volle Breite zur Verfuegung.
+     Ein <style>-Block wirkt nicht ueberall — Outlook mit der Word-Engine
+     ignoriert Medienabfragen. Das ist hier ohne Belang: Outlook mit der
+     Word-Engine ist der Rechner, und dort ist genug Platz. Faellt die
+     Regel aus, bleibt das zweispaltige Layout von vorher, das ebenfalls
+     ohne waagerechten Ueberlauf auskommt. -->
+<style>
+@media only screen and (max-width:480px) {
+  td.dv-label { display:block !important; width:auto !important;
+                padding:11px 0 2px !important; border-bottom:0 !important; }
+  td.dv-wert  { display:block !important; width:auto !important;
+                padding:0 0 11px !important; }
+}
+</style></head>
 <body style="margin:0;padding:0;background:${PAPIER}">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${PAPIER};padding:24px 12px">
     <tr><td align="center">
@@ -126,7 +137,15 @@ export function html(o: {
           <div style="margin:22px 0 0;padding:18px 20px;border-radius:14px;background:${PAPIER}">
             <p style="margin:0 0 8px;font:600 11px/1.4 Arial,Helvetica,sans-serif;letter-spacing:.12em;
                       text-transform:uppercase;color:${LABEL}">Nachricht</p>
-            <p style="margin:0;font:400 15px/1.65 Arial,Helvetica,sans-serif;color:${TEXT}">
+            <!-- Umbruch im Wort ist HIER genauso noetig wie in den
+                 Feldwerten daneben: Das ist der Freitext des Absenders.
+                 Ein einziges langes Wort (gemessen: 158 Zeichen) gab dem
+                 Absatz eine Mindestbreite von 1133 px und zog die ganze
+                 Karte auf 1233 px — auf jedem Telefon musste man seitwaerts
+                 scrollen. Die Regel stand bei den Feldwerten und fehlte
+                 ausgerechnet an der Stelle mit dem laengsten Text. -->
+            <p style="margin:0;word-wrap:break-word;overflow-wrap:anywhere;
+                      font:400 15px/1.65 Arial,Helvetica,sans-serif;color:${TEXT}">
               ${maskieren(nachricht).replace(/\n/g, "<br>")}</p>
           </div>` : ""}
           <table role="presentation" cellpadding="0" cellspacing="0">${knopf}</table>
@@ -147,7 +166,7 @@ export function html(o: {
 }
 
 /* Reine Textfassung — dieselben Angaben, ohne Auszeichnung. */
-export function text(o: { titel: string; felder: Feld[]; nachricht?: string; eingegangen?: string }): string {
+export function text(o) {
   const zeilen = o.felder
     .filter(([, w]) => String(w ?? "").trim())
     .map(([b, w]) => b + ": " + String(w).trim());

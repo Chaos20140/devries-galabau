@@ -17,7 +17,10 @@
    sonst koennte jeder ueber die oeffentliche Adresse Mails ausloesen.
    ===================================================================== */
 import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
-import { html, text, type Feld } from "./vorlage.ts";
+import { html, text } from "./vorlage.mjs";
+/* Ein Feld ist [Bezeichnung, Wert] — die Vorlage ist reines
+   JavaScript, damit sie sich pruefen laesst (siehe vorlage.mjs). */
+type Feld = [string, unknown];
 import { LOGO_BASE64, LOGO_CID, LOGO_DATEI, LOGO_TYP } from "./logo.ts";
 import { betreffAscii } from "./betreff.mjs";
 import { ohneRandleerzeichen, dateinameSicher } from "./qp.mjs";
