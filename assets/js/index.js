@@ -90,7 +90,18 @@ class Component extends DCLogic {
        Jetzt steht sofort das Standbild da — echtes Foto, echter Text.
        Der Rundgang startet am Rechner von selbst, sobald die Seite
        gezeichnet ist und feststeht, dass die Grafik ihn auch tragen kann. */
-    this.zeigeStandbild();
+    /* Das per Skript gebaute Standbild wird nur noch gebraucht, wenn der
+       Rundgang grundsaetzlich laufen soll und man auf ihn wartet. Ist er
+       ueber den Schalter aus, steht am Seitenanfang der echte Hero aus
+       dem MARKUP (#dvg-start): der braucht kein JavaScript, ist das erste
+       Inhaltsbild und laesst sich mit dem Seiten-Editor bearbeiten. */
+    if (RUNDGANG !== 'aus') {
+      this.zeigeStandbild();
+      /* Der Hero aus dem Markup und der Rundgang koennen nicht beide den
+         Seitenanfang belegen. Laeuft der Rundgang, weicht der Hero. */
+      const start = document.getElementById('dvg-start');
+      if (start) start.style.display = 'none';
+    }
     /* 'schmal' heisst: nur diese Fensterbreite verbietet ihn. Das ist
        umkehrbar — wer am Rechner das Fenster wieder aufzieht, bekommt ihn
        angeboten. Bei 'aus' ist die Abschaltung dagegen endgueltig. */
@@ -545,6 +556,10 @@ class Component extends DCLogic {
      scrollte man an einer leeren Leinwand vorbei. Nach dem Start vier
      Bildschirmhoehen statt der frueheren zehn. */
   bahnHoehe() {
+    /* Rundgang ueber den Schalter aus: Am Seitenanfang steht der Hero aus
+       dem Markup, der seinen Platz selbst mitbringt. Eine Bahn daneben
+       waere schlicht leerer Raum. */
+    if (RUNDGANG === 'aus') return '0';
     /* Steht fest, dass der Rundgang hier nicht laufen kann, waere eine
        lange Bahn nur leeres Scrollen an einer Flaeche vorbei. */
     if (this.dreiDAus) return '112vh';
