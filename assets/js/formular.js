@@ -57,7 +57,16 @@
      selbst (nur application/pdf, hoechstens 5 MB, siehe
      supabase/bewerbungsdatei.sql). Eine Pruefung im Browser laesst sich
      umgehen, die dort nicht. */
-  var DATEI = { max: 5 * 1024 * 1024, typ: 'application/pdf', eimer: 'bewerbungen' };
+  /* anzahl/gesamt gelten fuer die MEHRFACH-Auswahl (Lebenslauf,
+     Anschreiben, Zeugnisse). "gesamt" ist bewusst kleiner als
+     anzahl x max: Alle Unterlagen reisen als Anhang in EINER Mail mit,
+     und die Mail-Funktion haengt hoechstens 8 MB an. Waere die Summe
+     hier groesser, kaeme beim Betreiber ein Teil nicht an — und zwar
+     ohne dass es jemandem auffiele. */
+  var DATEI = {
+    max: 5 * 1024 * 1024, anzahl: 5, gesamt: 8 * 1024 * 1024,
+    typ: 'application/pdf', eimer: 'bewerbungen'
+  };
 
   var geladenUm = Date.now();
 
@@ -74,6 +83,15 @@
       if (!v) return;
       raus[k] = v.length > MAX[k] ? v.slice(0, MAX[k]) : v;
     });
+    /* "dateien" ist als EINZIGES Feld kein Text, sondern eine Liste, und
+       muss deshalb an MAX vorbei. Verbindlich geprueft wird sie ohnehin in
+       der Datenbank (galabau_dateien_ok, siehe supabase/unterlagen.sql):
+       hoechstens fuenf, jeder Eintrag mit Pfad unter "eingang/" und Namen. */
+    if (Array.isArray(werte.dateien) && werte.dateien.length) {
+      raus.dateien = werte.dateien.slice(0, DATEI.anzahl).map(function (d) {
+        return { pfad: String(d.pfad || ''), name: String(d.name || '').slice(0, 200) };
+      });
+    }
     return raus;
   }
 
@@ -199,11 +217,34 @@
   function dateiPruefen(datei) {
     if (!datei) return null;
     if (datei.size > DATEI.max) {
-      return 'Die Datei ist größer als 5 MB. Bitte schicken Sie sie uns per E-Mail an ' + HINWEIS_ADRESSE + '.';
+      return '„' + datei.name + '“ ist größer als 5 MB. Bitte schicken Sie sie uns per E-Mail an ' +
+        HINWEIS_ADRESSE + '.';
     }
     var name = String(datei.name || '');
     var istPdf = datei.type === DATEI.typ || /\.pdf$/i.test(name);
-    if (!istPdf) return 'Bitte laden Sie den Lebenslauf als PDF hoch.';
+    if (!istPdf) return '„' + name + '“ ist kein PDF. Bitte laden Sie Ihre Unterlagen als PDF hoch.';
+    return null;
+  }
+
+  /* Die ganze Auswahl auf einmal pruefen — Anzahl und Summe lassen sich
+     an einer einzelnen Datei nicht sehen. */
+  function dateienPruefen(liste) {
+    var dateien = [].slice.call(liste || []);
+    if (!dateien.length) return null;
+    if (dateien.length > DATEI.anzahl) {
+      return 'Bitte höchstens ' + DATEI.anzahl + ' Dateien auswählen. Weitere Unterlagen ' +
+        'können Sie gern nachreichen.';
+    }
+    var summe = 0;
+    for (var i = 0; i < dateien.length; i++) {
+      var meckern = dateiPruefen(dateien[i]);
+      if (meckern) return meckern;
+      summe += dateien[i].size;
+    }
+    if (summe > DATEI.gesamt) {
+      return 'Ihre Unterlagen sind zusammen größer als ' + Math.round(DATEI.gesamt / 1024 / 1024) +
+        ' MB. Bitte laden Sie weniger hoch oder schicken Sie sie an ' + HINWEIS_ADRESSE + '.';
+    }
     return null;
   }
 
@@ -242,11 +283,35 @@
     });
   }
 
+  /* Mehrere Unterlagen NACHEINANDER ablegen, nicht gleichzeitig.
+     Fuenf gleichzeitige Uebertragungen bringen auf einer Mobilfunk-
+     verbindung nichts und machen jede einzelne langsamer; ausserdem
+     laesst sich so sagen, bei welcher Datei es klemmt.
+     Rueckgabe: die Liste der abgelegten Unterlagen. Scheitert eine,
+     scheitert der ganze Vorgang — der Aufrufer entscheidet dann, ob die
+     Bewerbung trotzdem rausgeht (sie tut es). */
+  function dateienHochladen(liste, fortschritt) {
+    var dateien = [].slice.call(liste || []);
+    if (!dateien.length || !konfiguriert()) return Promise.resolve([]);
+    var fertig = [];
+    return dateien.reduce(function (kette, datei, i) {
+      return kette.then(function () {
+        if (typeof fortschritt === 'function') fortschritt(i + 1, dateien.length, datei.name);
+        return dateiHochladen(datei).then(function (a) {
+          if (a) fertig.push({ pfad: a.datei, name: a.datei_name });
+        });
+      });
+    }, Promise.resolve()).then(function () { return fertig; });
+  }
+
   window.dvFormular = {
     senden: senden,
     konfiguriert: konfiguriert,
     empfaenger: EMPFAENGER,
     dateiPruefen: dateiPruefen,
-    dateiHochladen: dateiHochladen
+    dateienPruefen: dateienPruefen,
+    dateiHochladen: dateiHochladen,
+    dateienHochladen: dateienHochladen,
+    grenzen: { anzahl: DATEI.anzahl, max: DATEI.max, gesamt: DATEI.gesamt }
   };
 })();

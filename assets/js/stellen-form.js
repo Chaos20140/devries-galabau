@@ -51,18 +51,23 @@
        passt. */
     if (eingabe) {
       eingabe.addEventListener('change', function () {
-        var f = eingabe.files && eingabe.files[0];
-        if (!f) { sageHinweis(null, false); return; }
-        var meckern = window.dvFormular && window.dvFormular.dateiPruefen(f);
+        var fs = eingabe.files ? [].slice.call(eingabe.files) : [];
+        if (!fs.length) { sageHinweis(null, false); return; }
+        var meckern = window.dvFormular && window.dvFormular.dateienPruefen(fs);
         if (meckern) { eingabe.value = ''; sageHinweis(meckern, true); return; }
-        sageHinweis('Ausgewählt: ' + f.name + ' (' + Math.max(1, Math.round(f.size / 1024)) + ' KB)', false);
+        var kb = function (b) { return Math.max(1, Math.round(b / 1024)) + ' KB'; };
+        var summe = fs.reduce(function (a, f) { return a + f.size; }, 0);
+        sageHinweis(fs.length === 1
+          ? 'Ausgewählt: ' + fs[0].name + ' (' + kb(fs[0].size) + ')'
+          : 'Ausgewählt: ' + fs.length + ' Dateien (' + kb(summe) + ') — ' +
+            fs.map(function (f) { return f.name; }).join(', '), false);
       });
     }
 
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       var d = new FormData(form);
-      var datei = eingabe && eingabe.files && eingabe.files[0];
+      var dateien = eingabe && eingabe.files ? [].slice.call(eingabe.files) : [];
       var knopf = form.querySelector('button[type="submit"]') || form.querySelector('button');
 
       var zeilen = [
@@ -82,7 +87,8 @@
       };
       if (!window.dvFormular) { mailto(); return; }
 
-      var weiter = function (anhang) {
+      var weiter = function (anhaenge) {
+        var liste = anhaenge && anhaenge.length ? anhaenge : null;
         window.dvFormular.senden({
           form: form,
           tabelle: 'bewerbung',
@@ -92,31 +98,38 @@
             name: d.get('name'), email: d.get('email'), telefon: d.get('telefon'),
             stelle: d.get('stelle'), verfuegbar_ab: d.get('verfuegbar_ab'),
             nachricht: d.get('nachricht'),
-            datei: anhang ? anhang.datei : null,
-            datei_name: anhang ? anhang.datei_name : null
+            /* Alle Unterlagen in "dateien". Die alten Einzelspalten
+               bekommen die ERSTE — es gibt Leser, die noch sie benutzen,
+               und Zeilen, die nur sie tragen. */
+            dateien: liste,
+            datei: liste ? liste[0].pfad : null,
+            datei_name: liste ? liste[0].name : null
           },
           mailto: mailto
         });
       };
 
-      if (!datei) { weiter(null); return; }
+      if (!dateien.length) { weiter(null); return; }
 
-      var meckern = window.dvFormular.dateiPruefen(datei);
+      var meckern = window.dvFormular.dateienPruefen(dateien);
       if (meckern) { sageHinweis(meckern, true); return; }
 
       if (knopf) { knopf.disabled = true; knopf.textContent = 'Lädt hoch …'; }
-      sageHinweis('Lebenslauf wird übertragen …', false);
-      window.dvFormular.dateiHochladen(datei)
-        .then(function (anhang) { weiter(anhang); })
+      window.dvFormular.dateienHochladen(dateien, function (nr, von, name) {
+        sageHinweis(von === 1
+          ? 'Unterlage wird übertragen …'
+          : 'Unterlage ' + nr + ' von ' + von + ' wird übertragen (' + name + ') …', false);
+      })
+        .then(function (anhaenge) { weiter(anhaenge); })
         .catch(function (f) {
           /* Die Bewerbung ist wichtiger als der Anhang: sie geht trotzdem
-             raus, und der Bewerber erfaehrt, dass die Datei fehlt — statt
-             dass beides stillschweigend liegen bleibt. */
+             raus, und der Bewerber erfaehrt, dass die Dateien fehlen —
+             statt dass beides stillschweigend liegen bleibt. */
           if (knopf) { knopf.disabled = false; knopf.textContent = 'Bewerbung senden →'; }
-          sageHinweis('Der Lebenslauf konnte nicht übertragen werden (' + (f && f.message) +
-            '). Ihre Bewerbung wird trotzdem gesendet — bitte schicken Sie die Datei an ' +
+          sageHinweis('Ihre Unterlagen konnten nicht übertragen werden (' + (f && f.message) +
+            '). Ihre Bewerbung wird trotzdem gesendet — bitte schicken Sie die Dateien an ' +
             'info@devries-galabau.de nach.', true);
-          zeilen.push('', 'Hinweis: Der Lebenslauf konnte nicht übertragen werden.');
+          zeilen.push('', 'Hinweis: Die Unterlagen konnten nicht übertragen werden.');
           setTimeout(function () { weiter(null); }, 2500);
         });
     });

@@ -168,6 +168,22 @@
   };
   var STATUS = [['neu', 'Neu'], ['in_arbeit', 'In Arbeit'], ['erledigt', 'Erledigt']];
 
+  /* Die Unterlagen einer Bewerbung — neue Spalte bevorzugt, alte
+     Einzelspalten als Rueckfall. Es gibt Zeilen aus der Zeit vor der
+     Mehrfach-Auswahl, die nur "datei"/"datei_name" tragen.
+     Die Reihenfolge ist massgeblich: Der Server bekommt beim Oeffnen die
+     NUMMER und schlaegt den Pfad in derselben Reihenfolge nach. */
+  function unterlagen(z) {
+    if (!z) return [];
+    if (Array.isArray(z.dateien) && z.dateien.length) {
+      return z.dateien
+        .filter(function (u) { return u && u.pfad; })
+        .map(function (u) { return { name: String(u.name || 'Unterlage.pdf') }; });
+    }
+    if (z.datei) return [{ name: String(z.datei_name || 'Lebenslauf.pdf') }];
+    return [];
+  }
+
   function datum(s) {
     try {
       var d = new Date(s);
@@ -583,11 +599,14 @@
           '<h1 class="vw-h1 vw-h1--klein">' + esc(z.name || '(ohne Namen)') + '</h1>' +
           '<div class="vw-felder">' + FELDER[bereich].map(zeile).join('') + '</div>' +
           (bereich === 'bewerbungen'
-            ? '<div class="vw-feld"><div class="vw-feld__label">Lebenslauf</div><div class="vw-feld__wert">' +
-                (z.datei
-                  ? '<button class="vw-btn vw-btn--leer" id="vw-datei" style="min-height:40px">' +
-                      esc(z.datei_name || 'Lebenslauf.pdf') + ' öffnen</button>'
-                  : '<span class="vw-hint">Keine Datei mitgeschickt.</span>') +
+            ? '<div class="vw-feld"><div class="vw-feld__label">Unterlagen</div><div class="vw-feld__wert">' +
+                (unterlagen(z).length
+                  ? '<div style="display:grid;gap:8px;justify-items:start">' +
+                      unterlagen(z).map(function (u, i) {
+                        return '<button class="vw-btn vw-btn--leer vw-datei" data-nr="' + i +
+                          '" style="min-height:40px">' + esc(u.name) + ' öffnen</button>';
+                      }).join('') + '</div>'
+                  : '<span class="vw-hint">Keine Unterlagen mitgeschickt.</span>') +
               '</div></div>'
             : '') +
           '<div class="vw-aktionen">' +
@@ -623,12 +642,14 @@
 
     /* Der Link wird bei jedem Klick neu geholt und gilt nur zwei Minuten.
        Er steht deshalb nirgends im Markup und landet nicht im Verlauf. */
-    var dateiKnopf = $('#vw-datei');
-    if (dateiKnopf) {
+    [].slice.call(document.querySelectorAll('.vw-datei')).forEach(function (dateiKnopf) {
       dateiKnopf.addEventListener('click', function () {
         var k = this, alt = k.textContent;
         k.disabled = true; k.textContent = 'öffnet …';
-        ruf({ was: 'dateilink', bereich: bereich, id: z.id })
+        /* Der Server bekommt die NUMMER, nicht den Pfad — er schlaegt ihn
+           selbst in der Zeile nach. Sonst liesse sich ueber diesen Weg
+           eine fremde Datei unterschreiben. */
+        ruf({ was: 'dateilink', bereich: bereich, id: z.id, nr: Number(k.getAttribute('data-nr')) })
           .then(function (a) {
             k.disabled = false; k.textContent = alt;
             var w = window.open(a.link, '_blank', 'noopener');
@@ -641,7 +662,7 @@
               ? 'Datei nicht mehr vorhanden' : 'Fehler: ' + verstaendlich(f);
           });
       });
-    }
+    });
 
     /* Die Grenze haengt an der Fensterbreite, nicht am Geraet — am Rechner
        ist sie bei schmalem Fenster oder 150 % Vergroesserung ebenfalls
@@ -762,7 +783,7 @@
           if (!daten[p.bereich]) daten[p.bereich] = [];
           /* Kam der Lebenslauf nicht mit zurueck, den Verweis entfernen —
              sonst boete die Verwaltung einen Knopf an, der ins Leere geht. */
-          if (a && a.anhang === false) { p.zeile.datei = null; }
+          if (a && a.anhang === false) { p.zeile.datei = null; p.zeile.dateien = []; }
           daten[p.bereich].push(p.zeile);
           daten[p.bereich].sort(function (a, b) {
             return String(b.eingegangen_am).localeCompare(String(a.eingegangen_am));
@@ -809,8 +830,17 @@
       if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
       return '"' + s.replace(/"/g, '""') + '"';
     };
+    /* "datei_name" traegt nur die erste Unterlage. Im Export sollen alle
+       stehen — sonst sieht der Betreiber in der Tabelle nicht, dass eine
+       Bewerbung drei Dokumente hatte. */
+    var wert = function (z, s) {
+      if (s === 'datei_name') return unterlagen(z).map(function (u) { return u.name; }).join(', ');
+      return z[s];
+    };
     var text = '﻿' + spalten.join(';') + '\n' +
-      zeilen.map(function (z) { return spalten.map(function (s) { return zelle(z[s]); }).join(';'); }).join('\n');
+      zeilen.map(function (z) {
+        return spalten.map(function (s) { return zelle(wert(z, s)); }).join(';');
+      }).join('\n');
     var a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([text], { type: 'text/csv;charset=utf-8' }));
     a.download = 'devries-' + bereich + '.csv';

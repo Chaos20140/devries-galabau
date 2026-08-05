@@ -153,14 +153,33 @@ Deno.serve(async (req: Request) => {
   /* Nur eine plausible Adresse darf in Reply-To. */
   const antwortAn = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : "";
 
-  /* Anzeigename der Bewerbungsunterlage. Steht auch dann in der Mail,
-     wenn der Anhang nicht mitgeschickt werden konnte — dann weiss der
-     Betreiber wenigstens, dass es eine gibt. */
-  const anhangName = dateinameSicher(kopfsicher(satz.datei_name, 120), "");
-
   /* Welche Tabelle den Trigger ausgeloest hat — der Webhook schickt sie mit. */
   const quelleTab = String(satz.__tabelle ?? "").includes("bewerbung") ||
     satz.stelle != null || satz.verfuegbar_ab != null ? "bewerbung" : "anfrage";
+
+  /* Welche Unterlagen liegen an? "dateien" bevorzugen, auf die alten
+     Einzelspalten zurueckfallen — es gibt Zeilen aus der Zeit vor der
+     Mehrfach-Auswahl, die nur sie tragen. */
+  const unterlagen: { pfad: string; name: string }[] = [];
+  if (quelleTab === "bewerbung") {
+    const liste = Array.isArray(satz.dateien) ? satz.dateien : [];
+    for (const e of liste) {
+      if (!e || typeof e !== "object") continue;
+      const x = e as Record<string, unknown>;
+      const pfad = kopfsicher(x.pfad, 200);
+      if (!pfad) continue;
+      unterlagen.push({ pfad, name: dateinameSicher(kopfsicher(x.name, 200)) });
+    }
+    if (!unterlagen.length) {
+      const alt = kopfsicher(satz.datei, 200);
+      if (alt) {
+        unterlagen.push({ pfad: alt, name: dateinameSicher(kopfsicher(satz.datei_name, 200)) });
+      }
+    }
+  }
+  /* Steht auch dann in der Mail, wenn ein Anhang nicht mitkonnte — dann
+     weiss der Betreiber wenigstens, dass es die Unterlage gibt. */
+  const unterlagenZeile = unterlagen.map((u) => u.name).join(", ");
 
   const felder: Feld[] = quelleTab === "bewerbung"
     ? [
@@ -169,7 +188,7 @@ Deno.serve(async (req: Request) => {
         ["Telefon", kopfsicher(satz.telefon, 60)],
         ["Stelle", kopfsicher(satz.stelle, 80)],
         ["Verfügbar ab", kopfsicher(satz.verfuegbar_ab, 60)],
-        ["Lebenslauf", anhangName]
+        ["Unterlagen", unterlagenZeile]
       ]
     : [
         ["Seite", kopfsicher(satz.quelle, 60)],
@@ -194,13 +213,26 @@ Deno.serve(async (req: Request) => {
      immer noch die Benachrichtigung, und die Datei liegt weiterhin im
      Speicher. Eine Bewerbung darf nicht daran scheitern, dass ein Anhang
      nicht geladen werden konnte. */
-  const dateiPfad = kopfsicher(satz.datei, 200);
-  const anhang = quelleTab === "bewerbung" && dateiPfad
-    ? await lebenslaufHolen(dateiPfad).catch((e) => {
-        console.error("Lebenslauf-Abruf fehlgeschlagen:", e);
-        return null;
-      })
-    : null;
+  /* Nacheinander holen und dabei die Gesamtgroesse mitzaehlen. Was nicht
+     mehr hineinpasst oder sich nicht abrufen laesst, wird uebersprungen —
+     die Mail geht trotzdem raus, und der Name steht in der Tabelle.
+     Eine Bewerbung darf nicht daran scheitern, dass ein Anhang klemmt. */
+  const anhaenge: { name: string; base64: string }[] = [];
+  let anhangSumme = 0;
+  for (const u of unterlagen.slice(0, 5)) {
+    if (anhangSumme >= MAX_ANHANG) break;
+    const geholt = await lebenslaufHolen(u.pfad).catch((e) => {
+      console.error("Unterlage nicht abrufbar:", e);
+      return null;
+    });
+    if (!geholt) continue;
+    if (anhangSumme + geholt.bytes > MAX_ANHANG) {
+      console.error("Unterlage uebersprungen, Summe zu gross:", u.name);
+      continue;
+    }
+    anhangSumme += geholt.bytes;
+    anhaenge.push({ name: u.name || "Unterlage.pdf", base64: geholt.base64 });
+  }
 
   const koerperHtml = html({
     art: quelleTab === "bewerbung" ? "bewerbung" : "anfrage",
@@ -243,16 +275,14 @@ Deno.serve(async (req: Request) => {
           content: LOGO_BASE64,
           contentID: LOGO_CID,
         },
-        /* Der Lebenslauf, sofern er geholt werden konnte. Ist er es nicht,
-           steht sein Name trotzdem in der Tabelle der Mail. */
-        ...(anhang
-          ? [{
-              contentType: "application/pdf",
-              filename: anhangName || "Lebenslauf.pdf",
-              encoding: "base64" as const,
-              content: anhang.base64,
-            }]
-          : []),
+        /* Alle Unterlagen, die geholt werden konnten. Konnte eine nicht
+           mitkommen, steht ihr Name trotzdem in der Tabelle der Mail. */
+        ...anhaenge.map((a) => ({
+          contentType: "application/pdf",
+          filename: a.name,
+          encoding: "base64" as const,
+          content: a.base64,
+        })),
       ],
     });
     return new Response("verschickt", { status: 200 });
