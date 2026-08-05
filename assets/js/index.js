@@ -678,7 +678,10 @@ class Component extends DCLogic {
       const flen = this.flowLine.getTotalLength();
       fLeafG.innerHTML = '';
       for (let k = 0; k < 46; k++) {
-        const fr = 0.012 + (k / 46) * 0.878;
+        /* Bis 0,985 statt 0,878: Vorher endete das letzte Blatt bei 89 %
+           des Wegs, die Bluete sitzt aber am Ende. Dazwischen blieb ein
+           kahles Stueck — der Weg sah aus, als hoere er vor der Bluete auf. */
+        const fr = 0.012 + (k / 46) * 0.985;
         const pt = this.flowLine.getPointAtLength(flen * fr);
         const p2 = this.flowLine.getPointAtLength(Math.min(flen, flen * fr + 10));
         const ang = Math.atan2(p2.y - pt.y, p2.x - pt.x) * 180 / Math.PI;
@@ -1309,7 +1312,12 @@ class Component extends DCLogic {
         const travel = Math.max(0, noetig - window.innerWidth);
         this.flowTrack.style.transform = 'translate3d(' + (-travel * q).toFixed(1) + 'px,0,0)';
       }
-      const qg = Math.min(1, q / 0.55);
+      /* Wachstum und Schieben laufen jetzt zusammen. Vorher war der Weg
+         schon bei 55 % des Abschnitts fertig gezeichnet, waehrend die
+         Bahn bis 100 % weiterschob: Die Bluete am Ende erschien also,
+         bevor Karte 04 ueberhaupt im Bild war, und danach wuchs nichts
+         mehr. Mit 0,92 kommt die Bluete an, wenn die letzte Karte steht. */
+      const qg = Math.min(1, q / 0.92);
       if (this.flowLine) this.flowLine.style.strokeDashoffset = (this.flowLen * (1 - qg)).toFixed(1);
       if (this.flowLeaves) {
         for (const lf of this.flowLeaves) {
