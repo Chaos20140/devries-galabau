@@ -920,21 +920,22 @@ class Component extends DCLogic {
 
   measureFlowLen() {
     if (!this.flowLine || !this.flowLine.isConnected) return;
+    /* stroke-dasharray und -dashoffset zaehlen in NUTZEINHEITEN des
+       Koordinatensystems (hier viewBox 0 0 3200 1000), nicht in
+       Bildpunkten. Genau das war der Fehler: Die Laenge wurde vorher
+       ueber getScreenCTM() in Bildpunkte umgerechnet und dann als
+       Strichlaenge gesetzt.
+       Gemessen: Pfad 2321 Einheiten lang, gesetztes dasharray 768,9 —
+       also ein Drittel. Damit war der Pfad von drei Strichen bedeckt und
+       konnte sich nie durchzeichnen; sichtbar blieben nur die Blaetter,
+       die an ihrem eigenen Fortschritt haengen. Genau das war im Bild zu
+       sehen: Blaetter und Blueten ohne Linie.
+       Schlimmer noch: Der Wert hing davon ab, WANN gemessen wurde. Lief
+       die Messung, bevor das SVG ausgelegt war, lieferte getScreenCTM()
+       die Einheitsmatrix und der Wert stimmte zufaellig. Mit
+       getTotalLength() faellt die Zeitabhaengigkeit ganz weg. */
     this.flowLenU = this.flowLine.getTotalLength();
-    const m = this.flowLine.getScreenCTM();
-    let L = this.flowLenU;
-    if (m) {
-      L = 0;
-      let px = 0, py = 0;
-      for (let i = 0; i <= 260; i++) {
-        const p = this.flowLine.getPointAtLength(this.flowLenU * i / 260);
-        const x = m.a * p.x + m.c * p.y + m.e;
-        const y = m.b * p.x + m.d * p.y + m.f;
-        if (i) L += Math.hypot(x - px, y - py);
-        px = x; py = y;
-      }
-    }
-    this.flowLen = L > 1 ? L : this.flowLenU;
+    this.flowLen = this.flowLenU;
     this.flowLine.style.strokeDasharray = this.flowLen.toFixed(1);
     this.flowLine.style.strokeDashoffset = this.flowLen.toFixed(1);
   }
