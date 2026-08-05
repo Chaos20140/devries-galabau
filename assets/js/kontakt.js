@@ -75,9 +75,11 @@ class Component extends DCLogic {
      in die USA — ohne dass er gefragt wurde. Deshalb steht zunaechst
      eine eigene Vorschau da, und erst dieser Klick ist die Einwilligung.
 
-     Bewusst OHNE Speichern der Zustimmung: die Seite legt nichts auf dem
-     Geraet ab, und genau das steht so in der Datenschutzerklaerung. Ein
-     Klick je Besuch ist der Preis dafuer, dass der Satz wahr bleibt. */
+     Seit v70 gibt es zusaetzlich die Abfrage am Seitenanfang
+     (assets/js/cookie.js). Liegt von dort eine Einwilligung vor, ist der
+     Klick hier schon erteilt und die Karte erscheint gleich. Der Knopf
+     bleibt trotzdem: Wer abgelehnt oder noch nicht entschieden hat, kommt
+     ueber ihn an die Karte, ohne dass dafuer etwas gespeichert wird. */
   karte() {
     const knopf = document.getElementById('karte-laden');
     const buehne = document.getElementById('karte-buehne');
@@ -87,8 +89,10 @@ class Component extends DCLogic {
        auch etwas. Ohne JavaScript bleibt er verborgen. */
     const zustimmung = document.getElementById('karte-zustimmung');
     if (zustimmung) zustimmung.hidden = false;
+    const widerruf = document.getElementById('karte-widerruf');
 
-    knopf.addEventListener('click', () => {
+    const einbetten = (fokus) => {
+      if (buehne.querySelector('iframe')) return;   /* nie zweimal */
       const vorschau = document.getElementById('karte-vorschau');
       /* Bewusst nach dem FIRMENNAMEN suchen, nicht nur nach der Anschrift.
          Sucht man allein die Adresse, setzt Google die Stecknadel auf den
@@ -116,12 +120,43 @@ class Component extends DCLogic {
       buehne.appendChild(f);
 
       /* Erst danach die Vorschau entfernen: faellt das Einsetzen aus
-         irgendeinem Grund aus, bleibt wenigstens die Adresse stehen. */
-      if (vorschau) vorschau.remove();
+         irgendeinem Grund aus, bleibt wenigstens die Adresse stehen.
+         Der Knoten wird aufgehoben, damit ein Widerruf ihn
+         zurueckstellen kann — ohne Neuladen und ohne dass die Buehne
+         leer bliebe. */
+      if (vorschau) { this.vorschauKnoten = vorschau; vorschau.remove(); }
+      if (zustimmung) zustimmung.hidden = true;
+      if (widerruf) widerruf.hidden = false;
       /* Der gedrueckte Knopf ist jetzt weg — ohne das hier verloere die
-         Tastaturbedienung ihre Stelle und spraenge an den Seitenanfang. */
-      buehne.focus();
-    });
+         Tastaturbedienung ihre Stelle und spraenge an den Seitenanfang.
+         Beim automatischen Einbetten NICHT den Fokus nehmen: da hat
+         niemand geklickt, und ein Fokussprung beim Laden ist ein Fehler. */
+      if (fokus) buehne.focus();
+    };
+
+    knopf.addEventListener('click', () => einbetten(true));
+
+    const K = window.dvgKarte;
+    if (K) {
+      if (K.erlaubt()) einbetten(false);
+      /* Zustimmung im Banner erteilt, waehrend die Kontaktseite offen
+         liegt: Karte sofort zeigen, ohne dass jemand neu laden muss. */
+      K.beiAenderung((wert) => {
+        if (wert === 'ja') einbetten(true);
+        else if (wert === null) this.karteZurueck(buehne, zustimmung, widerruf);
+      });
+    }
+  }
+
+  /* Widerruf: Rahmen raus, eigene Vorschau zurueck, Knopf wieder da.
+     Der Rahmen muss weg — sonst waere der Widerruf ein Wort ohne
+     Wirkung, die Karte liefe weiter und Google saehe weiter mit. */
+  karteZurueck(buehne, zustimmung, widerruf) {
+    const f = buehne.querySelector('iframe');
+    if (f) f.remove();
+    if (this.vorschauKnoten) { buehne.appendChild(this.vorschauKnoten); this.vorschauKnoten = null; }
+    if (zustimmung) zustimmung.hidden = false;
+    if (widerruf) widerruf.hidden = true;
   }
 
   componentWillUnmount() { if (this.io) this.io.disconnect(); }

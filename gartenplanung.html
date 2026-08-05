@@ -23,7 +23,7 @@
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png?v=1">
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/outfit-600-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/outfit-400-latin.woff2" crossorigin>
-<link rel="stylesheet" href="assets/css/base.css?v=83">
+<link rel="stylesheet" href="assets/css/base.css?v=84">
 <style>
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;background:#EDF3E8;color:#12261A}
@@ -55,7 +55,12 @@
       <p data-reveal style="margin:clamp(22px,3vh,34px) 0 0;max-width:62ch;font-size:clamp(16px,1.4vw,20px);line-height:1.6;color:#3C5145;text-wrap:pretty" data-ed="hero-planung-p2">Die richtige Gartenplanung ist der Grundstein für einen Garten, der genau zu Ihnen passt. Wir beginnen mit einem persönlichen Gespräch bei Ihnen vor Ort, um Ihre Wünsche und Bedürfnisse genau zu verstehen — daraus entwickeln wir ein maßgeschneidertes Konzept, das ästhetisch und funktional zu Ihrem Garten passt.</p>
       <div data-reveal style="display:flex;flex-wrap:wrap;gap:12px;margin-top:clamp(24px,3.4vh,38px)">
         <a href="#anfrage" style="display:inline-flex;align-items:center;gap:9px;background:#1B4332;color:#F3F7F0;border-radius:999px;padding:16px 28px;font-size:15px;font-weight:600" data-ed="hero-planung-a">Jetzt kostenlos anfragen →</a>
-        <a href="index.html" style="display:inline-flex;align-items:center;gap:9px;border-radius:999px;padding:16px 28px;font-size:15px;font-weight:500;color:#12261A;background:linear-gradient(155deg,rgba(255,255,255,.72),rgba(255,255,255,.42));backdrop-filter:blur(26px) saturate(1.45);border:1px solid rgba(255,255,255,.6);box-shadow:0 26px 54px -38px rgba(12,29,20,.34)" data-ed="hero-planung-a2">Durch den Garten gehen</a>
+        <!-- Auskommentiert, solange der Rundgang abgeschaltet ist
+             (RUNDGANG in assets/js/index.js). Der Knopf fuehrte auf die
+             Startseite und versprach einen Rundgang, den es dort nicht
+             gibt. Wird der Rundgang wieder eingeschaltet, gehoert er
+             zurueck — deshalb steht er hier und ist nicht geloescht.
+        <a href="index.html" style="display:inline-flex;align-items:center;gap:9px;border-radius:999px;padding:16px 28px;font-size:15px;font-weight:500;color:#12261A;background:linear-gradient(155deg,rgba(255,255,255,.72),rgba(255,255,255,.42));backdrop-filter:blur(26px) saturate(1.45);border:1px solid rgba(255,255,255,.6);box-shadow:0 26px 54px -38px rgba(12,29,20,.34)" data-ed="hero-planung-a2">Durch den Garten gehen</a> -->
       </div>
     </div>
   </section>
@@ -165,13 +170,14 @@
   <garden-footer active="gartenplanung.html"></garden-footer>
 </div>
 <!-- Texte von Kopf- und Fusszeile. MUSS vor den Komponenten stehen. -->
-<script src="assets/js/rahmen-texte.js?v=83"></script>
-<script src="assets/js/garden-header.js?v=83"></script>
-<script src="assets/js/garden-footer.js?v=83"></script>
-<script src="assets/js/formular.js?v=83"></script>
-<script src="assets/js/gartenplanung.js?v=83"></script>
+<script src="assets/js/rahmen-texte.js?v=84"></script>
+<script src="assets/js/garden-header.js?v=84"></script>
+<script src="assets/js/garden-footer.js?v=84"></script>
+<script src="assets/js/cookie.js?v=84"></script>
+<script src="assets/js/formular.js?v=84"></script>
+<script src="assets/js/gartenplanung.js?v=84"></script>
 <!-- Seiten-Editor: laeuft NUR mit ?bearbeiten=1 UND gueltiger Anmeldung
      aus /admin/. Ohne beides beendet sich die Datei sofort. -->
-<script defer src="assets/js/editor.js?v=83"></script>
+<script defer src="assets/js/editor.js?v=84"></script>
 </body>
 </html>
