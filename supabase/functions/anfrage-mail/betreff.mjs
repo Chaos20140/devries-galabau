@@ -58,7 +58,10 @@ const UMLAUT = { "Ä": "A", "Ö": "O", "Ü": "U", "ẞ": "S" };
 const KLEIN = { "ä": "ae", "ö": "oe", "ü": "ue", "ß": "ss" };
 const ZWEITER = { "A": "E", "O": "E", "U": "E", "S": "S" };
 
-export function betreffAscii(text) {
+/* Nur die Umschrift, ohne Kürzen und ohne Betreff-Regeln.
+   Wird auch für den Namen des Anhangs gebraucht (qp.mjs) — sonst fiele
+   dort aus "Prüfeintrag" ein "Prfeintrag". */
+export function umschreiben(text) {
   const roh = Array.from(String(text ?? ""));
   let s = roh.map((z, i) => {
     if (KLEIN[z]) return KLEIN[z];
@@ -80,7 +83,11 @@ export function betreffAscii(text) {
      zweite Reihe hinter kopfsicher(), damit sich über den Betreff keine
      zweite Kopfzeile einschleusen lässt. */
   s = s.replace(/[^\x20-\x7E]/g, "");
-  s = s.replace(/\s+/g, " ").trim();
+  return s.replace(/\s+/g, " ").trim();
+}
+
+export function betreffAscii(text) {
+  let s = umschreiben(text);
   /* Darf NICHT mit "=?" beginnen, sonst greift die Neukodierung doch.
      Führende Satzzeichen haben in einem Betreff ohnehin nichts verloren. */
   s = s.replace(/^[^A-Za-z0-9]+/, "");

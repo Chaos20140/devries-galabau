@@ -20,6 +20,7 @@ import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 import { html, text, type Feld } from "./vorlage.ts";
 import { LOGO_BASE64, LOGO_CID, LOGO_DATEI, LOGO_TYP } from "./logo.ts";
 import { betreffAscii } from "./betreff.mjs";
+import { ohneRandleerzeichen, dateinameSicher } from "./qp.mjs";
 
 const env = (k: string, fallback = "") => Deno.env.get(k) ?? fallback;
 
@@ -30,6 +31,13 @@ const SMTP_USER = env("SMTP_USER");
 const SMTP_PASS = env("SMTP_PASS");
 const MAIL_TO = env("MAIL_TO", "info@devries-galabau.de");
 const MAIL_FROM = env("MAIL_FROM", SMTP_USER);
+/* Von Supabase automatisch gesetzt — kein zusaetzliches Secret noetig. */
+const PROJEKT_URL = env("SUPABASE_URL");
+const DIENSTSCHLUESSEL = env("SUPABASE_SERVICE_ROLE_KEY");
+const EIMER = "bewerbungen";
+/* Groesser haengen wir nicht an — der Betreiber findet die Datei dann
+   weiterhin in der Verwaltung. Der Speicher laesst ohnehin nur 5 MB zu. */
+const MAX_ANHANG = 8 * 1024 * 1024;
 
 /* Zeilenumbrueche aus allem entfernen, was in einen Kopf wandert.
    Ohne das koennte ein Absender ueber "Name\r\nBcc: ..." eigene
@@ -72,6 +80,50 @@ function gleich(a: string, b: string): boolean {
 
 const zeile = (bez: string, wert: string) => (wert ? `${bez}: ${wert}\n` : "");
 
+/* Den Lebenslauf aus dem Speicher holen, damit er der Benachrichtigung
+   beiliegt. Ohne das bekaeme der Betreiber eine Mail "Neue Bewerbung",
+   in der die Bewerbungsunterlage nicht einmal erwaehnt wird.
+
+   Der Pfad kommt aus der Zeile, die den Trigger ausgeloest hat. Er wird
+   trotzdem STRENG geprueft: Was ueber die Leitung kommt, ist nie
+   vertrauenswuerdig — auch nicht, wenn es aus der eigenen Datenbank zu
+   stammen scheint. Nur "eingang/<kennung>.pdf" ist erlaubt, also genau
+   das Muster, unter dem das Formular ablegt. Damit sind Pfadwechsel
+   ("../"), andere Eimer und andere Dateiarten ausgeschlossen. */
+const PFAD_MUSTER = /^eingang\/[0-9a-fA-F-]{36}\.pdf$/;
+
+async function lebenslaufHolen(
+  pfad: string,
+): Promise<{ base64: string; bytes: number } | null> {
+  if (!PFAD_MUSTER.test(pfad)) return null;
+  if (!PROJEKT_URL || !DIENSTSCHLUESSEL) return null;
+  const antwort = await fetch(
+    PROJEKT_URL + "/storage/v1/object/" + EIMER + "/" + pfad,
+    {
+      headers: {
+        Authorization: "Bearer " + DIENSTSCHLUESSEL,
+        apikey: DIENSTSCHLUESSEL,
+      },
+    },
+  );
+  if (!antwort.ok) {
+    console.error("Lebenslauf nicht abrufbar:", antwort.status);
+    return null;
+  }
+  const roh = new Uint8Array(await antwort.arrayBuffer());
+  if (!roh.length || roh.length > MAX_ANHANG) {
+    console.error("Lebenslauf uebersprungen, Groesse:", roh.length);
+    return null;
+  }
+  /* In Bloecken umwandeln — String.fromCharCode(...) mit einigen
+     hunderttausend Argumenten sprengt den Aufrufstapel. */
+  let binaer = "";
+  for (let i = 0; i < roh.length; i += 0x8000) {
+    binaer += String.fromCharCode(...roh.subarray(i, i + 0x8000));
+  }
+  return { base64: btoa(binaer), bytes: roh.length };
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method !== "POST") return new Response("nur POST", { status: 405 });
 
@@ -101,6 +153,11 @@ Deno.serve(async (req: Request) => {
   /* Nur eine plausible Adresse darf in Reply-To. */
   const antwortAn = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : "";
 
+  /* Anzeigename der Bewerbungsunterlage. Steht auch dann in der Mail,
+     wenn der Anhang nicht mitgeschickt werden konnte — dann weiss der
+     Betreiber wenigstens, dass es eine gibt. */
+  const anhangName = dateinameSicher(kopfsicher(satz.datei_name, 120), "");
+
   /* Welche Tabelle den Trigger ausgeloest hat — der Webhook schickt sie mit. */
   const quelleTab = String(satz.__tabelle ?? "").includes("bewerbung") ||
     satz.stelle != null || satz.verfuegbar_ab != null ? "bewerbung" : "anfrage";
@@ -111,7 +168,8 @@ Deno.serve(async (req: Request) => {
         ["E-Mail", email],
         ["Telefon", kopfsicher(satz.telefon, 60)],
         ["Stelle", kopfsicher(satz.stelle, 80)],
-        ["Verfügbar ab", kopfsicher(satz.verfuegbar_ab, 60)]
+        ["Verfügbar ab", kopfsicher(satz.verfuegbar_ab, 60)],
+        ["Lebenslauf", anhangName]
       ]
     : [
         ["Seite", kopfsicher(satz.quelle, 60)],
@@ -130,6 +188,19 @@ Deno.serve(async (req: Request) => {
     : "Über das Formular auf der Website ist eine neue Anfrage eingegangen.";
   const eingegangen = zeitpunkt(satz.eingegangen_am);
   const nachricht = textsicher(satz.nachricht);
+
+  /* Der Lebenslauf gehoert in die Mail, nicht nur in die Verwaltung.
+     Scheitert der Abruf, wird die Mail trotzdem verschickt — sie ist dann
+     immer noch die Benachrichtigung, und die Datei liegt weiterhin im
+     Speicher. Eine Bewerbung darf nicht daran scheitern, dass ein Anhang
+     nicht geladen werden konnte. */
+  const dateiPfad = kopfsicher(satz.datei, 200);
+  const anhang = quelleTab === "bewerbung" && dateiPfad
+    ? await lebenslaufHolen(dateiPfad).catch((e) => {
+        console.error("Lebenslauf-Abruf fehlgeschlagen:", e);
+        return null;
+      })
+    : null;
 
   const koerperHtml = html({
     art: quelleTab === "bewerbung" ? "bewerbung" : "anfrage",
@@ -156,19 +227,33 @@ Deno.serve(async (req: Request) => {
          denomailer 1.6.0 in einen kaputten Kopfblock. */
       subject: betreffAscii(`${betreff || titel}: ${name || "ohne Namen"}`),
       /* Beides mitschicken: wer HTML abgeschaltet hat, bekommt den Text. */
-      content: koerperText,
-      html: koerperHtml,
+      /* ohneRandleerzeichen: sonst erzeugt denomailer sichtbare "=20"
+         im Text — die Begruendung steht in qp.mjs. */
+      content: ohneRandleerzeichen(koerperText),
+      html: ohneRandleerzeichen(koerperHtml),
       /* Das Logo reist als Teil der Nachricht mit und wird im HTML ueber
          cid: angesprochen. Ein Verweis auf die Website waere in den
          meisten Postfaechern zunaechst ein leerer Kasten — entfernte
          Bilder sind dort standardmaessig blockiert. */
-      attachments: [{
-        contentType: LOGO_TYP,
-        filename: LOGO_DATEI,
-        encoding: "base64",
-        content: LOGO_BASE64,
-        contentID: LOGO_CID,
-      }],
+      attachments: [
+        {
+          contentType: LOGO_TYP,
+          filename: LOGO_DATEI,
+          encoding: "base64" as const,
+          content: LOGO_BASE64,
+          contentID: LOGO_CID,
+        },
+        /* Der Lebenslauf, sofern er geholt werden konnte. Ist er es nicht,
+           steht sein Name trotzdem in der Tabelle der Mail. */
+        ...(anhang
+          ? [{
+              contentType: "application/pdf",
+              filename: anhangName || "Lebenslauf.pdf",
+              encoding: "base64" as const,
+              content: anhang.base64,
+            }]
+          : []),
+      ],
     });
     return new Response("verschickt", { status: 200 });
   } catch (fehler) {
