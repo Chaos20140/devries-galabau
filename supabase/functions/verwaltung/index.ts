@@ -37,7 +37,7 @@ const SPALTEN: Record<string, string[]> = {
   bewerbungen: [
     "id", "eingegangen_am", "quelle", "betreff", "name", "email", "telefon",
     "stelle", "verfuegbar_ab", "nachricht", "status", "notiz", "archiviert",
-    "datei", "datei_name",
+    "datei", "datei_name", "dateien",
   ],
 };
 
@@ -1332,12 +1332,19 @@ Deno.serve(async (req: Request) => {
       /* Den Dateipfad selbst nachschlagen statt ihn vom Browser
          entgegenzunehmen — sonst liesse sich ueber diesen Weg eine
          beliebige fremde Datei verschieben. */
-      let datei = "";
+      const dateien: string[] = [];
       if (bereich === "bewerbungen") {
         const treffer = await db(
-          tabelle + "?select=datei&id=eq." + encodeURIComponent(id) + "&limit=1",
+          tabelle + "?select=datei,dateien&id=eq." + encodeURIComponent(id) + "&limit=1",
         );
-        if (Array.isArray(treffer) && treffer[0]?.datei) datei = String(treffer[0].datei);
+        const zeile = Array.isArray(treffer) ? treffer[0] : null;
+        if (Array.isArray(zeile?.dateien)) {
+          for (const e of zeile.dateien as Record<string, unknown>[]) {
+            const p = String(e?.pfad ?? "");
+            if (p) dateien.push(p);
+          }
+        }
+        if (!dateien.length && zeile?.datei) dateien.push(String(zeile.datei));
       }
 
       await db(tabelle + "?id=eq." + encodeURIComponent(id), {
@@ -1345,10 +1352,11 @@ Deno.serve(async (req: Request) => {
         headers: { Prefer: "return=minimal" },
       });
 
-      /* Erst in den Papierkorbbereich, damit "Rueckgaengig" auch den
-         Lebenslauf zurueckholen kann. Scheitert das, ist der Datensatz
+      /* Erst in den Papierkorbbereich, damit "Rueckgaengig" auch die
+         Unterlagen zurueckholen kann. Scheitert das, ist der Datensatz
          trotzdem fort — das ist der wichtigere Teil. */
-      if (datei.startsWith("eingang/")) {
+      for (const datei of dateien) {
+        if (!datei.startsWith("eingang/")) continue;
         try {
           await speicher("object/move", {
             method: "POST",
@@ -1372,9 +1380,19 @@ Deno.serve(async (req: Request) => {
       const id = String(körper.id ?? "");
       if (!id || bereich !== "bewerbungen") return json({ fehler: "keine Kennung" }, 400);
       const treffer = await db(
-        tabelle + "?select=datei,datei_name&id=eq." + encodeURIComponent(id) + "&limit=1",
+        tabelle + "?select=datei,datei_name,dateien&id=eq." + encodeURIComponent(id) + "&limit=1",
       );
-      const datei = Array.isArray(treffer) && treffer[0]?.datei ? String(treffer[0].datei) : "";
+      const zeile = Array.isArray(treffer) ? treffer[0] : null;
+      /* Welche der Unterlagen? Der Browser schickt die Nummer, nicht den
+         Pfad — der Pfad wird hier aus der Zeile geholt. Nur so kann ueber
+         diesen Weg keine fremde Datei unterschrieben werden. */
+      const nr = Number(körper.nr ?? 0);
+      const liste: string[] = Array.isArray(zeile?.dateien)
+        ? (zeile.dateien as Record<string, unknown>[])
+            .map((e) => String(e?.pfad ?? "")).filter(Boolean)
+        : [];
+      if (!liste.length && zeile?.datei) liste.push(String(zeile.datei));
+      const datei = Number.isInteger(nr) && nr >= 0 && nr < liste.length ? liste[nr] : "";
       if (!datei.startsWith("eingang/")) return json({ fehler: "kein Anhang" }, 404);
       const unterschrift = await speicher("object/sign/" + EIMER + "/" + datei, {
         method: "POST",
@@ -1415,8 +1433,19 @@ Deno.serve(async (req: Request) => {
          Datensatz trotzdem wieder da — der Anhang fehlt dann, und die
          Verwaltung sagt das, statt einen toten Link anzubieten. */
       let anhang = true;
-      const pfad = String(satz.datei ?? "");
-      if (pfad.startsWith("eingang/")) {
+      const pfade: string[] = [];
+      if (Array.isArray(satz.dateien)) {
+        for (const e of satz.dateien as Record<string, unknown>[]) {
+          const p = String(e?.pfad ?? "");
+          if (p) pfade.push(p);
+        }
+      }
+      if (!pfade.length && satz.datei) pfade.push(String(satz.datei));
+      /* Jede einzeln zurueckschieben. Klappt EINE nicht, gilt der Anhang
+         als unvollstaendig und die Verweise werden entfernt — lieber gar
+         kein Link als ein toter. */
+      for (const pfad of pfade) {
+        if (!pfad.startsWith("eingang/")) continue;
         try {
           await speicher("object/move", {
             method: "POST",
@@ -1429,14 +1458,16 @@ Deno.serve(async (req: Request) => {
         } catch (e) {
           anhang = false;
           console.error("Datei zurueckschieben:", e instanceof Error ? e.message : e);
+        }
+      }
+      if (!anhang) {
           try {
             await db(tabelle + "?id=eq." + encodeURIComponent(String(satz.id)), {
               method: "PATCH",
-              body: JSON.stringify({ datei: null }),
+              body: JSON.stringify({ datei: null, dateien: [] }),
               headers: { Prefer: "return=minimal" },
             });
           } catch { /* dann bleibt der Verweis stehen, der Link meldet 404 */ }
-        }
       }
       return json({ ok: true, anhang });
     }
