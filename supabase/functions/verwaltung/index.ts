@@ -60,7 +60,7 @@ const CORS = {
    wird die HTML-Datei selbst geaendert und committet; Pages baut danach
    neu. Was ausgeliefert wird, ist also weiterhin fertiges HTML.
    ===================================================================== */
-import { bloeckeErzeugen, zoneSetzen, leerhinweis } from "./bloecke.mjs";
+import { bloeckeErzeugen, zoneSetzen, zoneInhalt, leerhinweis } from "./bloecke.mjs";
 
 const GH_TOKEN = Deno.env.get("GITHUB_TOKEN") ?? "";
 const GH_REPO = "Chaos20140/devries-galabau";
@@ -835,15 +835,42 @@ Deno.serve(async (req: Request) => {
       }
       const inhalt = gebaut.inhalt;
 
+      /* Schutz gegen ein zweites Editorfenster.
+         Diese Aktion erzeugt den GESAMTEN Zoneninhalt neu. Ohne Abgleich
+         wuerde ein Fenster, das die Zone vor einer fremden Aenderung
+         gelesen hat, deren Ergebnis lautlos ueberschreiben — und mit
+         200 OK antworten. Der Blob-SHA faengt das nicht: er faellt nur
+         auf, wenn sich die beiden Schreibvorgaenge ueberlappen.
+         Der Editor schickt deshalb den Stand mit, den SEIN Fenster beim
+         Oeffnen vorgefunden hat; daraus wird dasselbe Markup erzeugt und
+         mit dem verglichen, was tatsaechlich in der Datei steht.
+         Dieselbe Sicherung wie bei texte-speichern (v60). */
+      let vorherInhalt: string | null = null;
+      if (körper.vorher !== undefined) {
+        const v = bloeckeErzeugen(datei, zone, körper.vorher);
+        if (!v.ok) return json({ fehler: "vorher_ungueltig" }, 400);
+        vorherInhalt = v.inhalt;
+      }
+
       const geschriebenB: string[] = [];
       for (const branch of BRANCHES) {
         try {
           const stand = await ghHole(datei, branch);
+          if (vorherInhalt !== null) {
+            const jetzt = zoneInhalt(stand.text, zone);
+            if (jetzt === null) return json({ fehler: "zone_nicht_gefunden", zone, branch }, 409);
+            if (jetzt !== vorherInhalt) {
+              return json({
+                fehler: "fremde_aenderung", zone, branch,
+                hinweis: "In der Zwischenzeit hat jemand anders diesen Bereich geändert.",
+              }, 409);
+            }
+          }
           let neu = zoneSetzen(stand.text, zone, inhalt);
           if (neu === null) return json({ fehler: "zone_nicht_gefunden", zone, branch }, 409);
           /* gebaut.anzahl, nicht die Eingabe: massgeblich ist, was
              tatsaechlich in der Seite landet. */
-          neu = leerhinweis(neu, gebaut.anzahl === 0);
+          neu = leerhinweis(neu, zone, gebaut.anzahl === 0);
           if (neu === stand.text) { geschriebenB.push(branch); continue; }
           await ghSchreibe(datei, branch, neu, stand.sha,
             "Seiten-Editor: Blöcke in " + datei + " geändert");

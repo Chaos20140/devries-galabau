@@ -54,7 +54,12 @@ export function sauberMehr(v, max) {
   const absaetze = t.split(/\n\s*\n/)
     .map((s) => s.replace(/\n/g, " ").trim())
     .filter(Boolean);
-  return absaetze.length ? absaetze : null;
+  if (!absaetze.length) return null;
+  /* Jeder Absatz bringt rund 130 Byte Inline-Stil mit. 3000 Zeichen aus
+     lauter Leerzeilen ergäben sonst über 1000 Absätze und damit ein
+     Vielfaches an Markup in der ausgelieferten Seite. */
+  if (absaetze.length > 30) return null;
+  return absaetze;
 }
 
 /* Optionales einzeiliges Feld.
@@ -101,8 +106,15 @@ const FLIESS = "max-width:62ch;font-size:16px;line-height:1.62;color:#3C5145;tex
    Werte exakt zurück, statt sie aus der Position im Markup zu erraten.
    Ohne das hängt das Zurückschreiben an der Reihenfolge der Tags — und die
    ändert sich mit jeder Designanpassung, lautlos und ohne Fehlermeldung. */
+/* data-b-f trägt den FELDNAMEN DES EDITORS, nicht den des Bausteins.
+   Die erste Fassung schrieb hier "marke" — der Editor sucht aber "umfang".
+   Folge: Das Abzeichen stand sichtbar auf der Seite, kam beim Öffnen der
+   Lade aber leer zurück und war nach dem nächsten Speichern weg.
+   Gefunden von der Gegenprüfung, NICHT von meinem Rundlauftest — der hatte
+   einen selbst geschriebenen Leser statt des echten. Genau der Fehler, vor
+   dem der Kopf dieser Datei warnt, nur eine Ebene höher. */
 const marke = (v) =>
-  '<span data-b-f="marke" style="display:inline-block;padding:7px 14px;border-radius:999px;' +
+  '<span data-b-f="umfang" style="display:inline-block;padding:7px 14px;border-radius:999px;' +
   "background:rgba(142,207,79,.24);font-size:11px;font-weight:700;letter-spacing:.16em;" +
   'text-transform:uppercase;color:#31611A">' + htmlMaskieren(v) + "</span>";
 
@@ -260,16 +272,29 @@ export function zoneInhalt(html, zone) {
    Normalfall, nicht die Ausnahme.
    Der Text selbst bleibt bearbeitbar (data-ed) und erscheint dann in der
    Lade für nicht sichtbare Stellen. */
-export function leerhinweis(html, sichtbar) {
-  const m = /<[a-zA-Z][\w-]*\b[^>]*\sdata-ed-leerhinweis[\s=>][^>]*>/.exec(html);
-  if (!m) return html; /* Seite ohne Hinweiskarte — nichts zu tun */
+export function leerhinweis(html, zone, sichtbar) {
+  /* An die ZONE gebunden, aus zwei Gründen:
+     1. Eine Seite könnte mehrere Zonen haben; ohne Bindung schaltete das
+        Speichern der einen den Hinweis der anderen um.
+     2. Der Marker ohne Wert ließe sich über ein anderes Feld nachbilden.
+        Die Google-Beschreibung landet als roher Text in einem
+        content="…"-Attribut; "data-ed-leerhinweis" darin stünde weiter
+        vorn im Dokument als die echte Karte und würde zuerst gefunden.
+        attributMaskieren deckt nur & < > " ab — der Attributname bleibt
+        unangetastet. Mit ="<zone>" trifft der Ausdruck das nicht mehr,
+        solange keine Zone so heißt wie ein eingeschleuster Wert; und
+        Zonennamen sind auf ^[a-z0-9-]{1,40}$ beschränkt. */
+  const m = new RegExp(
+    '<[a-zA-Z][\\w-]*\\b[^>]*\\sdata-ed-leerhinweis="' + regexMaskieren(zone) + '"[^>]*>',
+  ).exec(html);
+  if (!m) return html; /* Seite ohne Hinweiskarte für diese Zone */
   /* Vorhandenes data-ed-leer erst entfernen, sonst stünde es beim zweiten
      Speichern doppelt im Tag. Der Ausblick (?=[\s>]) ist nötig, weil
      "data-ed-leerhinweis" mit "data-ed-leer" ANFÄNGT — ohne ihn würde die
      Markierung selbst zerschnitten. */
   let tag = m[0].replace(/\sdata-ed-leer(="[^"]*")?(?=[\s>])/g, "");
   if (!sichtbar) {
-    tag = tag.replace(/\sdata-ed-leerhinweis/, ' data-ed-leerhinweis data-ed-leer="aus"');
+    tag = tag.replace(/\sdata-ed-leerhinweis="/, ' data-ed-leer="aus" data-ed-leerhinweis="');
   }
   return html.slice(0, m.index) + tag + html.slice(m.index + m[0].length);
 }
