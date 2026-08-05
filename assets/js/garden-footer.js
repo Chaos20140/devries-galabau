@@ -121,10 +121,20 @@
           '<div style="position:absolute;left:0;right:0;bottom:-14px;height:104px;pointer-events:none;z-index:6;overflow:visible" data-band>' +
             '<svg viewBox="0 0 1600 104" preserveAspectRatio="none" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible"></svg>' +
           '</div>' +
-          '<div class="gf-tree" style="position:absolute;left:0;top:-210px;bottom:-14px;width:clamp(140px,13vw,190px);pointer-events:none;z-index:1;overflow:hidden">' +
+          /* Die Baeume hingen mit left:0 / right:0 am FENSTER, nicht am
+             Inhalt. Bei 1272 px rahmen sie die Karte (sie ueberlappen sie
+             um rund 50 px). Auf einem 2560er Schirm bleibt die Karte bei
+             1280 px stehen, die Baeume rutschen aber mit an den Rand — dort
+             standen sie 631 px daneben und wirkten wie hingeworfen.
+             max(0px, …) begrenzt das: bis 1620 px Fensterbreite aendert
+             sich nichts (der Ausdruck wird negativ, 0px gewinnt), darueber
+             bleiben sie an der gedachten Buehnenkante stehen. 1620 = Karte
+             1280 + 2 x 170 px, damit sie wie bisher leicht dahinterstecken.
+             ⚠ Leerzeichen um das Minus in calc() sind Pflicht. */
+          '<div class="gf-tree" style="position:absolute;left:max(0px, calc((100% - 1620px) / 2));top:-210px;bottom:-14px;width:clamp(140px,13vw,190px);pointer-events:none;z-index:1;overflow:hidden">' +
             '<svg viewBox="0 0 290 900" preserveAspectRatio="xMinYMax meet" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;overflow:hidden"></svg>' +
           '</div>' +
-          '<div class="gf-tree" style="position:absolute;right:0;top:-210px;bottom:-14px;width:clamp(140px,13vw,190px);pointer-events:none;z-index:1;overflow:hidden">' +
+          '<div class="gf-tree" style="position:absolute;right:max(0px, calc((100% - 1620px) / 2));top:-210px;bottom:-14px;width:clamp(140px,13vw,190px);pointer-events:none;z-index:1;overflow:hidden">' +
             '<svg viewBox="0 0 290 900" preserveAspectRatio="xMaxYMax meet" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;overflow:hidden"></svg>' +
           '</div>' +
           '<div class="gf-wrap" style="position:relative;z-index:5;max-width:1280px;margin:0 auto">' +
