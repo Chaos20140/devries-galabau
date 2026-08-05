@@ -267,11 +267,17 @@
       rechts.appendChild(schubladeKnopf);
     }
 
-    if (document.querySelector('[data-ed-zone]')) {
-      var bloeckeKnopf = el('button', 'dvg-knopf dvg-knopf-still', 'Stellenanzeigen');
+    /* Der Knopf traegt die Beschriftung der Zone, nicht eine feste.
+       Auf der Stellenseite heisst er "Stellenanzeigen", auf einer
+       Leistungsseite "Eigene Abschnitte" — der Betreiber soll lesen,
+       was ihn dort erwartet. */
+    var zone0 = document.querySelector('[data-ed-zone]');
+    if (zone0) {
+      var bloeckeKnopf = el('button', 'dvg-knopf dvg-knopf-still',
+        zone0.getAttribute('data-ed-titel') || 'Abschnitte');
       bloeckeKnopf.type = 'button';
       bloeckeKnopf.id = 'dvg-bloecke';
-      bloeckeKnopf.title = 'Offene Stellen anlegen, ändern, entfernen';
+      bloeckeKnopf.title = 'Anlegen, ändern, umsortieren, entfernen';
       bloeckeKnopf.addEventListener('click', bloeckeUmschalten);
       rechts.appendChild(bloeckeKnopf);
     }
@@ -394,40 +400,111 @@
      einsetzen, und jede weitere Art verdoppelt eine Stilvorlage im
      Server, die bei jeder Designaenderung nachzuziehen ist. */
 
+  /* Die Blockarten, die der Editor anbietet.
+     Welche in WELCHER Zone erlaubt sind, entscheidet der Server — hier
+     steht nur, wie sie zu bedienen sind. Die Liste im Markup
+     (data-ed-arten) ist eine Bequemlichkeit fuer die Oberflaeche, keine
+     Schranke: wer sie im Browser aendert, kommt trotzdem nicht durch. */
+  var ARTEN = {
+    stelle: {
+      name: 'Stellenanzeige',
+      frage: 'Diese Stellenanzeige entfernen?',
+      felder: [
+        { schl: 'titel', text: 'Stellenbezeichnung', zeilen: 1, pflicht: true },
+        { schl: 'umfang', text: 'Umfang', zeilen: 1,
+          hinweis: 'Zum Beispiel „Vollzeit“ oder „Ausbildung ab August“. Darf leer bleiben.' },
+        { schl: 'text', text: 'Beschreibung', zeilen: 4, pflicht: true },
+        { schl: 'punkte', text: 'Stichpunkte', zeilen: 4,
+          hinweis: 'Eine Zeile je Punkt. Darf leer bleiben.' }
+      ]
+    },
+    hinweis: {
+      name: 'Karte',
+      frage: 'Diese Karte entfernen?',
+      felder: [
+        { schl: 'umfang', text: 'Kleine Marke', zeilen: 1,
+          hinweis: 'Steht klein über der Überschrift, zum Beispiel „Gut zu wissen“. Darf leer bleiben.' },
+        { schl: 'titel', text: 'Überschrift', zeilen: 1, pflicht: true },
+        { schl: 'text', text: 'Text', zeilen: 6, pflicht: true, mehrzeilig: true,
+          hinweis: 'Eine Leerzeile beginnt einen neuen Absatz.' },
+        { schl: 'punkte', text: 'Stichpunkte', zeilen: 4,
+          hinweis: 'Eine Zeile je Punkt. Darf leer bleiben.' }
+      ]
+    },
+    absatz: {
+      name: 'Textabschnitt',
+      frage: 'Diesen Textabschnitt entfernen?',
+      felder: [
+        { schl: 'titel', text: 'Zwischenüberschrift', zeilen: 1,
+          hinweis: 'Darf leer bleiben — dann steht nur der Text da.' },
+        { schl: 'text', text: 'Text', zeilen: 8, pflicht: true, mehrzeilig: true,
+          hinweis: 'Eine Leerzeile beginnt einen neuen Absatz.' },
+        { schl: 'punkte', text: 'Stichpunkte', zeilen: 4,
+          hinweis: 'Eine Zeile je Punkt. Darf leer bleiben.' }
+      ]
+    }
+  };
+
   function bloeckeLesen(zone) {
-    /* Der Server erzeugt die Bloecke in fester Form — deshalb laesst sich
-       aus dem Markup verlaesslich zurueckgelesen werden. */
-    return [].slice.call(zone.querySelectorAll('article')).map(function (a) {
-      var marke = a.querySelector('span');
-      return {
-        art: 'stelle',
-        titel: (a.querySelector('h3') || {}).textContent || '',
-        umfang: marke ? marke.textContent.trim() : '',
-        text: (a.querySelector('p') || {}).textContent || '',
-        punkte: [].slice.call(a.querySelectorAll('li')).map(function (l) { return l.textContent; })
+    /* Gelesen wird ueber data-b / data-b-f, also ueber den FELDNAMEN, den
+       der Server mitgeschrieben hat. Die erste Fassung las nach Position
+       ("das erste h3 ist der Titel"). Das haelt genau solange, wie es nur
+       eine Blockart gibt und niemand das Markup anfasst — und faellt
+       danach lautlos auf falsche Werte, statt zu scheitern. */
+    return [].slice.call(zone.querySelectorAll('[data-b]')).map(function (a) {
+      var art = a.getAttribute('data-b');
+      var wert = function (feld) {
+        var e = a.querySelector('[data-b-f="' + feld + '"]');
+        return e ? e.textContent : '';
       };
+      var b = { art: art };
+      (ARTEN[art] ? ARTEN[art].felder : []).forEach(function (f) {
+        if (f.schl === 'punkte') {
+          var ul = a.querySelector('[data-b-f="punkte"]');
+          b.punkte = ul ? [].slice.call(ul.children).map(function (l) { return l.textContent; }) : [];
+        } else if (f.mehrzeilig) {
+          var e = a.querySelector('[data-b-f="' + f.schl + '"]');
+          /* Absaetze kamen als eigene <p> heraus — zurueck in Leerzeilen,
+             sonst waere jedes Speichern ein Zusammenziehen. */
+          b[f.schl] = e
+            ? [].slice.call(e.children).map(function (p) { return p.textContent; }).join('\n\n')
+            : '';
+        } else {
+          b[f.schl] = wert(f.schl).trim();
+        }
+      });
+      return b;
     });
+  }
+
+  function bloeckeZone() {
+    return document.querySelector('[data-ed-zone]');
+  }
+
+  function bloeckeArten(zone) {
+    var roh = (zone.getAttribute('data-ed-arten') || 'stelle').split(/\s+/).filter(Boolean);
+    var da = roh.filter(function (a) { return ARTEN[a]; });
+    return da.length ? da : ['stelle'];
   }
 
   function bloeckeUmschalten() {
     if (bloecke) { bloecke.remove(); bloecke = null; return; }
     ladenSchliessen();
 
-    var zone = document.querySelector('[data-ed-zone]');
+    var zone = bloeckeZone();
     if (!zone) return;
     bloeckeNeu = bloeckeLesen(zone);
     bloeckeStand = JSON.stringify(bloeckeNeu);
 
+    var titel = zone.getAttribute('data-ed-titel') || 'Abschnitte';
     bloecke = el('div', 'dvg-schublade');
     bloecke.setAttribute('role', 'group');
-    bloecke.setAttribute('aria-label', 'Stellenanzeigen');
+    bloecke.setAttribute('aria-label', titel);
     var kopf = el('div', 'dvg-schublade-kopf');
-    kopf.appendChild(el('strong', null, 'Stellenanzeigen'));
-    kopf.appendChild(el('span', null,
-      'Hier stehen die offenen Stellen. Die Karte darüber („Zurzeit sind keine Stellen ' +
-      'ausgeschrieben“) blendet sich beim Speichern von selbst aus, sobald hier eine ' +
-      'Stelle steht — und kommt zurück, wenn Sie die letzte wieder entfernen. Ihren ' +
-      'Text können Sie weiterhin ändern; er steht dann unter „nicht sichtbar“.'));
+    kopf.appendChild(el('strong', null, titel));
+    kopf.appendChild(el('span', null, zone.getAttribute('data-ed-hilfe') ||
+      'Diese Abschnitte stehen nur auf dieser Seite. Sie erscheinen in der Reihenfolge, ' +
+      'in der sie hier stehen.'));
     bloecke.appendChild(kopf);
     document.body.appendChild(bloecke);
     bloeckeZeichnen();
@@ -436,16 +513,19 @@
   function bloeckeZeichnen() {
     /* Alles ausser dem Kopf neu aufbauen. */
     while (bloecke.children.length > 1) bloecke.removeChild(bloecke.lastChild);
+    var zone = bloeckeZone();
+    var arten = bloeckeArten(zone);
 
     bloeckeNeu.forEach(function (b, i) {
+      var art = ARTEN[b.art] || ARTEN.stelle;
       var g = el('div', 'dvg-gruppe');
       var kopf = el('div', 'dvg-gruppe-kopf');
-      kopf.appendChild(el('div', 'dvg-gruppe-titel', 'Stelle ' + (i + 1)));
+      kopf.appendChild(el('div', 'dvg-gruppe-titel', art.name + ' ' + (i + 1)));
       var werkzeuge = el('div', 'dvg-block-werkzeuge');
       [['↑', 'nach oben', i > 0, function () { tausche(i, i - 1); }],
        ['↓', 'nach unten', i < bloeckeNeu.length - 1, function () { tausche(i, i + 1); }],
        ['✕', 'entfernen', true, function () {
-          if (!window.confirm('Diese Stellenanzeige entfernen?')) return;
+          if (!window.confirm(art.frage)) return;
           bloeckeNeu.splice(i, 1); bloeckeZeichnen();
        }]
       ].forEach(function (w) {
@@ -459,55 +539,64 @@
       kopf.appendChild(werkzeuge);
       g.appendChild(kopf);
 
-      var feld = function (beschriftung, schl, zeilen, hinweis) {
+      art.felder.forEach(function (spec) {
         var z = el('label', 'dvg-zeile');
-        z.appendChild(el('span', 'dvg-zeile-kennung', beschriftung));
+        z.appendChild(el('span', 'dvg-zeile-kennung', spec.text));
         var r = el('div', 'dvg-seo-feld');
         var f = document.createElement('textarea');
         f.className = 'dvg-feld';
-        f.rows = zeilen;
-        f.value = schl === 'punkte' ? (b.punkte || []).join('\n') : (b[schl] || '');
+        f.rows = spec.zeilen;
+        f.value = spec.schl === 'punkte' ? (b.punkte || []).join('\n') : (b[spec.schl] || '');
         f.addEventListener('input', function () {
-          if (schl === 'punkte') {
+          if (spec.schl === 'punkte') {
             b.punkte = f.value.split('\n').map(function (x) { return x.trim(); }).filter(Boolean);
+          } else if (spec.mehrzeilig) {
+            b[spec.schl] = f.value;
           } else {
-            b[schl] = f.value.replace(/[\r\n]+/g, ' ');
-            if (b[schl] !== f.value) f.value = b[schl];
+            /* Einzeilige Felder: der Server verwirft Steuerzeichen, also
+               darf hier gar kein Umbruch entstehen. */
+            b[spec.schl] = f.value.replace(/[\r\n]+/g, ' ');
+            if (b[spec.schl] !== f.value) f.value = b[spec.schl];
           }
           bloeckeKnopfStand();
         });
         r.appendChild(f);
-        if (hinweis) r.appendChild(el('span', 'dvg-ampel', hinweis));
+        if (spec.hinweis) r.appendChild(el('span', 'dvg-ampel', spec.hinweis));
         z.appendChild(r);
-        return z;
-      };
-
-      g.appendChild(feld('Stellenbezeichnung', 'titel', 1));
-      g.appendChild(feld('Umfang', 'umfang', 1, 'Zum Beispiel „Vollzeit" oder „Ausbildung ab August". Darf leer bleiben.'));
-      g.appendChild(feld('Beschreibung', 'text', 4));
-      g.appendChild(feld('Stichpunkte', 'punkte', 4, 'Eine Zeile je Punkt. Darf leer bleiben.'));
+        g.appendChild(z);
+      });
       bloecke.appendChild(g);
     });
 
     if (!bloeckeNeu.length) {
-      bloecke.appendChild(el('div', 'dvg-ampel', 'Zurzeit ist keine Stelle eingetragen.'));
+      bloecke.appendChild(el('div', 'dvg-ampel',
+        zone.getAttribute('data-ed-leertext') || 'Hier steht noch nichts.'));
     }
 
     var leiste = el('div', 'dvg-seo-aktionen');
-    var neu = el('button', 'dvg-knopf dvg-knopf-still', '+ Stelle hinzufügen');
-    neu.type = 'button';
-    neu.addEventListener('click', function () {
-      bloeckeNeu.push({ art: 'stelle', titel: '', umfang: '', text: '', punkte: [] });
-      bloeckeZeichnen();
-      var felder = bloecke.querySelectorAll('.dvg-feld');
-      if (felder.length) felder[felder.length - 4].focus();
+    arten.forEach(function (a) {
+      var neu = el('button', 'dvg-knopf dvg-knopf-still', '+ ' + ARTEN[a].name);
+      neu.type = 'button';
+      neu.addEventListener('click', function () {
+        var b = { art: a, punkte: [] };
+        ARTEN[a].felder.forEach(function (f) { if (f.schl !== 'punkte') b[f.schl] = ''; });
+        bloeckeNeu.push(b);
+        bloeckeZeichnen();
+        var gruppen = bloecke.querySelectorAll('.dvg-gruppe');
+        var letzte = gruppen[gruppen.length - 1];
+        if (letzte) {
+          var f = letzte.querySelector('.dvg-feld');
+          if (f) f.focus();
+        }
+      });
+      leiste.appendChild(neu);
     });
     bloeckeMeldung = el('span', 'dvg-meldung');
     bloeckeMeldung.setAttribute('role', 'status');
-    bloeckeSpeichern = el('button', 'dvg-knopf dvg-knopf-voll', 'Stellen speichern');
+    bloeckeSpeichern = el('button', 'dvg-knopf dvg-knopf-voll', 'Speichern');
     bloeckeSpeichern.type = 'button';
     bloeckeSpeichern.addEventListener('click', bloeckeSenden);
-    leiste.appendChild(neu); leiste.appendChild(bloeckeMeldung); leiste.appendChild(bloeckeSpeichern);
+    leiste.appendChild(bloeckeMeldung); leiste.appendChild(bloeckeSpeichern);
     bloecke.appendChild(leiste);
     bloeckeKnopfStand();
   }
@@ -520,18 +609,30 @@
   function bloeckeKnopfStand() {
     if (!bloeckeSpeichern) return;
     var anders = JSON.stringify(bloeckeNeu) !== bloeckeStand;
-    var luecke = bloeckeNeu.some(function (b) {
-      return !String(b.titel || '').trim() || !String(b.text || '').trim();
+    var fehlt = null;
+    bloeckeNeu.forEach(function (b, i) {
+      if (fehlt) return;
+      var art = ARTEN[b.art];
+      if (!art) { fehlt = 'Unbekannte Art in Abschnitt ' + (i + 1) + '.'; return; }
+      art.felder.forEach(function (f) {
+        if (fehlt || !f.pflicht) return;
+        if (!String(b[f.schl] || '').trim()) {
+          fehlt = '„' + f.text + '“ fehlt bei ' + art.name + ' ' + (i + 1) + '.';
+        }
+      });
     });
-    bloeckeSpeichern.disabled = !anders || luecke;
-    if (luecke) bloeckeSage('Bezeichnung und Beschreibung sind bei jeder Stelle nötig.', 'fehler');
+    bloeckeSpeichern.disabled = !anders || !!fehlt;
+    if (fehlt) bloeckeSage(fehlt, 'fehler');
     else if (anders) bloeckeSage('', null);
   }
 
   function bloeckeSenden() {
+    var zone = bloeckeZone();
+    if (!zone) return;
     bloeckeSpeichern.disabled = true;
     bloeckeSage('Wird gespeichert …', null);
-    ruf({ was: 'bloecke-speichern', datei: dateiname(), zone: 'stellen', bloecke: bloeckeNeu })
+    ruf({ was: 'bloecke-speichern', datei: dateiname(),
+          zone: zone.getAttribute('data-ed-zone'), bloecke: bloeckeNeu })
       .then(function (a) {
         if (a.s === 401) { bloeckeSage('Die Anmeldung ist abgelaufen. Bitte neu anmelden.', 'fehler'); return; }
         if (a.d && a.d.teilweise) {
@@ -1327,10 +1428,16 @@
       bild_nicht_gefunden: 'dieses Bild gibt es in der Datei nicht mehr — bitte neu laden',
       rahmen_ungueltig: 'eine Angabe für Menü oder Fußzeile ist nicht gültig',
       erzeugung_fehlgeschlagen: 'die Datei ließ sich nicht erzeugen — nichts wurde gespeichert',
-      zone_nicht_gefunden: 'der Bereich für Stellen fehlt in der Datei — bitte neu laden',
-      block_titel_fehlt: 'eine Stelle hat keine Bezeichnung',
-      block_text_fehlt: 'eine Stelle hat keine Beschreibung',
-      zu_viele_bloecke: 'höchstens 20 Stellen'
+      zone_nicht_gefunden: 'der Bereich fehlt in der Datei — bitte neu laden',
+      zone_nicht_freigegeben: 'für diesen Bereich ist das Bearbeiten nicht freigeschaltet',
+      blockart_hier_nicht_erlaubt: 'diese Art gehört nicht in diesen Bereich',
+      blockart_unbekannt: 'unbekannte Art',
+      block_titel_fehlt: 'einem Abschnitt fehlt die Überschrift',
+      block_text_fehlt: 'einem Abschnitt fehlt der Text, oder er ist zu lang',
+      feld_ungueltig: 'ein Feld enthält Zeichen, die dort nicht stehen dürfen',
+      punkt_ungueltig: 'ein Stichpunkt ist leer oder zu lang',
+      zu_viele_punkte: 'höchstens 10 Stichpunkte je Abschnitt',
+      zu_viele_bloecke: 'höchstens 20 Abschnitte'
     };
     return karte[f] || f;
   }

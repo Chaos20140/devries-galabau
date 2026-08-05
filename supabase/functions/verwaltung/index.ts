@@ -60,6 +60,8 @@ const CORS = {
    wird die HTML-Datei selbst geaendert und committet; Pages baut danach
    neu. Was ausgeliefert wird, ist also weiterhin fertiges HTML.
    ===================================================================== */
+import { bloeckeErzeugen, zoneSetzen, leerhinweis } from "./bloecke.mjs";
+
 const GH_TOKEN = Deno.env.get("GITHUB_TOKEN") ?? "";
 const GH_REPO = "Chaos20140/devries-galabau";
 
@@ -821,131 +823,27 @@ Deno.serve(async (req: Request) => {
       if (!Array.isArray(roh)) return json({ fehler: "bloecke_fehlen" }, 400);
       if (roh.length > 20) return json({ fehler: "zu_viele_bloecke" }, 400);
 
-      const sauber = (v: unknown, max: number) => {
-        if (typeof v !== "string") return null;
-        const t = v.trim();
-        if (!t || t.length > max) return null;
-        for (let i = 0; i < t.length; i++) {
-          const c = t.charCodeAt(i);
-          if (c < 32 || c === 127) return null;
-        }
-        return t;
-      };
-
-      /* Genau EINE Blockart, bewusst. Was der Betreiber nicht braucht,
-         kann er auch nicht falsch einsetzen — und jede weitere Art
-         verdoppelt eine Inline-Stil-Vorlage, die bei jeder
-         Designaenderung nachzuziehen ist. */
-      const teile: string[] = [];
-      for (const b of roh) {
-        if (!b || typeof b !== "object") return json({ fehler: "block_ungueltig" }, 400);
-        const x = b as Record<string, unknown>;
-        if (String(x.art) !== "stelle") return json({ fehler: "blockart_unbekannt", art: String(x.art) }, 400);
-
-        const titel = sauber(x.titel, 90);
-        if (!titel) return json({ fehler: "block_titel_fehlt" }, 400);
-        const umfang = sauber(x.umfang, 60) ?? "";
-        const text = sauber(x.text, 900);
-        if (!text) return json({ fehler: "block_text_fehlt" }, 400);
-
-        const punkteRoh = Array.isArray(x.punkte) ? x.punkte : [];
-        if (punkteRoh.length > 10) return json({ fehler: "zu_viele_punkte" }, 400);
-        const punkte: string[] = [];
-        for (const p of punkteRoh) {
-          const t = sauber(p, 160);
-          if (!t) return json({ fehler: "punkt_ungueltig" }, 400);
-          punkte.push(t);
-        }
-
-        /* Gestaltung wie die uebrigen Karten dieser Seite: Glaskarte,
-           Radius 26, dieselbe Palette. */
-        teile.push(
-          '<article data-reveal style="border-radius:26px;padding:clamp(22px,2.6vw,36px);' +
-          'background:linear-gradient(155deg,rgba(255,255,255,.72),rgba(255,255,255,.42));' +
-          'backdrop-filter:blur(26px) saturate(1.45);border:1px solid rgba(255,255,255,.6);' +
-          'box-shadow:0 26px 54px -38px rgba(12,29,20,.34)">' +
-          (umfang
-            ? '<span style="display:inline-block;padding:7px 14px;border-radius:999px;' +
-              'background:rgba(142,207,79,.24);font-size:11px;font-weight:700;letter-spacing:.16em;' +
-              'text-transform:uppercase;color:#31611A">' + htmlMaskieren(umfang) + "</span>"
-            : "") +
-          '<h3 style="margin:' + (umfang ? "14px" : "0") + ' 0 0;font-size:clamp(20px,2.4vw,30px);' +
-          'line-height:1.12;letter-spacing:-.03em;font-weight:600;color:#0F2318">' +
-          htmlMaskieren(titel) + "</h3>" +
-          '<p style="margin:12px 0 0;max-width:62ch;font-size:16px;line-height:1.62;color:#3C5145;' +
-          'text-wrap:pretty">' + htmlMaskieren(text) + "</p>" +
-          (punkte.length
-            ? '<ul style="margin:14px 0 0;padding-left:20px;display:grid;gap:6px">' +
-              punkte.map((p) =>
-                '<li style="font-size:15px;line-height:1.55;color:#4A5F52">' + htmlMaskieren(p) + "</li>"
-              ).join("") + "</ul>"
-            : "") +
-          '<div style="margin-top:20px"><a href="#bewerbung" style="display:inline-flex;' +
-          'align-items:center;gap:9px;background:#1B4332;color:#F3F7F0;border-radius:999px;' +
-          'padding:14px 24px;font-size:15px;font-weight:600">Auf diese Stelle bewerben →</a></div>' +
-          "</article>",
-        );
+      /* Erzeugen, Zone setzen und Hinweiskarte schalten stehen in
+         ./bloecke.js — EINE Quelle, die Deno und Node laden. Vorher lag
+         die Logik hier und im Pruefskript als Nachbau; ein Nachbau prueft
+         aber nur den Nachbau, und genau so ist "bloecke.length" (den Namen
+         gibt es hier nicht) bis in die Live-Funktion gekommen. */
+      const gebaut = bloeckeErzeugen(datei, zone, roh);
+      if (!gebaut.ok) {
+        const { ok: _weg, ...rest } = gebaut;
+        return json(rest, 400);
       }
-      const inhalt = teile.join("");
-
-      /* Zone finden und ihren INHALT ersetzen.
-         Hier wird die Verschachtelung GEZAEHLT, nicht vorausgesetzt.
-         Die erste Fassung nahm den Bereich bis zum naechsten </div> mit
-         einem nicht-gierigen Ausdruck. Das ging genau einmal gut: Beim
-         ersten Speichern ist die Zone leer, also ist das naechste </div>
-         auch das richtige. Danach steht in der Zone die Huelle des
-         Bewerben-Knopfs — ein <div> —, und das naechste </div> ist ihres.
-         Der Rest der Zone samt </article> waere aus der Zone gefallen und
-         die Seite zerschnitten. Gefunden von .planning/werkzeug/pruefe-bloecke.js
-         (Pruefung 9/10/12), nicht beim Lesen. */
-      const zoneSetzen = (html: string): string | null => {
-        const auf = new RegExp(
-          '<div\\b[^>]*\\sdata-ed-zone="' + regexMaskieren(zone) + '"[^>]*>',
-        );
-        const start = auf.exec(html);
-        if (!start) return null;
-        const ab = start.index + start[0].length;
-        const marken = /<div\b[^>]*>|<\/div\s*>/g;
-        marken.lastIndex = ab;
-        let tiefe = 1;
-        let m: RegExpExecArray | null;
-        while ((m = marken.exec(html))) {
-          tiefe += m[0][1] === "/" ? -1 : 1;
-          if (tiefe === 0) return html.slice(0, ab) + inhalt + html.slice(m.index);
-        }
-        return null; /* kein passendes Ende — lieber nichts schreiben */
-      };
-
-      /* Der Hinweis "Zurzeit sind keine Stellen ausgeschrieben" darf nicht
-         ueber einer Liste offener Stellen stehen. Er wird deshalb genau
-         dann ausgeblendet, wenn die Zone gefuellt ist — und kommt von
-         selbst zurueck, sobald sie wieder leer ist.
-         Bewusst NICHT dem Betreiber ueberlassen: Wer eine Stelle eintraegt,
-         denkt an die Stelle, nicht an einen Satz weiter oben. Der
-         Widerspruch waere der Normalfall, nicht die Ausnahme.
-         Der Text selbst bleibt bearbeitbar (data-ed) und erscheint dann in
-         der Lade fuer nicht sichtbare Stellen. */
-      const leerhinweis = (html: string, sichtbar: boolean): string => {
-        const m = /<[a-zA-Z][\w-]*\b[^>]*\sdata-ed-leerhinweis[\s=>][^>]*>/.exec(html);
-        if (!m) return html; /* Seite ohne Hinweiskarte — nichts zu tun */
-        /* Vorhandenes data-ed-leer erst entfernen, sonst stuende es beim
-           zweiten Speichern doppelt im Tag. Der Ausblick (?=[\s>]) ist
-           noetig, weil "data-ed-leerhinweis" mit "data-ed-leer" ANFAENGT —
-           ohne ihn wuerde die Markierung selbst zerschnitten. */
-        let tag = m[0].replace(/\sdata-ed-leer(="[^"]*")?(?=[\s>])/g, "");
-        if (!sichtbar) tag = tag.replace(/\sdata-ed-leerhinweis/, ' data-ed-leerhinweis data-ed-leer="aus"');
-        return html.slice(0, m.index) + tag + html.slice(m.index + m[0].length);
-      };
+      const inhalt = gebaut.inhalt;
 
       const geschriebenB: string[] = [];
       for (const branch of BRANCHES) {
         try {
           const stand = await ghHole(datei, branch);
-          let neu = zoneSetzen(stand.text);
+          let neu = zoneSetzen(stand.text, zone, inhalt);
           if (neu === null) return json({ fehler: "zone_nicht_gefunden", zone, branch }, 409);
-          /* teile, nicht die Eingabe: massgeblich ist, was tatsaechlich in
-             der Seite landet. */
-          neu = leerhinweis(neu, teile.length === 0);
+          /* gebaut.anzahl, nicht die Eingabe: massgeblich ist, was
+             tatsaechlich in der Seite landet. */
+          neu = leerhinweis(neu, gebaut.anzahl === 0);
           if (neu === stand.text) { geschriebenB.push(branch); continue; }
           await ghSchreibe(datei, branch, neu, stand.sha,
             "Seiten-Editor: Blöcke in " + datei + " geändert");
@@ -957,7 +855,7 @@ Deno.serve(async (req: Request) => {
             hinweis: "Gespeichert, aber nicht veröffentlicht." }, 502);
         }
       }
-      return json({ ok: true, datei, zone, anzahl: teile.length, branches: geschriebenB });
+      return json({ ok: true, datei, zone, anzahl: gebaut.anzahl, branches: geschriebenB });
     }
 
     /* ---- Seiten-Editor: Menü und Fußzeile -----------------------------
