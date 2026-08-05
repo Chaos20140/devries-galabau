@@ -121,20 +121,14 @@
           '<div style="position:absolute;left:0;right:0;bottom:-14px;height:104px;pointer-events:none;z-index:6;overflow:visible" data-band>' +
             '<svg viewBox="0 0 1600 104" preserveAspectRatio="none" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible"></svg>' +
           '</div>' +
-          /* Die Baeume hingen mit left:0 / right:0 am FENSTER, nicht am
-             Inhalt. Bei 1272 px rahmen sie die Karte (sie ueberlappen sie
-             um rund 50 px). Auf einem 2560er Schirm bleibt die Karte bei
-             1280 px stehen, die Baeume rutschen aber mit an den Rand — dort
-             standen sie 631 px daneben und wirkten wie hingeworfen.
-             max(0px, …) begrenzt das: bis 1620 px Fensterbreite aendert
-             sich nichts (der Ausdruck wird negativ, 0px gewinnt), darueber
-             bleiben sie an der gedachten Buehnenkante stehen. 1620 = Karte
-             1280 + 2 x 170 px, damit sie wie bisher leicht dahinterstecken.
-             ⚠ Leerzeichen um das Minus in calc() sind Pflicht. */
-          '<div class="gf-tree" style="position:absolute;left:max(0px, calc((100% - 1620px) / 2));top:-210px;bottom:-14px;width:clamp(140px,13vw,190px);pointer-events:none;z-index:1;overflow:hidden">' +
+          /* Die Baeume stehen bewusst an den Fensterraendern, nicht an der
+             Inhaltsbreite. Ein Versuch, sie auf breiten Schirmen an die
+             Karte heranzuziehen, wurde auf Zuruf wieder zurueckgenommen —
+             am Rand sehen sie besser aus. NICHT erneut aendern. */
+          '<div class="gf-tree" style="position:absolute;left:0;top:-210px;bottom:-14px;width:clamp(140px,13vw,190px);pointer-events:none;z-index:1;overflow:hidden">' +
             '<svg viewBox="0 0 290 900" preserveAspectRatio="xMinYMax meet" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;overflow:hidden"></svg>' +
           '</div>' +
-          '<div class="gf-tree" style="position:absolute;right:max(0px, calc((100% - 1620px) / 2));top:-210px;bottom:-14px;width:clamp(140px,13vw,190px);pointer-events:none;z-index:1;overflow:hidden">' +
+          '<div class="gf-tree" style="position:absolute;right:0;top:-210px;bottom:-14px;width:clamp(140px,13vw,190px);pointer-events:none;z-index:1;overflow:hidden">' +
             '<svg viewBox="0 0 290 900" preserveAspectRatio="xMaxYMax meet" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;overflow:hidden"></svg>' +
           '</div>' +
           '<div class="gf-wrap" style="position:relative;z-index:5;max-width:1280px;margin:0 auto">' +
@@ -556,8 +550,34 @@
         }
       }
 
+      /* WIE WEIT STEHT DER BLUMENSTREIFEN IM BILD?
+         Einmal je Bild ausgerechnet und von Faltern UND Blueten benutzt —
+         vorher holte sich jeder Block sein eigenes getBoundingClientRect.
+
+         Der Streifen klebt am SEITENENDE. Sein Oberrand kommt deshalb nie
+         weiter als rund 276 px ueber den Fensterboden hinaus, egal wie
+         gross der Schirm ist. Die alte Rechnung teilte diesen KONSTANTEN
+         Weg durch 0,6 bzw. 0,7 mal die FENSTERHOEHE — je hoeher das
+         Fenster, desto kleiner das Ergebnis. Am Seitenende gemessen:
+         0,49 bei 800 px Fensterhoehe, 0,30 bei 1308 px, 0,27 bei 1440 px.
+         Die Blueten erreichten damit nie ihre volle Deckkraft (bei 1308 px
+         hoechstens 0,61), und die spaeteste Gruppe (Verzoegerung 0,28)
+         erschien ab etwa 1400 px Fensterhoehe ueberhaupt nicht mehr. Auf
+         einem grossen Schirm war vom Blumenband so gut wie nichts zu sehen
+         — genau so gemeldet.
+
+         Jetzt wird durch die HOEHE DES STREIFENS geteilt. Der Wert haengt
+         damit nur noch davon ab, wie weit der Streifen im Bild steht, und
+         erreicht auf jedem Schirm 1. */
+      let fpStreifen = null;
+      if (this.fvines) {
+        const fr0 = this.fvines.getBoundingClientRect();
+        fpStreifen = REDUCE ? 1 : Math.min(1, Math.max(0,
+          (window.innerHeight + 60 - fr0.top) / Math.max(1, fr0.height)));
+      }
+
       if (this.fbf && this.fbf.length && this.fvines) {
-        const bv = REDUCE ? 1 : Math.min(1, Math.max(0, (window.innerHeight + 60 - this.fvines.getBoundingClientRect().top) / (window.innerHeight * 0.6)));
+        const bv = fpStreifen;
         for (const bf of this.fbf) {
           if (bv < 0.05) { if (bf.el.getAttribute('opacity') !== '0') bf.el.setAttribute('opacity', '0'); continue; }
           const a2 = t * bf.sp + bf.ph;
@@ -573,9 +593,7 @@
       }
 
       if (this.fvines && this.blooms && this.blooms.length) {
-        const fr = this.fvines.getBoundingClientRect();
-        const vh2 = window.innerHeight;
-        const fp = REDUCE ? 1 : Math.min(1, Math.max(0, (vh2 + 60 - fr.top) / (vh2 * 0.7)));
+        const fp = fpStreifen;
         for (const bl of this.blooms) {
           const v = Math.min(1, Math.max(0, (fp - bl.delay) / 0.42));
           const ez = v < 0.5 ? 2 * v * v : 1 - Math.pow(-2 * v + 2, 2) / 2;
