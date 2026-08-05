@@ -918,26 +918,53 @@ class Component extends DCLogic {
     }
   }
 
+  /* Laenge des Wegs fuer das Strichmuster.
+
+     ⚠ Der Pfad traegt vector-effect="non-scaling-stroke". Damit rechnet
+     der Browser Strichbreite UND Strichmuster in BILDPUNKTEN, nicht in
+     Nutzeinheiten der viewBox. Die Umrechnung ueber getScreenCTM() ist
+     hier also richtig und kein Umweg.
+
+     Das Attribut ist noetig, weil das SVG mit preserveAspectRatio="none"
+     auf 240vw gezerrt wird: Ohne es waere der Strich waagerecht breit
+     und senkrecht duenn.
+
+     ZWEI FEHLER AN DIESER STELLE, beide gemessen:
+     1. Zuerst war die Laenge falsch, weil die Messung lief, bevor das SVG
+        seine endgueltige Breite hatte. getScreenCTM() lieferte dann einen
+        Wert, der zur spaeteren Darstellung nicht passte — der Strich war
+        zu kurz, der Pfad von mehreren Strichen bedeckt, und sichtbar
+        blieben nur die Blaetter (die an ihrem eigenen Fortschritt haengen).
+     2. Der naheliegende "Fix", stattdessen getTotalLength() zu nehmen, ist
+        FALSCH: 2321 Nutzeinheiten gegen rund 770 Bildpunkte. Der Strich
+        wird dreimal zu lang, und die Linie erscheint erst im letzten
+        Drittel. Auch das war im Bild zu sehen.
+
+     Richtig ist: in Bildpunkten messen UND nachmessen, sobald sich die
+     Fensterbreite aendert. Genau daran haengt der Massstab. */
   measureFlowLen() {
     if (!this.flowLine || !this.flowLine.isConnected) return;
-    /* stroke-dasharray und -dashoffset zaehlen in NUTZEINHEITEN des
-       Koordinatensystems (hier viewBox 0 0 3200 1000), nicht in
-       Bildpunkten. Genau das war der Fehler: Die Laenge wurde vorher
-       ueber getScreenCTM() in Bildpunkte umgerechnet und dann als
-       Strichlaenge gesetzt.
-       Gemessen: Pfad 2321 Einheiten lang, gesetztes dasharray 768,9 —
-       also ein Drittel. Damit war der Pfad von drei Strichen bedeckt und
-       konnte sich nie durchzeichnen; sichtbar blieben nur die Blaetter,
-       die an ihrem eigenen Fortschritt haengen. Genau das war im Bild zu
-       sehen: Blaetter und Blueten ohne Linie.
-       Schlimmer noch: Der Wert hing davon ab, WANN gemessen wurde. Lief
-       die Messung, bevor das SVG ausgelegt war, lieferte getScreenCTM()
-       die Einheitsmatrix und der Wert stimmte zufaellig. Mit
-       getTotalLength() faellt die Zeitabhaengigkeit ganz weg. */
     this.flowLenU = this.flowLine.getTotalLength();
-    this.flowLen = this.flowLenU;
-    this.flowLine.style.strokeDasharray = this.flowLen.toFixed(1);
-    this.flowLine.style.strokeDashoffset = this.flowLen.toFixed(1);
+    const m = this.flowLine.getScreenCTM();
+    let L = 0;
+    if (m && (m.a !== 1 || m.d !== 1)) {
+      let px = 0, py = 0;
+      for (let i = 0; i <= 260; i++) {
+        const p = this.flowLine.getPointAtLength(this.flowLenU * i / 260);
+        const x = m.a * p.x + m.c * p.y + m.e;
+        const y = m.b * p.x + m.d * p.y + m.f;
+        if (i) L += Math.hypot(x - px, y - py);
+        px = x; py = y;
+      }
+    }
+    /* Ist die Matrix noch die Einheitsmatrix, war das SVG beim Messen
+       nicht ausgelegt. Dann NICHT uebernehmen — lieber beim naechsten
+       Anlauf noch einmal messen, als einen falschen Wert festschreiben. */
+    if (L <= 1) { this.flowGemessenBei = null; return; }
+    this.flowLen = L;
+    this.flowGemessenBei = window.innerWidth;
+    this.flowLine.style.strokeDasharray = L.toFixed(1);
+    this.flowLine.style.strokeDashoffset = L.toFixed(1);
   }
 
   setupMap() {
@@ -1243,6 +1270,16 @@ class Component extends DCLogic {
     });
 
     if (this.flow && this.flowTrack) {
+      /* Erst messen, wenn der Abschnitt in die Naehe kommt — vorher hat
+         das SVG oft noch nicht seine endgueltige Breite, und ein zu frueh
+         festgeschriebener Wert laesst die Linie falsch laufen.
+         Danach nur noch, wenn sich die Fensterbreite geaendert hat: An ihr
+         haengt der Massstab, und die 260-Punkt-Messung soll nicht in jedem
+         Einzelbild laufen. */
+      if (this.flowGemessenBei !== window.innerWidth &&
+          this.flow.getBoundingClientRect().top < window.innerHeight * 2) {
+        this.measureFlowLen();
+      }
       const r = this.flow.getBoundingClientRect();
       const span = Math.max(1, r.height - window.innerHeight);
       const raw = Math.min(1, Math.max(0, -r.top / span));
@@ -1250,8 +1287,26 @@ class Component extends DCLogic {
       this.fp = this.fp == null ? p : this.fp + (p - this.fp) * 0.11;
       const q = this.fp;
       if (!this.isMobile) {
+        /* Nur so weit schieben, bis die LETZTE Karte vollstaendig im Bild
+           steht — nicht ueber die ganze Bahnbreite.
+           Gemessen bei 1280 px: Bahn 3072 px breit, also 1792 px Weg,
+           obwohl die letzte Karte schon bei 2342 px endet. 690 px davon,
+           also 39 % des ganzen Scrollens, waren leerer Nachlauf hinter dem
+           Inhalt. Genau das sah aus, als wuerde der Weg "aufhoeren zu
+           laufen": Linie und Karten sind zu Ende, gescrollt wird weiter. */
         const tw = this.flowTrack.offsetWidth || 1;
-        const travel = Math.max(0, tw - window.innerWidth);
+        let noetig = tw;
+        if (this.flowSteps && this.flowSteps.length) {
+          const tl = this.flowTrack.getBoundingClientRect().left;
+          let rechts = 0;
+          for (const s of this.flowSteps) {
+            const r = s.getBoundingClientRect();
+            if (r.width) rechts = Math.max(rechts, r.right - tl);
+          }
+          /* Der Aufschlag ist der Rand, den die Seite auch sonst haelt. */
+          if (rechts > 0) noetig = Math.min(tw, rechts + 40);
+        }
+        const travel = Math.max(0, noetig - window.innerWidth);
         this.flowTrack.style.transform = 'translate3d(' + (-travel * q).toFixed(1) + 'px,0,0)';
       }
       const qg = Math.min(1, q / 0.55);
