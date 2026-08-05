@@ -129,11 +129,36 @@
          die Statuszeile neu, in der ein Marker sitzt.
 
        Ausgenommen ist nur die Werkzeugleiste des Editors selbst. */
+    /* Kopf- und Fusszeile sind Web Components mit Shadow DOM. Fuer einen
+       Klick DARIN meldet ev.target das HOST-Element (<garden-header>) —
+       closest() findet daran kein a[href], und das Menue navigierte
+       ungebremst weg, samt aller ungespeicherten Aenderungen.
+       composedPath() liefert den echten Weg durch den Schattenbaum. */
+    var ausPfad = function (ev) {
+      var pfad = ev.composedPath ? ev.composedPath() : null;
+      if (!pfad || !pfad.length) return ev.target;
+      for (var i = 0; i < pfad.length; i++) {
+        var k = pfad[i];
+        if (!k || k.nodeType !== 1) continue;
+        if (k.classList && (k.classList.contains('dvg-leiste') ||
+            k.classList.contains('dvg-hinweis') || k.classList.contains('dvg-schublade'))) return null;
+        var tag = k.tagName;
+        if (tag === 'A' && k.getAttribute('href')) return k;
+        if (tag === 'BUTTON') return k;
+        if (tag === 'INPUT' && /^(submit|button|file)$/i.test(k.type)) return k;
+      }
+      return ev.target;
+    };
+
     var stillLegen = function (ev) {
-      var t = ev.target;
+      var t = ausPfad(ev);
+      if (t === null) return;                    /* im Werkzeug selbst */
       if (!t || !t.closest) return;
       if (t.closest('.dvg-leiste') || t.closest('.dvg-hinweis') || t.closest('.dvg-schublade')) return;
-      var ziel = t.closest('a[href], button, input[type="submit"], input[type="button"], input[type="file"]');
+      var ziel = (t.tagName === 'A' && t.getAttribute('href')) || t.tagName === 'BUTTON' ||
+        (t.tagName === 'INPUT' && /^(submit|button|file)$/i.test(t.type))
+        ? t
+        : t.closest('a[href], button, input[type="submit"], input[type="button"], input[type="file"]');
       if (!ziel) return;
       ev.preventDefault();
       ev.stopPropagation();
@@ -142,6 +167,12 @@
         : 'Knöpfe sind beim Bearbeiten stillgelegt, damit nichts versehentlich abgeschickt wird.', null);
     };
     document.addEventListener('click', stillLegen, true);
+    /* Mittelklick oeffnet einen Verweis in einem neuen Reiter und loest
+       KEIN click aus. Das ist zwar harmlos (das Fenster bleibt stehen),
+       fuehrt aber zu einem zweiten Editorfenster auf derselben Seite —
+       und damit genau in den Fall, den der Abgleich gegen fremde
+       Aenderungen abfangen muss. Lieber gar nicht erst. */
+    document.addEventListener('auxclick', stillLegen, true);
     /* Der Griff ueber die Tastatur (Enter/Leertaste im Formular) laeuft
        nicht zwingend ueber click — deshalb zusaetzlich am submit. */
     document.addEventListener('submit', function (ev) {
@@ -248,6 +279,14 @@
 
     var raus = el('a', 'dvg-knopf dvg-knopf-still', 'Beenden');
     raus.href = location.pathname;
+    /* "Beenden" ist bewusst von der Stilllegung ausgenommen — sonst kaeme
+       man nicht mehr heraus. Genau deshalb muss die Rueckfrage hier
+       ausdruecklich stehen: beforeunload greift bei einem Klick auf einen
+       Verweis derselben Seite nicht zuverlaessig. */
+    raus.addEventListener('click', function (ev) {
+      if (!offeneAenderungen()) return;
+      if (!window.confirm('Es gibt ungespeicherte Änderungen. Trotzdem beenden?')) ev.preventDefault();
+    });
 
     var rechts = el('div', 'dvg-leiste-rechts');
     rechts.appendChild(zaehlerEl); rechts.appendChild(meldungEl);
@@ -311,7 +350,7 @@
 
     /* Ungespeichertes nicht stillschweigend verlieren. */
     window.addEventListener('beforeunload', function (ev) {
-      if (!geaendert.size) return;
+      if (!offeneAenderungen()) return;
       ev.preventDefault(); ev.returnValue = '';
     });
   }
@@ -382,6 +421,24 @@
      Werkzeugleiste. Statt in jeder Lade die vier anderen einzeln zu
      schliessen — dabei vergisst man verlaesslich eine Kombination —
      macht das eine Stelle. */
+  /* Gibt es irgendwo ungespeicherte Arbeit?
+     Vorher fragte beforeunload nur "geaendert.size" ab, also allein die
+     Textstellen. Eine fertig getippte Stellenanzeige, ein geaenderter
+     Menuepunkt, eine neue Google-Beschreibung oder ein ausgewaehltes Bild
+     waren dagegen NICHT geschuetzt: Fenster zu, alles weg, ohne Rueckfrage.
+     Jede neue Lade muss hier eine Zeile bekommen — deshalb steht es an
+     EINER Stelle und nicht an jedem Ausgang einzeln. */
+  function offeneAenderungen() {
+    if (geaendert.size) return true;
+    if (bloeckeStand !== null && JSON.stringify(bloeckeNeu) !== bloeckeStand) return true;
+    if (rahmenNeu && rahmenStand &&
+        JSON.stringify(rahmenNeu) !== JSON.stringify(rahmenStand)) return true;
+    if (seoStart && (seoWerte.titel !== seoStart.titel ||
+        seoWerte.beschreibung !== seoStart.beschreibung)) return true;
+    if (bildNeu) return true;
+    return false;
+  }
+
   function ladenSchliessen(ausser) {
     if (schublade && ausser !== 'verborgen') {
       schublade.remove(); schublade = null;
@@ -487,14 +544,62 @@
     return da.length ? da : ['stelle'];
   }
 
+  /* Merkzettel fuer den Fall, dass die Seite neu geladen wird, bevor
+     GitHub Pages den neuen Stand ausliefert (das dauert etwa eine Minute).
+     Ohne ihn liest die Lade die noch alte Zone aus dem DOM, haelt sie fuer
+     die Wahrheit — und der naechste Speichervorgang loescht das gerade
+     Gespeicherte wieder. sessionStorage, nicht localStorage: mit dem
+     Reiter soll es enden. */
+  function merkSchluessel() {
+    var z = bloeckeZone();
+    return 'dvg-bloecke:' + dateiname() + '|' + (z ? z.getAttribute('data-ed-zone') : '');
+  }
+  function merken(stand) {
+    try {
+      sessionStorage.setItem(merkSchluessel(),
+        JSON.stringify({ stand: stand, zeit: Date.now() }));
+    } catch (e) { /* Speicher gesperrt — dann eben ohne */ }
+  }
+  function gemerkt() {
+    try {
+      var r = JSON.parse(sessionStorage.getItem(merkSchluessel()) || 'null');
+      if (!r || !r.stand) return null;
+      /* Nach 15 Minuten ist die Veroeffentlichung laengst durch; ein
+         aelterer Merkzettel wuerde nur einer echten Aenderung im Weg
+         stehen, die inzwischen anderswo passiert ist. */
+      if (Date.now() - r.zeit > 15 * 60 * 1000) return null;
+      return r.stand;
+    } catch (e) { return null; }
+  }
+  function merkzettelWeg() {
+    try { sessionStorage.removeItem(merkSchluessel()); } catch (e) { /* egal */ }
+  }
+
   function bloeckeUmschalten() {
     if (bloecke) { bloecke.remove(); bloecke = null; return; }
     ladenSchliessen();
 
     var zone = bloeckeZone();
     if (!zone) return;
-    bloeckeNeu = bloeckeLesen(zone);
-    bloeckeStand = JSON.stringify(bloeckeNeu);
+    /* NUR neu aus dem DOM lesen, wenn es keinen offenen Stand gibt.
+       Vorher wurde bei jedem Oeffnen neu gelesen — wer eine Anzeige
+       ausgetippt und dann eine andere Lade angeklickt hatte, fand sie
+       danach ersatzlos verschwunden. */
+    var stillOffen = null;
+    if (bloeckeStand === null) {
+      var vomDom = bloeckeLesen(zone);
+      var alt = gemerkt();
+      if (alt && alt !== JSON.stringify(vomDom)) {
+        /* Zuletzt gespeicherter Stand weicht von dem ab, was die Seite
+           zeigt: die Veroeffentlichung ist noch unterwegs. */
+        bloeckeNeu = JSON.parse(alt);
+        stillOffen = 'Die Seite zeigt oben noch den vorherigen Stand — die Veröffentlichung ' +
+          'braucht etwa eine Minute. Hier steht bereits Ihr zuletzt gespeicherter Stand.';
+      } else {
+        bloeckeNeu = vomDom;
+      }
+      bloeckeStand = JSON.stringify(bloeckeNeu);
+    }
 
     var titel = zone.getAttribute('data-ed-titel') || 'Abschnitte';
     bloecke = el('div', 'dvg-schublade');
@@ -505,6 +610,11 @@
     kopf.appendChild(el('span', null, zone.getAttribute('data-ed-hilfe') ||
       'Diese Abschnitte stehen nur auf dieser Seite. Sie erscheinen in der Reihenfolge, ' +
       'in der sie hier stehen.'));
+    if (stillOffen) {
+      var w = el('span', 'dvg-ampel dvg-ampel-warn', stillOffen);
+      w.setAttribute('role', 'status');
+      kopf.appendChild(w);
+    }
     bloecke.appendChild(kopf);
     document.body.appendChild(bloecke);
     bloeckeZeichnen();
@@ -631,8 +741,14 @@
     if (!zone) return;
     bloeckeSpeichern.disabled = true;
     bloeckeSage('Wird gespeichert …', null);
+    /* "vorher" ist der Stand, den DIESES Fenster beim Öffnen vorgefunden
+       hat. Der Server vergleicht ihn mit dem, was tatsächlich in der Datei
+       steht, und lehnt mit 409 ab, wenn dort inzwischen etwas anderes
+       liegt. Ohne das überschreibt ein zweites Editorfenster die Arbeit
+       des ersten lautlos — und antwortet mit 200. */
     ruf({ was: 'bloecke-speichern', datei: dateiname(),
-          zone: zone.getAttribute('data-ed-zone'), bloecke: bloeckeNeu })
+          zone: zone.getAttribute('data-ed-zone'), bloecke: bloeckeNeu,
+          vorher: JSON.parse(bloeckeStand) })
       .then(function (a) {
         if (a.s === 401) { bloeckeSage('Die Anmeldung ist abgelaufen. Bitte neu anmelden.', 'fehler'); return; }
         if (a.d && a.d.teilweise) {
@@ -645,9 +761,13 @@
           return;
         }
         bloeckeStand = JSON.stringify(bloeckeNeu);
+        merken(bloeckeStand);
         bloeckeKnopfStand();
-        bloeckeSage('Gespeichert. In etwa einer Minute sichtbar — die Seite lädt gleich neu.', 'ok');
-        setTimeout(function () { location.reload(); }, 3000);
+        /* KEIN Neuladen mehr. Die Veroeffentlichung braucht etwa eine
+           Minute; ein Neuladen nach drei Sekunden holt die ALTE Seite,
+           die Lade laese daraus eine leere Zone — und der naechste
+           Speichervorgang loeschte das gerade Gespeicherte wieder. */
+        bloeckeSage('Gespeichert. In etwa einer Minute auf der Seite sichtbar.', 'ok');
       })
       .catch(function (e) {
         bloeckeSpeichern.disabled = false;
@@ -1430,6 +1550,8 @@
       erzeugung_fehlgeschlagen: 'die Datei ließ sich nicht erzeugen — nichts wurde gespeichert',
       zone_nicht_gefunden: 'der Bereich fehlt in der Datei — bitte neu laden',
       zone_nicht_freigegeben: 'für diesen Bereich ist das Bearbeiten nicht freigeschaltet',
+      fremde_aenderung: 'in der Zwischenzeit hat jemand anders diesen Bereich geändert — bitte die Seite neu laden und noch einmal ansehen',
+      vorher_ungueltig: 'der Ausgangsstand ließ sich nicht prüfen — bitte neu laden',
       blockart_hier_nicht_erlaubt: 'diese Art gehört nicht in diesen Bereich',
       blockart_unbekannt: 'unbekannte Art',
       block_titel_fehlt: 'einem Abschnitt fehlt die Überschrift',
@@ -1556,6 +1678,7 @@
       '.dvg-gruppe-kopf{display:flex;align-items:center;justify-content:space-between;gap:12px}',
       '.dvg-block-werkzeuge{display:flex;gap:6px}',
       '.dvg-mini{min-height:30px;padding:4px 11px;font-size:14px;line-height:1}',
+      '.dvg-ampel-warn{color:#7A5A08;font-weight:600}',
 
       /* Bilder */
       '.dvg-bearbeiten .dvg-bild{outline:2px dashed rgba(44,110,73,.5);outline-offset:4px;cursor:pointer;',
