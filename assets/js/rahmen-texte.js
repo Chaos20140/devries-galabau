@@ -22,7 +22,7 @@
    ===================================================================== */
 window.RAHMEN_TEXTE = {
   "menue": [
-    { "datei": "index.html", "text": "Rundgang" },
+    { "datei": "index.html", "text": "Start" },
     { "datei": "gartengestaltung.html", "text": "Gestaltung" },
     { "datei": "gartenplanung.html", "text": "Planung" },
     { "datei": "gartenpflege.html", "text": "Pflege" },
@@ -57,7 +57,7 @@ window.RAHMEN_TEXTE = {
         { "datei": "datenschutz.html", "text": "Datenschutz" },
         { "datei": "referenzen.html", "text": "Referenzen" },
         { "datei": "impressum.html", "text": "Impressum" },
-        { "datei": "index.html", "text": "Rundgang" },
+        { "datei": "index.html", "text": "Start" },
         { "datei": "ueber-uns.html", "text": "Über uns" },
         { "datei": "kontakt.html", "text": "Kontakt" }
       ]
