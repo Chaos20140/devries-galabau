@@ -57,9 +57,9 @@ window.RAHMEN_TEXTE = {
         { "datei": "datenschutz.html", "text": "Datenschutz" },
         { "datei": "referenzen.html", "text": "Referenzen" },
         { "datei": "impressum.html", "text": "Impressum" },
-        { "datei": "index.html", "text": "Start" },
         { "datei": "ueber-uns.html", "text": "Über uns" },
-        { "datei": "kontakt.html", "text": "Kontakt" }
+        { "datei": "kontakt.html", "text": "Kontakt" },
+        { "datei": "index.html", "text": "Start" }
       ]
     }
   ],
