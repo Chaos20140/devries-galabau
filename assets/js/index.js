@@ -964,6 +964,32 @@ class Component extends DCLogic {
        Mit pathLength kann dieser Unterschied gar nicht mehr entstehen. */
     this.flowLine.style.strokeDasharray = '1';
     this.flowLine.style.strokeDashoffset = '1';
+
+    /* Wie weit muss die Bahn ueberhaupt geschoben werden? Nur so weit, bis
+       die letzte Karte UND das Ende des Wegs im Bild stehen — dort sitzt
+       die Bluete, und sie ragt ueber die Karte hinaus.
+       Das wird GENAU HIER ausgerechnet und nicht in der Bildschleife: Die
+       drei Abfragen unten erzwingen je eine Layout-Berechnung. In der
+       Schleife, zwei Zeilen vor dem Schreiben der Transformation, ergibt
+       das Layout-Thrashing — gemessen: blockierter Renderer, kein einziges
+       nachladendes Bild wurde geholt. */
+    if (this.flowTrack) {
+      const tw = this.flowTrack.offsetWidth || 1;
+      const tl = this.flowTrack.getBoundingClientRect().left;
+      let rechts = 0;
+      for (const s of (this.flowSteps || [])) {
+        const r = s.getBoundingClientRect();
+        if (r.width) rechts = Math.max(rechts, r.right - tl);
+      }
+      const m = this.flowLine.getScreenCTM();
+      if (m) {
+        const p = this.flowLine.getPointAtLength(this.flowLenU);
+        rechts = Math.max(rechts, (m.a * p.x + m.c * p.y + m.e) - tl);
+      }
+      /* Der Aufschlag ist der Rand, den die Seite auch sonst haelt. */
+      const noetig = rechts > 0 ? Math.min(tw, rechts + 56) : tw;
+      this.flowWeg = Math.max(0, noetig - window.innerWidth);
+    }
     this.flowGemessenBei = window.innerWidth;
   }
 
@@ -1276,11 +1302,13 @@ class Component extends DCLogic {
          Danach nur noch, wenn sich die Fensterbreite geaendert hat: An ihr
          haengt der Massstab, und die 260-Punkt-Messung soll nicht in jedem
          Einzelbild laufen. */
-      if (this.flowGemessenBei !== window.innerWidth &&
-          this.flow.getBoundingClientRect().top < window.innerHeight * 2) {
+      /* EINE Abfrage der Lage je Bild, nicht zwei. Sie steht vor dem
+         Nachmessen, damit dessen Ergebnis noch in diesem Bild wirkt. */
+      let r = this.flow.getBoundingClientRect();
+      if (this.flowGemessenBei !== window.innerWidth && r.top < window.innerHeight * 2) {
         this.measureFlowLen();
+        r = this.flow.getBoundingClientRect();
       }
-      const r = this.flow.getBoundingClientRect();
       const span = Math.max(1, r.height - window.innerHeight);
       const raw = Math.min(1, Math.max(0, -r.top / span));
       const p = raw < 0.06 ? 0 : raw > 0.94 ? 1 : (raw - 0.06) / 0.88;
@@ -1294,33 +1322,18 @@ class Component extends DCLogic {
            also 39 % des ganzen Scrollens, waren leerer Nachlauf hinter dem
            Inhalt. Genau das sah aus, als wuerde der Weg "aufhoeren zu
            laufen": Linie und Karten sind zu Ende, gescrollt wird weiter. */
-        const tw = this.flowTrack.offsetWidth || 1;
-        let noetig = tw;
-        if (this.flowSteps && this.flowSteps.length) {
-          const tl = this.flowTrack.getBoundingClientRect().left;
-          let rechts = 0;
-          for (const s of this.flowSteps) {
-            const r = s.getBoundingClientRect();
-            if (r.width) rechts = Math.max(rechts, r.right - tl);
-          }
-          /* Auch das ENDE DES WEGS mitnehmen — dort sitzt die Bluete, und
-             sie ragt ueber die letzte Karte hinaus. Im echten Browser
-             gemessen: Karte 04 endet bei 1234 px im Bild, der Weg bei
-             1283 — die Bluete lag also 11 px hinter dem Rand und war nie
-             ganz zu sehen. Der Abzug der Track-Kante macht die Rechnung
-             unabhaengig von der laufenden Verschiebung. */
-          if (this.flowLine) {
-            const m = this.flowLine.getScreenCTM();
-            if (m) {
-              const p = this.flowLine.getPointAtLength(
-                this.flowLenU || this.flowLine.getTotalLength());
-              rechts = Math.max(rechts, (m.a * p.x + m.c * p.y + m.e) - tl);
-            }
-          }
-          /* Der Aufschlag ist der Rand, den die Seite auch sonst haelt. */
-          if (rechts > 0) noetig = Math.min(tw, rechts + 56);
-        }
-        const travel = Math.max(0, noetig - window.innerWidth);
+        /* Der Weg steht fest, seit measureFlowLen ihn ausgerechnet hat.
+           ⚠ Er DARF hier nicht neu gemessen werden: getBoundingClientRect,
+           getScreenCTM und getPointAtLength erzwingen jeweils eine
+           Layout-Berechnung, und zwei Zeilen weiter wird eine Transformation
+           GESCHRIEBEN. Lesen nach Schreiben in derselben Schleife ist
+           Layout-Thrashing — im echten Browser gemessen: der Renderer
+           blockierte, Skripte liefen in die 45-Sekunden-Grenze und kein
+           einziges der 16 nachladenden Bilder wurde geholt. Genau dieser
+           Fehler stand schon einmal im Aenderungsprotokoll (v7). */
+        const travel = this.flowWeg != null
+          ? this.flowWeg
+          : Math.max(0, (this.flowTrack.offsetWidth || 1) - window.innerWidth);
         this.flowTrack.style.transform = 'translate3d(' + (-travel * q).toFixed(1) + 'px,0,0)';
       }
       /* Wachstum und Schieben laufen jetzt zusammen. Vorher war der Weg
