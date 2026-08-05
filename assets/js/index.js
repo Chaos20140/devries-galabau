@@ -976,19 +976,33 @@ class Component extends DCLogic {
     if (this.flowTrack) {
       const tw = this.flowTrack.offsetWidth || 1;
       const tl = this.flowTrack.getBoundingClientRect().left;
-      let rechts = 0;
+      let rechts = 0, mitteLetzte = 0;
       for (const s of (this.flowSteps || [])) {
         const r = s.getBoundingClientRect();
-        if (r.width) rechts = Math.max(rechts, r.right - tl);
+        if (!r.width) continue;
+        rechts = Math.max(rechts, r.right - tl);
+        /* Die letzte Karte ist die am weitesten rechts liegende. */
+        mitteLetzte = Math.max(mitteLetzte, (r.left + r.right) / 2 - tl);
       }
       const m = this.flowLine.getScreenCTM();
       if (m) {
         const p = this.flowLine.getPointAtLength(this.flowLenU);
         rechts = Math.max(rechts, (m.a * p.x + m.c * p.y + m.e) - tl);
       }
-      /* Der Aufschlag ist der Rand, den die Seite auch sonst haelt. */
-      const noetig = rechts > 0 ? Math.min(tw, rechts + 56) : tw;
-      this.flowWeg = Math.max(0, noetig - window.innerWidth);
+      /* Bis hierhin endete das Schieben, sobald die letzte Karte gerade
+         eben vollstaendig im Bild stand — sie klebte also am rechten Rand,
+         und die Bluete lag halb daneben. Gewuenscht ist, nach dem Aufbluehen
+         noch ein Stueck weiterscrollen zu koennen, bis Karte 04 MITTIG
+         steht; die Bluete rueckt dann rechts daneben ins Bild.
+         Der Aufschlag von 56 px ist der Rand, den die Seite auch sonst
+         haelt — er gilt weiter als Untergrenze, damit bei sehr breiten
+         Fenstern (Karte schon mittig) nichts abgeschnitten wird.
+         Die Bahn ist 240vw breit; noetig sind hoechstens 218vw
+         (70 % Kartenmitte x 240vw + 50vw), der Deckel greift also nie. */
+      const bisRand = rechts > 0 ? rechts + 56 : 0;
+      const bisMitte = mitteLetzte > 0 ? mitteLetzte + window.innerWidth / 2 : 0;
+      const noetig = Math.max(bisRand, bisMitte) || tw;
+      this.flowWeg = Math.max(0, Math.min(tw, noetig) - window.innerWidth);
     }
     this.flowGemessenBei = window.innerWidth;
   }
@@ -1340,7 +1354,12 @@ class Component extends DCLogic {
          schon bei 55 % des Abschnitts fertig gezeichnet, waehrend die
          Bahn bis 100 % weiterschob: Die Bluete am Ende erschien also,
          bevor Karte 04 ueberhaupt im Bild war, und danach wuchs nichts
-         mehr. Mit 0,92 kommt die Bluete an, wenn die letzte Karte steht. */
+         mehr. Mit 0,92 kommt die Bluete an, wenn die letzte Karte steht.
+         Seit der Weg bis zur MITTE der letzten Karte reicht, bleiben danach
+         noch 8 % Scrollweg: die Pflanze ist aufgeblueht, und Karte 04
+         wandert in diesem Rest von rechts in die Bildmitte. Genau das war
+         gewuenscht — deshalb bleibt es bei 0,92 und wird NICHT auf den
+         neuen Weg umgerechnet. */
       const qg = Math.min(1, q / 0.92);
       /* Reiner Anteil dank pathLength="1" — kein gemessener Wert mehr,
          der zur Darstellung passen muesste. */
