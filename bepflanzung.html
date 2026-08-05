@@ -23,7 +23,7 @@
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png?v=1">
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/outfit-600-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/outfit-400-latin.woff2" crossorigin>
-<link rel="stylesheet" href="assets/css/base.css?v=68">
+<link rel="stylesheet" href="assets/css/base.css?v=69">
 <style>
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;background:#EDF3E8;color:#12261A}
@@ -32,6 +32,11 @@
   a:hover{color:#46761F}
   ::selection{background:#8ECF4F;color:#0F2318}
   input::placeholder,textarea::placeholder{color:rgba(243,247,240,.72);opacity:1}
+
+  /* Zone fuer eigene Abschnitte. Solange sie leer ist, nimmt sie KEINEN
+     Platz ein — sonst klaffte auf jeder Seite eine Luecke, bevor der
+     Betreiber ueberhaupt etwas eingetragen hat. */
+  [data-ed-zone]:not(:empty){display:grid;gap:clamp(18px,2.4vw,30px);padding:clamp(30px,5vh,66px) 0 0}
 </style>
 </head>
 <body>
@@ -123,6 +128,15 @@
     </div>
   </section>
 
+  <section data-screen-label="Eigene Abschnitte" style="position:relative;z-index:2;padding:0 clamp(20px,5vw,68px)">
+    <div style="max-width:1240px;margin:0 auto">
+      <!-- Zone fuer frei ergaenzbare Abschnitte. Ihr Inhalt wird
+           SERVERSEITIG aus geprueften Daten erzeugt; es wird niemals
+           Markup aus dem Browser uebernommen. Leer = nichts zu sehen. -->
+      <div data-ed-zone="extra" data-ed-arten="absatz hinweis" data-ed-titel="Eigene Abschnitte" data-ed-leertext="Hier steht noch nichts. Mit den Kn&ouml;pfen unten legen Sie etwas an." data-ed-hilfe="Diese Abschnitte stehen nur auf dieser Seite und erscheinen in der Reihenfolge, in der sie hier stehen. &#8222;Textabschnitt&#8220; ist Fliesstext im Seitenraster, &#8222;Karte&#8220; ist eine Glaskarte wie die &uuml;brigen."></div>
+    </div>
+  </section>
+
   <section id="anfrage" data-screen-label="Anfrage Bepflanzung" style="position:relative;z-index:2;padding:0 clamp(20px,5vw,68px) clamp(40px,6vh,90px)">
     <div style="max-width:1240px;margin:0 auto;border-radius:clamp(24px,3vw,34px);padding:clamp(26px,4vw,56px);position:relative;overflow:hidden;background:linear-gradient(150deg,#1B4332,#245239 58%,#2C6E49);box-shadow:0 34px 70px -44px rgba(12,29,20,.55)">
       <div style="position:absolute;right:-110px;top:-110px;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(142,207,79,.4),transparent 68%);pointer-events:none"></div>
@@ -151,13 +165,13 @@
   <garden-footer active="bepflanzung.html"></garden-footer>
 </div>
 <!-- Texte von Kopf- und Fusszeile. MUSS vor den Komponenten stehen. -->
-<script src="assets/js/rahmen-texte.js?v=68"></script>
-<script src="assets/js/garden-header.js?v=68"></script>
-<script src="assets/js/garden-footer.js?v=68"></script>
-<script src="assets/js/formular.js?v=68"></script>
-<script src="assets/js/bepflanzung.js?v=68"></script>
+<script src="assets/js/rahmen-texte.js?v=69"></script>
+<script src="assets/js/garden-header.js?v=69"></script>
+<script src="assets/js/garden-footer.js?v=69"></script>
+<script src="assets/js/formular.js?v=69"></script>
+<script src="assets/js/bepflanzung.js?v=69"></script>
 <!-- Seiten-Editor: laeuft NUR mit ?bearbeiten=1 UND gueltiger Anmeldung
      aus /admin/. Ohne beides beendet sich die Datei sofort. -->
-<script src="assets/js/editor.js?v=68"></script>
+<script src="assets/js/editor.js?v=69"></script>
 </body>
 </html>
