@@ -1303,8 +1303,22 @@ class Component extends DCLogic {
             const r = s.getBoundingClientRect();
             if (r.width) rechts = Math.max(rechts, r.right - tl);
           }
+          /* Auch das ENDE DES WEGS mitnehmen — dort sitzt die Bluete, und
+             sie ragt ueber die letzte Karte hinaus. Im echten Browser
+             gemessen: Karte 04 endet bei 1234 px im Bild, der Weg bei
+             1283 — die Bluete lag also 11 px hinter dem Rand und war nie
+             ganz zu sehen. Der Abzug der Track-Kante macht die Rechnung
+             unabhaengig von der laufenden Verschiebung. */
+          if (this.flowLine) {
+            const m = this.flowLine.getScreenCTM();
+            if (m) {
+              const p = this.flowLine.getPointAtLength(
+                this.flowLenU || this.flowLine.getTotalLength());
+              rechts = Math.max(rechts, (m.a * p.x + m.c * p.y + m.e) - tl);
+            }
+          }
           /* Der Aufschlag ist der Rand, den die Seite auch sonst haelt. */
-          if (rechts > 0) noetig = Math.min(tw, rechts + 40);
+          if (rechts > 0) noetig = Math.min(tw, rechts + 56);
         }
         const travel = Math.max(0, noetig - window.innerWidth);
         this.flowTrack.style.transform = 'translate3d(' + (-travel * q).toFixed(1) + 'px,0,0)';
