@@ -298,18 +298,26 @@
 
       Array.from(R.querySelectorAll('.gf-tree[data-extra]')).forEach(function (e) { e.remove(); });
 
-      var paare = breite >= 2300 ? 3 : (breite >= 1700 ? 2 : 1);
+      var paare = breite >= 2300 ? 3 : (breite >= 1800 ? 2 : 1);
       for (var p = 1; p < paare; p++) {
-        var ein = 6 + p * 7;                     /* Prozent vom Fensterrand */
-        var gr = 1 - p * 0.22;                   /* kleiner = weiter hinten */
+        /* Abstand als VIELFACHES DER BAUMBREITE, nicht in Prozent des
+           Fensters. In Prozent rissen sie mit wachsendem Schirm immer
+           weiter auseinander (bei 2552 px lagen 140 px zwischen dem
+           ersten und dem zweiten Baum); so bleibt die Gruppe bei jeder
+           Breite gleich dicht und die Kronen ueberschneiden sich leicht. */
+        var versatz = [0, 0.82, 1.55][p];
+        /* Nur noch leicht kleiner und kaum blasser. Vorher 0,74 und 0,56
+           Deckkraft — das sah ausgewaschen aus statt nach Tiefe. */
+        var gr = 1 - p * 0.15;
         [['left', 'xMinYMax'], ['right', 'xMaxYMax']].forEach(function (s) {
           var d = document.createElement('div');
           d.className = 'gf-tree';
           d.setAttribute('data-extra', '1');
-          d.setAttribute('style', 'position:absolute;' + s[0] + ':' + ein + '%;top:' +
+          d.setAttribute('style', 'position:absolute;' + s[0] +
+            ':calc(clamp(140px,13vw,190px) * ' + versatz + ');top:' +
             Math.round(-210 * gr) + 'px;bottom:-14px;width:calc(clamp(140px,13vw,190px) * ' +
             gr.toFixed(2) + ');pointer-events:none;z-index:1;opacity:' +
-            (0.92 - p * 0.18).toFixed(2) + ';overflow:hidden');
+            (1 - p * 0.06).toFixed(2) + ';overflow:hidden');
           d.innerHTML = '<svg viewBox="0 0 290 900" preserveAspectRatio="' + s[1] +
             ' meet" aria-hidden="true" style="position:absolute;inset:0;width:100%;' +
             'height:100%;overflow:hidden"></svg>';
