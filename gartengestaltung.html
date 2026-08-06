@@ -23,7 +23,7 @@
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png?v=1">
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/outfit-600-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/outfit-400-latin.woff2" crossorigin>
-<link rel="stylesheet" href="assets/css/base.css?v=91">
+<link rel="stylesheet" href="assets/css/base.css?v=93">
 <style>
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;background:#EDF3E8;color:#12261A}
@@ -43,8 +43,17 @@
      gezeichneten Text wieder versteckt, sieht aus wie ein zweiter
      Ladevorgang — genau das war v86. Eine Regel im Kopf der Seite ist
      dagegen Teil des ERSTEN Bildes, es gibt also kein Verschwinden. */
-  @keyframes dvgTitel{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
-  h1{animation:dvgTitel .66s cubic-bezier(.16,1,.3,1) both}
+  /* Blur-Reveal: die Ueberschrift steigt aus der Unschaerfe auf.
+     Die Unschaerfe ist schon bei 55 % weg — der Text ist also frueh
+     lesbar, waehrend die Bewegung noch laeuft. Das ist Absicht: eine
+     Ueberschrift, die eine Sekunde lang unleserlich ist, kostet das
+     erste Inhaltsbild. */
+  @keyframes dvgTitel{
+    from{opacity:0;transform:translateY(30px) scale(.97);filter:blur(10px)}
+    55%{opacity:1;filter:blur(0)}
+    to{opacity:1;transform:none;filter:blur(0)}
+  }
+  h1{animation:dvgTitel .85s cubic-bezier(.22,1,.36,1) both}
   @media (prefers-reduced-motion:reduce){h1{animation:none}}
 </style>
 </head>
@@ -179,14 +188,14 @@
   <garden-footer active="gartengestaltung.html"></garden-footer>
 </div>
 <!-- Texte von Kopf- und Fusszeile. MUSS vor den Komponenten stehen. -->
-<script src="assets/js/rahmen-texte.js?v=91"></script>
-<script src="assets/js/garden-header.js?v=91"></script>
-<script src="assets/js/garden-footer.js?v=91"></script>
-<script src="assets/js/cookie.js?v=91"></script>
-<script src="assets/js/formular.js?v=91"></script>
-<script src="assets/js/gartengestaltung.js?v=91"></script>
+<script src="assets/js/rahmen-texte.js?v=93"></script>
+<script src="assets/js/garden-header.js?v=93"></script>
+<script src="assets/js/garden-footer.js?v=93"></script>
+<script src="assets/js/cookie.js?v=93"></script>
+<script src="assets/js/formular.js?v=93"></script>
+<script src="assets/js/gartengestaltung.js?v=93"></script>
 <!-- Seiten-Editor: laeuft NUR mit ?bearbeiten=1 UND gueltiger Anmeldung
      aus /admin/. Ohne beides beendet sich die Datei sofort. -->
-<script defer src="assets/js/editor.js?v=91"></script>
+<script defer src="assets/js/editor.js?v=93"></script>
 </body>
 </html>

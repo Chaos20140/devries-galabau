@@ -74,6 +74,13 @@ class Component extends DCLogic {
     this.onResize = () => { this.resizeGL(); this.applyMobile(); this.measureFlowLen(); };
     window.addEventListener('mousemove', this.onMouse, { passive: true });
     window.addEventListener('resize', this.onResize);
+    /* Solange die Schrift noch nicht geladen ist, misst der Browser den
+       Schriftzug in der Ersatzschrift — meist schmaler. Der Ausschlag des
+       Kinetik-Bands waere dann zu grosszuegig berechnet. Einmal
+       nachmessen, sobald die echte Schrift steht. */
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => this.applyMobile()).catch(() => {});
+    }
     /* Immer zuerst das Standbild — auch am Rechner.
 
        Vorher wurde am Rechner sofort three.js geladen und die Szene
@@ -1292,6 +1299,28 @@ class Component extends DCLogic {
 
     if (this.kinSpread == null) this.kinSpread = 120;
     this.kinSpread = m ? 40 : 120;
+
+    /* Der Schriftzug „de Vries GaLa-Bau" wandert beim Scrollen um
+       kinSpread nach links bzw. rechts. Sein Band hat overflow:hidden —
+       reicht die Luft neben dem Text nicht fuer den vollen Ausschlag,
+       schneidet der Rand mitten in einen Buchstaben. Genau so gemeldet:
+       das „s" von „Vries" endete an einer senkrechten Kante.
+       Der Ausschlag wird deshalb auf die tatsaechlich vorhandene Luft
+       begrenzt (minus 8 px Sicherheitsabstand). Bei genug Platz aendert
+       sich nichts; wird es eng, wandert der Zug eben weniger weit.
+       Gemessen wird die BREITERE der beiden Zeilen — sie stoesst zuerst an. */
+    const kb = document.querySelector('[data-screen-label="Kinetik"]');
+    if (kb) {
+      const bb = kb.getBoundingClientRect();
+      let luft = Infinity;
+      [this.kin, this.kin2].forEach((z) => {
+        const t = z && z.firstElementChild;
+        if (!t) return;
+        const r = t.getBoundingClientRect();
+        luft = Math.min(luft, (bb.width - r.width) / 2);
+      });
+      if (isFinite(luft)) this.kinSpread = Math.max(0, Math.min(this.kinSpread, luft - 8));
+    }
   }
 
   updateExtras(t, dt) {

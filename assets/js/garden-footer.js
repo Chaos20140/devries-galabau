@@ -305,19 +305,28 @@
            weiter auseinander (bei 2552 px lagen 140 px zwischen dem
            ersten und dem zweiten Baum); so bleibt die Gruppe bei jeder
            Breite gleich dicht und die Kronen ueberschneiden sich leicht. */
-        var versatz = [0, 0.82, 1.55][p];
-        /* Nur noch leicht kleiner und kaum blasser. Vorher 0,74 und 0,56
-           Deckkraft — das sah ausgewaschen aus statt nach Tiefe. */
-        var gr = 1 - p * 0.15;
+        var versatz = [0, 0.82, 1.35][p];
+        /* Groesse WECHSELT ab, statt von aussen nach innen immer kleiner
+           zu werden: gross — klein — gross. Eine gleichmaessige Staffelung
+           liest sich wie eine Reihe abnehmender Kopien; der Wechsel gibt
+           der Gruppe einen Rhythmus, wie er in einer echten Baumgruppe
+           auch entsteht. Dasselbe gilt fuer die Deckkraft — sie folgt der
+           Groesse, damit der kleinere Baum hinten steht und nicht blass
+           wirkt. */
+        var gr = [1, 0.72, 0.95][p];
         [['left', 'xMinYMax'], ['right', 'xMaxYMax']].forEach(function (s) {
           var d = document.createElement('div');
           d.className = 'gf-tree';
           d.setAttribute('data-extra', '1');
+          /* Der Groessenfaktor wandert mit ans Element: Die Zeichen-
+             schleife liest ihn dort und gibt groesseren Baeumen mehr
+             Aeste und mehr Blaetter. */
+          d.setAttribute('data-gr', gr.toFixed(2));
           d.setAttribute('style', 'position:absolute;' + s[0] +
             ':calc(clamp(140px,13vw,190px) * ' + versatz + ');top:' +
             Math.round(-210 * gr) + 'px;bottom:-14px;width:calc(clamp(140px,13vw,190px) * ' +
             gr.toFixed(2) + ');pointer-events:none;z-index:1;opacity:' +
-            (1 - p * 0.06).toFixed(2) + ';overflow:hidden');
+            [1, 0.9, 0.97][p] + ';overflow:hidden');
           d.innerHTML = '<svg viewBox="0 0 290 900" preserveAspectRatio="' + s[1] +
             ' meet" aria-hidden="true" style="position:absolute;inset:0;width:100%;' +
             'height:100%;overflow:hidden"></svg>';
@@ -412,6 +421,14 @@
 
       this.baeumeSicherstellen(bandBreite).forEach((tsvg, ti) => {
         if (!tsvg) return;
+        /* 1 fuer die beiden aeusseren Baeume aus dem Markup, sonst der
+           in baeumeSicherstellen gesetzte Wert. Je groesser der Baum,
+           desto mehr Verzweigungen und Blaetter — sonst saehe ein
+           kleiner Baum aus wie ein blosser Verkleinerungsmassstab des
+           grossen. */
+        const groesse = parseFloat(
+          (tsvg.parentNode && tsvg.parentNode.getAttribute('data-gr')) || '1') || 1;
+        const vielAeste = groesse >= 0.85;
         tsvg.innerHTML = '';
         /* Eigener Startwert je Baum, sonst saehen alle gleich aus. */
         let seed = 2411 + ti * 3163;
@@ -458,8 +475,8 @@
           p.setAttribute('d', taper(x0, y0, x1, y1, cx, cy, w, Math.max(1.6, w * 0.34)));
           p.setAttribute('fill', barks[depth % 3]);
           g.appendChild(p);
-          if (depth >= 2 || len < 46) { tips.push([x1, y1, 40 + rnd() * 24]); return; }
-          const kids = depth === 0 ? 3 : (rnd() > 0.55 ? 2 : 1);
+          if (depth >= (vielAeste ? 2 : 1) || len < 46) { tips.push([x1, y1, 40 + rnd() * 24]); return; }
+          const kids = depth === 0 ? (vielAeste ? 3 : 2) : (rnd() > 0.55 ? 2 : 1);
           for (let k = 0; k < kids; k++) {
             const off = (k - (kids - 1) / 2) * (0.55 + rnd() * 0.22);
             branch(x1 * 0.96 + x0 * 0.04, y1 * 0.96 + y0 * 0.04, a1 + off, len * (0.62 + rnd() * 0.16), w * 0.56, depth + 1);
@@ -508,7 +525,7 @@
           const cluster = document.createElementNS(ns2, 'g');
           cluster.setAttribute('opacity', '0');
           g.appendChild(cluster);
-          const n = 18 + Math.floor(rnd() * 8);
+          const n = Math.max(8, Math.round((18 + rnd() * 8) * groesse));
           for (let k = 0; k < n; k++) {
             const a = rnd() * Math.PI * 2, r = Math.pow(rnd(), 0.6) * tp[2];
             const lx = cl(tp[0] + Math.cos(a) * r, 6, 252), ly = cl(tp[1] + Math.sin(a) * r * 0.78, 40, 890);
@@ -544,8 +561,9 @@
           tp.style.strokeDasharray = tlen;
           tp.style.strokeDashoffset = tlen;
           const lv = [];
-          for (let k = 0; k < td.nl; k++) {
-            const fr = 0.1 + (k / td.nl) * 0.88;
+          const nl = Math.max(4, Math.round(td.nl * groesse));
+          for (let k = 0; k < nl; k++) {
+            const fr = 0.1 + (k / nl) * 0.88;
             const pt = tp.getPointAtLength(tlen * fr);
             const p2 = tp.getPointAtLength(Math.min(tlen, tlen * fr + 6));
             const ang = Math.atan2(p2.y - pt.y, p2.x - pt.x) * 180 / Math.PI;
