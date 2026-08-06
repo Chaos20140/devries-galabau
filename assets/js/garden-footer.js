@@ -14,8 +14,40 @@
       if (!this.__built) {
         this.__built = true;
         this.build();
+        this.beobachteBreite();
       }
       this.start();
+    }
+
+    /* Anzahl der Blumen und der Baeume haengt an der Breite. Sie wird beim
+       Aufbau EINMAL gemessen — ohne das hier bliebe es nach einem
+       Groessenwechsel bei der alten Zahl, und wer das Fenster aufzieht,
+       saehe die Szene des kleinen Schirms.
+       Zwei Gruende fuer den Nachschlag ausserdem:
+       · Beim Aufbau ist die Fusszeile mitunter noch nicht vermessen; die
+         Breite faellt dann auf einen Notwert zurueck. Der erste Aufruf nach
+         dem Layout berichtigt das von selbst.
+       · Neu aufgebaut wird nur bei einem SPUERBAREN Unterschied (60 px),
+         sonst laeuft der Aufbau bei jedem Pixel der Groessenaenderung. */
+    beobachteBreite() {
+      var self = this;
+      var letzte = 0, uhr = null;
+      var messen = function () {
+        var b = self.R && self.R.querySelector('[data-band]');
+        return b ? Math.round(b.getBoundingClientRect().width) : 0;
+      };
+      var pruefen = function () {
+        var jetzt = messen();
+        if (!jetzt || Math.abs(jetzt - letzte) < 60) return;
+        letzte = jetzt;
+        self.setupVines();
+      };
+      requestAnimationFrame(function () { letzte = messen(); pruefen(); });
+      this.__onResize = function () {
+        clearTimeout(uhr);
+        uhr = setTimeout(pruefen, 200);
+      };
+      window.addEventListener('resize', this.__onResize);
     }
 
     build() {
@@ -252,6 +284,41 @@
       this.setupVines();
     }
 
+    /* Auf breiten Schirmen stehen MEHR BAEUME. Die beiden aeusseren stehen
+       fest im Markup; weitere Paare entstehen hier je nach Breite und
+       ruecken nach innen. Sie sind kleiner und blasser, damit sie wie
+       weiter hinten stehend wirken und nicht wie Kopien.
+       Erzeugte Baeume tragen data-extra und werden vor dem Neuaufbau
+       wieder entfernt — sonst vermehrten sie sich bei jedem Groessenwechsel. */
+    baeumeSicherstellen(breite) {
+      const R = this.R;
+      const fuss = R.querySelector('footer');
+      const anker = R.querySelector('.gf-wrap');
+      if (!fuss || !anker) return Array.from(R.querySelectorAll('.gf-tree svg'));
+
+      Array.from(R.querySelectorAll('.gf-tree[data-extra]')).forEach(function (e) { e.remove(); });
+
+      var paare = breite >= 2300 ? 3 : (breite >= 1700 ? 2 : 1);
+      for (var p = 1; p < paare; p++) {
+        var ein = 6 + p * 7;                     /* Prozent vom Fensterrand */
+        var gr = 1 - p * 0.22;                   /* kleiner = weiter hinten */
+        [['left', 'xMinYMax'], ['right', 'xMaxYMax']].forEach(function (s) {
+          var d = document.createElement('div');
+          d.className = 'gf-tree';
+          d.setAttribute('data-extra', '1');
+          d.setAttribute('style', 'position:absolute;' + s[0] + ':' + ein + '%;top:' +
+            Math.round(-210 * gr) + 'px;bottom:-14px;width:calc(clamp(140px,13vw,190px) * ' +
+            gr.toFixed(2) + ');pointer-events:none;z-index:1;opacity:' +
+            (0.92 - p * 0.18).toFixed(2) + ';overflow:hidden');
+          d.innerHTML = '<svg viewBox="0 0 290 900" preserveAspectRatio="' + s[1] +
+            ' meet" aria-hidden="true" style="position:absolute;inset:0;width:100%;' +
+            'height:100%;overflow:hidden"></svg>';
+          fuss.insertBefore(d, anker);
+        });
+      }
+      return Array.from(R.querySelectorAll('.gf-tree svg'));
+    }
+
     setupVines() {
       const R = this.R;
       this.fvines = this.$fvines;
@@ -335,13 +402,16 @@
         this.blooms.push({ el: g0, head: head, delay: 0.04 + (k % 9) * 0.03, ph: Math.random() * 6.28, x: x, lean: lean, h: h });
       }
 
-      [this.$trunkL, this.$trunkR].forEach((tsvg, ti) => {
+      this.baeumeSicherstellen(bandBreite).forEach((tsvg, ti) => {
         if (!tsvg) return;
         tsvg.innerHTML = '';
-        let seed = ti ? 8731 : 2411;
+        /* Eigener Startwert je Baum, sonst saehen alle gleich aus. */
+        let seed = 2411 + ti * 3163;
         const rnd = () => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; };
         const g = document.createElementNS(ns2, 'g');
-        if (ti) g.setAttribute('transform', 'translate(290,0) scale(-1,1)');
+        /* ti ist jetzt der Index UEBER ALLE Baeume, nicht mehr nur 0/1:
+           gespiegelt wird deshalb bei ungeradem Index (rechte Seite). */
+        if (ti % 2) g.setAttribute('transform', 'translate(290,0) scale(-1,1)');
         tsvg.appendChild(g);
 
         const barks = ['#3A2C1E', '#4B3826', '#5C4630'];
@@ -483,6 +553,9 @@
           this.trunks.push({ path: tp, len: tlen, delay: td.delay, leaves: lv });
         });
 
+        /* Falter nur an den beiden aeusseren Baeumen. Mit sechs Baeumen
+           waeren es sonst zwoelf — das flattert die Fusszeile zu. */
+        if (ti > 1) return;
         this.fbf = this.fbf || [];
         const cols = [['#FFFFFF', '#E7EFE2'], ['#F6D46A', '#E0A93C'], ['#F3B8C8', '#DE93AA']];
         for (let k = 0; k < 2; k++) {
@@ -529,7 +602,12 @@
       this.raf = requestAnimationFrame(loop);
     }
 
-    disconnectedCallback() { cancelAnimationFrame(this.raf); }
+    disconnectedCallback() {
+      cancelAnimationFrame(this.raf);
+      /* Der Horcher haengt am FENSTER, nicht am Element — ohne das hier
+         ueberlebt er die Fusszeile und ruft ins Leere. */
+      if (this.__onResize) window.removeEventListener('resize', this.__onResize);
+    }
 
     frame() {
       if (!this.fvines) return;
