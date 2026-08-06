@@ -23,7 +23,7 @@
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png?v=1">
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/outfit-600-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/outfit-400-latin.woff2" crossorigin>
-<link rel="stylesheet" href="assets/css/base.css?v=88">
+<link rel="stylesheet" href="assets/css/base.css?v=89">
 <style>
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;background:#EDF3E8;color:#12261A}
@@ -40,6 +40,16 @@
      Inline-Style traegt; ein blosses [hidden] verliert dagegen
      (siehe CLAUDE.md, v45). */
   [data-ed-leer="aus"]{display:none !important}
+
+  /* Die Ueberschrift kommt beim Laden herein. BEWUSST als CSS-Animation in
+     der Seite und NICHT per JavaScript: Ein nachgeladenes Skript, das schon
+     gezeichneten Text wieder versteckt, sieht aus wie ein zweiter
+     Ladevorgang — genau das war v86. Eine Regel im Kopf der Seite ist
+     dagegen Teil des ERSTEN Bildes, es gibt also kein Verschwinden. */
+  @keyframes dvgTitel{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+  h1{animation:dvgTitel .66s cubic-bezier(.16,1,.3,1) both}
+  @media (prefers-reduced-motion:reduce){h1{animation:none}}
+  input::placeholder,textarea::placeholder{color:rgba(243,247,240,.72);opacity:1}
 </style>
 </head>
 <body>
@@ -120,12 +130,12 @@
           <div style="grid-column:1/-1">
           <label style="display:block">
             <span style="display:block;margin-bottom:8px;font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#8ECF4F" data-ed="bewerbungsformular-span">Ihr Name *</span>
-            <input name="name" required style="width:100%;padding:14px 16px;border-radius:14px;border:1px solid rgba(243,247,240,.24);background:rgba(255,255,255,.1);color:#F3F7F0;font:inherit;font-size:15px">
+            <input name="name" required style="width:100%;padding:14px 16px;border-radius:14px;border:1px solid rgba(243,247,240,.24);background:rgba(255,255,255,.1);color:#F3F7F0;font:inherit;font-size:15px" maxlength="120" minlength="2" pattern="(?=.*\p{L})[^0-9@&lt;&gt;\/\|\{\}\[\]]{2,120}" title="Bitte Ihren Namen eintragen — Buchstaben, Leerzeichen und Bindestriche. Ziffern, @ und Adressen sind hier nicht vorgesehen." autocomplete="name" spellcheck="false">
           </label>
           </div>
           <label style="display:block">
             <span style="display:block;margin-bottom:8px;font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#8ECF4F" data-ed="bewerbungsformular-span2">E-Mail *</span>
-            <input name="email" type="email" required style="width:100%;padding:14px 16px;border-radius:14px;border:1px solid rgba(243,247,240,.24);background:rgba(255,255,255,.1);color:#F3F7F0;font:inherit;font-size:15px">
+            <input name="email" type="email" required style="width:100%;padding:14px 16px;border-radius:14px;border:1px solid rgba(243,247,240,.24);background:rgba(255,255,255,.1);color:#F3F7F0;font:inherit;font-size:15px" maxlength="200" autocomplete="email" inputmode="email" spellcheck="false">
           </label>
           <label style="display:block">
             <span style="display:block;margin-bottom:8px;font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#8ECF4F" data-ed="bewerbungsformular-span3">Telefon</span>
@@ -142,7 +152,7 @@
           <div style="grid-column:1/-1">
           <label style="display:block">
             <span style="display:block;margin-bottom:8px;font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#8ECF4F" data-ed="bewerbungsformular-span6">Über Sie</span>
-            <textarea name="nachricht" rows="5" placeholder="Was Sie mitbringen und was Sie suchen." style="width:100%;padding:14px 16px;border-radius:14px;border:1px solid rgba(243,247,240,.24);background:rgba(255,255,255,.1);color:#F3F7F0;font:inherit;font-size:15px;resize:vertical"></textarea>
+            <textarea name="nachricht" rows="5" placeholder="Was Sie mitbringen und was Sie suchen." style="width:100%;padding:14px 16px;border-radius:14px;border:1px solid rgba(243,247,240,.24);background:rgba(255,255,255,.1);color:#F3F7F0;font:inherit;font-size:15px;resize:vertical" maxlength="2500"></textarea>
           </label>
           </div>
           <div style="grid-column:1/-1">
@@ -177,15 +187,15 @@
   <garden-footer active="stellenangebote.html"></garden-footer>
 </div>
 <!-- Texte von Kopf- und Fusszeile. MUSS vor den Komponenten stehen. -->
-<script src="assets/js/rahmen-texte.js?v=88"></script>
-<script src="assets/js/garden-header.js?v=88"></script>
-<script src="assets/js/garden-footer.js?v=88"></script>
-<script src="assets/js/cookie.js?v=88"></script>
-<script src="assets/js/formular.js?v=88"></script>
-<script src="assets/js/stellenangebote.js?v=88"></script>
-<script src="assets/js/stellen-form.js?v=88"></script>
+<script src="assets/js/rahmen-texte.js?v=89"></script>
+<script src="assets/js/garden-header.js?v=89"></script>
+<script src="assets/js/garden-footer.js?v=89"></script>
+<script src="assets/js/cookie.js?v=89"></script>
+<script src="assets/js/formular.js?v=89"></script>
+<script src="assets/js/stellenangebote.js?v=89"></script>
+<script src="assets/js/stellen-form.js?v=89"></script>
 <!-- Seiten-Editor: laeuft NUR mit ?bearbeiten=1 UND gueltiger Anmeldung
      aus /admin/. Ohne beides beendet sich die Datei sofort. -->
-<script defer src="assets/js/editor.js?v=88"></script>
+<script defer src="assets/js/editor.js?v=89"></script>
 </body>
 </html>

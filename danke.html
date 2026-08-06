@@ -23,7 +23,7 @@
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png?v=1">
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/outfit-600-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/outfit-400-latin.woff2" crossorigin>
-<link rel="stylesheet" href="assets/css/base.css?v=88">
+<link rel="stylesheet" href="assets/css/base.css?v=89">
 <style>
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;background:#EDF3E8;color:#12261A}
@@ -31,6 +31,15 @@
   a{color:#2C6E49;text-decoration:none}
   a:hover{color:#46761F}
   ::selection{background:#8ECF4F;color:#0F2318}
+
+  /* Die Ueberschrift kommt beim Laden herein. BEWUSST als CSS-Animation in
+     der Seite und NICHT per JavaScript: Ein nachgeladenes Skript, das schon
+     gezeichneten Text wieder versteckt, sieht aus wie ein zweiter
+     Ladevorgang — genau das war v86. Eine Regel im Kopf der Seite ist
+     dagegen Teil des ERSTEN Bildes, es gibt also kein Verschwinden. */
+  @keyframes dvgTitel{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+  h1{animation:dvgTitel .66s cubic-bezier(.16,1,.3,1) both}
+  @media (prefers-reduced-motion:reduce){h1{animation:none}}
 </style>
 </head>
 <body>
@@ -65,13 +74,13 @@
   <garden-footer active="kontakt.html"></garden-footer>
 </div>
 <!-- Texte von Kopf- und Fusszeile. MUSS vor den Komponenten stehen. -->
-<script src="assets/js/rahmen-texte.js?v=88"></script>
-<script src="assets/js/garden-header.js?v=88"></script>
-<script src="assets/js/garden-footer.js?v=88"></script>
-<script src="assets/js/cookie.js?v=88"></script>
-<script src="assets/js/impressum.js?v=88"></script>
+<script src="assets/js/rahmen-texte.js?v=89"></script>
+<script src="assets/js/garden-header.js?v=89"></script>
+<script src="assets/js/garden-footer.js?v=89"></script>
+<script src="assets/js/cookie.js?v=89"></script>
+<script src="assets/js/impressum.js?v=89"></script>
 <!-- Seiten-Editor: laeuft NUR mit ?bearbeiten=1 UND gueltiger Anmeldung
      aus /admin/. Ohne beides beendet sich die Datei sofort. -->
-<script defer src="assets/js/editor.js?v=88"></script>
+<script defer src="assets/js/editor.js?v=89"></script>
 </body>
 </html>

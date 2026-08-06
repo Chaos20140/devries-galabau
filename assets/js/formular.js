@@ -45,9 +45,14 @@
      kuerzen() uebernimmt ausschliesslich diese Schluessel. Fehlt eines,
      wird es stillschweigend verworfen. Genau daran ist das
      Bewerbungsformular schon einmal gescheitert (quelle/betreff). */
+  /* nachricht: 2500 auf Wunsch des Betreibers. Im Markup steht dieselbe
+     Zahl als maxlength, damit der Browser schon beim Tippen begrenzt.
+     ⚠ VERBINDLICH ist keines von beidem — beides laesst sich umgehen.
+     Die harte Grenze steht in der Datenbank (char_length(nachricht) <= 5000,
+     supabase/schema.sql) und bleibt dort als aeussere Schranke stehen. */
   var MAX = {
     quelle: 60, betreff: 160, name: 120, email: 200, telefon: 60,
-    ort: 120, art: 40, bereich: 60, zeitraum: 120, nachricht: 5000,
+    ort: 120, art: 40, bereich: 60, zeitraum: 120, nachricht: 2500,
     stelle: 80, verfuegbar_ab: 60, datei: 300, datei_name: 200
   };
 

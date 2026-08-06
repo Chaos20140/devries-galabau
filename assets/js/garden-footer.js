@@ -268,14 +268,29 @@
       const ns2 = 'http://www.w3.org/2000/svg';
       const front = this.$front;
       const flowerHost = front || vsvg;
+      /* DIE BLUMEN RICHTEN SICH NACH DER TATSAECHLICHEN BREITE.
+         Vorher stand im Band fest viewBox="0 0 1600 104" zusammen mit
+         preserveAspectRatio="none". Auf einem 2552 px breiten Schirm wurde
+         damit alles um den Faktor 1,6 in die BREITE gezogen, waehrend die
+         Hoehe gleich blieb — die Blueten waren flachgedrueckt. Und weil es
+         trotzdem bei 26 Stueck blieb, standen sie zugleich halb so dicht:
+         ein Abstand von 98 px statt 49 px.
+         Jetzt entspricht eine Nutzeinheit einem Bildpunkt (viewBox-Breite =
+         Pixelbreite), und die Anzahl waechst mit: eine Bluete je 49 px, das
+         ist genau die Dichte, die das Design bei 1280 px hatte (26 auf
+         1280). Der Deckel bei 140 ist eine Notbremse, keine Gestaltung. */
+      const bandBreite = Math.max(320, Math.round(
+        (front && front.parentNode && front.parentNode.getBoundingClientRect().width) || 1600));
+      if (front) front.setAttribute('viewBox', '0 0 ' + bandBreite + ' 104');
+      const blumenAnzahl = Math.max(14, Math.min(140, Math.round(bandBreite / 49)));
       const petalSets = [
         { p: '#FFFFFF', c: '#E8A81F', n: 8, r: 15, ry: 6.4 },
         { p: '#F6D46A', c: '#D08A22', n: 7, r: 13, ry: 5.8 },
         { p: '#F3B8C8', c: '#E0A93C', n: 6, r: 14, ry: 6.2 },
         { p: '#C9E3F7', c: '#E8A81F', n: 6, r: 12, ry: 5.4 }
       ];
-      for (let k = 0; k < 26; k++) {
-        const x = 30 + (k / 26) * 1560 + (Math.random() - 0.5) * 26;
+      for (let k = 0; k < blumenAnzahl; k++) {
+        const x = 30 + (k / blumenAnzahl) * (bandBreite - 60) + (Math.random() - 0.5) * 26;
         const baseY = 106;
         const h = 30 + Math.random() * 46;
         const lean = (Math.random() - 0.5) * 26;

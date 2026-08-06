@@ -23,7 +23,7 @@
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png?v=1">
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/outfit-600-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/outfit-400-latin.woff2" crossorigin>
-<link rel="stylesheet" href="assets/css/base.css?v=88">
+<link rel="stylesheet" href="assets/css/base.css?v=89">
 <style>
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;background:#EDF3E8;color:#12261A}
@@ -37,6 +37,15 @@
      Platz ein — sonst klaffte auf jeder Seite eine Luecke, bevor der
      Betreiber ueberhaupt etwas eingetragen hat. */
   [data-ed-zone]:not(:empty){display:grid;gap:clamp(18px,2.4vw,30px);padding:clamp(30px,5vh,66px) 0 0}
+
+  /* Die Ueberschrift kommt beim Laden herein. BEWUSST als CSS-Animation in
+     der Seite und NICHT per JavaScript: Ein nachgeladenes Skript, das schon
+     gezeichneten Text wieder versteckt, sieht aus wie ein zweiter
+     Ladevorgang — genau das war v86. Eine Regel im Kopf der Seite ist
+     dagegen Teil des ERSTEN Bildes, es gibt also kein Verschwinden. */
+  @keyframes dvgTitel{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+  h1{animation:dvgTitel .66s cubic-bezier(.16,1,.3,1) both}
+  @media (prefers-reduced-motion:reduce){h1{animation:none}}
 </style>
 </head>
 <body>
@@ -223,10 +232,10 @@
           </div>
         </div>
         <form data-contact style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:12px"><input type="text" name="hinweisfeld" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
-          <input name="name" placeholder="Ihr Name" required style="grid-column:1/-1;padding:14px 16px;border-radius:14px;border:1px solid rgba(243,247,240,.24);background:rgba(255,255,255,.1);color:#F3F7F0;font:inherit;font-size:15px">
-          <input name="email" type="email" placeholder="E-Mail" required style="padding:14px 16px;border-radius:14px;border:1px solid rgba(243,247,240,.24);background:rgba(255,255,255,.1);color:#F3F7F0;font:inherit;font-size:15px">
-          <input name="tel" placeholder="Telefon (optional)" style="padding:14px 16px;border-radius:14px;border:1px solid rgba(243,247,240,.24);background:rgba(255,255,255,.1);color:#F3F7F0;font:inherit;font-size:15px">
-          <textarea name="text" rows="4" placeholder="Worum geht es? Gern mit Größe und Ort." style="grid-column:1/-1;padding:14px 16px;border-radius:14px;border:1px solid rgba(243,247,240,.24);background:rgba(255,255,255,.1);color:#F3F7F0;font:inherit;font-size:15px;resize:vertical"></textarea>
+          <input name="name" placeholder="Ihr Name" required style="grid-column:1/-1;padding:14px 16px;border-radius:14px;border:1px solid rgba(243,247,240,.24);background:rgba(255,255,255,.1);color:#F3F7F0;font:inherit;font-size:15px" maxlength="120" minlength="2" pattern="(?=.*\p{L})[^0-9@&lt;&gt;\/\|\{\}\[\]]{2,120}" title="Bitte Ihren Namen eintragen — Buchstaben, Leerzeichen und Bindestriche. Ziffern, @ und Adressen sind hier nicht vorgesehen." autocomplete="name" spellcheck="false">
+          <input name="email" type="email" placeholder="E-Mail" required style="padding:14px 16px;border-radius:14px;border:1px solid rgba(243,247,240,.24);background:rgba(255,255,255,.1);color:#F3F7F0;font:inherit;font-size:15px" maxlength="200" autocomplete="email" inputmode="email" spellcheck="false">
+          <input name="tel" placeholder="Telefon (optional)" style="padding:14px 16px;border-radius:14px;border:1px solid rgba(243,247,240,.24);background:rgba(255,255,255,.1);color:#F3F7F0;font:inherit;font-size:15px" type="tel" maxlength="40" pattern="(?=(?:[^0-9]*[0-9]){6,})[+0-9 \(\)\/.\-]{6,40}" title="Bitte eine Telefonnummer mit mindestens sechs Ziffern. Erlaubt sind Ziffern, Leerzeichen und + ( ) / - ." autocomplete="tel" inputmode="tel">
+          <textarea name="text" rows="4" placeholder="Worum geht es? Gern mit Größe und Ort." style="grid-column:1/-1;padding:14px 16px;border-radius:14px;border:1px solid rgba(243,247,240,.24);background:rgba(255,255,255,.1);color:#F3F7F0;font:inherit;font-size:15px;resize:vertical" maxlength="2500"></textarea>
           <button type="submit" style="grid-column:1/-1;padding:16px 24px;border:none;border-radius:999px;background:#8ECF4F;color:#0F2318;font:inherit;font-size:15px;font-weight:700;cursor:pointer" data-ed="anfrage-button">Anfrage senden →</button>
           <p style="grid-column:1/-1;margin:0;font-size:12.5px;line-height:1.5;color:rgba(243,247,240,.74)" data-ed="anfrage-p3">Ihre Angaben werden übertragen und für die Bearbeitung Ihrer Anfrage gespeichert.</p>
         </form>
@@ -237,14 +246,14 @@
   <garden-footer active="kontakt.html"></garden-footer>
 </div>
 <!-- Texte von Kopf- und Fusszeile. MUSS vor den Komponenten stehen. -->
-<script src="assets/js/rahmen-texte.js?v=88"></script>
-<script src="assets/js/garden-header.js?v=88"></script>
-<script src="assets/js/garden-footer.js?v=88"></script>
-<script src="assets/js/cookie.js?v=88"></script>
-<script src="assets/js/formular.js?v=88"></script>
-<script src="assets/js/kontakt.js?v=88"></script>
+<script src="assets/js/rahmen-texte.js?v=89"></script>
+<script src="assets/js/garden-header.js?v=89"></script>
+<script src="assets/js/garden-footer.js?v=89"></script>
+<script src="assets/js/cookie.js?v=89"></script>
+<script src="assets/js/formular.js?v=89"></script>
+<script src="assets/js/kontakt.js?v=89"></script>
 <!-- Seiten-Editor: laeuft NUR mit ?bearbeiten=1 UND gueltiger Anmeldung
      aus /admin/. Ohne beides beendet sich die Datei sofort. -->
-<script defer src="assets/js/editor.js?v=88"></script>
+<script defer src="assets/js/editor.js?v=89"></script>
 </body>
 </html>
