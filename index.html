@@ -23,7 +23,7 @@
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png?v=1">
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/outfit-600-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/outfit-400-latin.woff2" crossorigin>
-<link rel="stylesheet" href="assets/css/base.css?v=93">
+<link rel="stylesheet" href="assets/css/base.css?v=94">
 <style>
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;background:#EDF3E8;color:#10231A}
@@ -85,6 +85,18 @@
      er aber auf WEISS — und erbt dabei die helle Farbe des Feldes.
      "Gewerblich" stand so fast unsichtbar da. Eigene, dunkle Farbe. */
   select option{background:#FFFFFF;color:#12261A}
+  /* Der Ablauf-Abschnitt zeichnet am Rechner eine Pflanze, an der die
+     vier Schritte haengen. Auf schmalen Schirmen faellt diese Zeichnung
+     weg (applyMobile), die Karten stehen dort schlicht untereinander —
+     „Folgen Sie der Pflanze." waere dann eine Aufforderung ins Leere.
+     Deshalb zwei Fassungen im Markup statt eines per Skript getauschten
+     Textes: So bleiben beide mit dem Seiten-Editor bearbeitbar, und kein
+     Skript schreibt in ein Feld mit Marker. */
+  .dvg-nur-schmal{display:none}
+  @media (max-width:820px){
+    .dvg-nur-breit{display:none}
+    .dvg-nur-schmal{display:inline}
+  }
 </style>
 </head>
 <body>
@@ -180,7 +192,7 @@
     <div data-station="6" data-side="center" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(820px,92vw);text-align:center;opacity:0">
       <span style="position:absolute;left:50%;top:50%;width:132%;height:250%;transform:translate(-50%,-50%);pointer-events:none;background:radial-gradient(closest-side,rgba(243,247,240,.99) 0%,rgba(243,247,240,.97) 40%,rgba(243,247,240,.86) 56%,rgba(243,247,240,.52) 70%,rgba(243,247,240,.18) 84%,rgba(243,247,240,0) 96%);filter:blur(30px)"></span>
       <p style="position:relative;margin:0 0 16px;font-size:12px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:#2C6E49" data-ed="seite-p8">Der Rückblick</p>
-      <h2 style="position:relative;margin:0;font-size:clamp(30px,5vw,72px);line-height:1;letter-spacing:-.035em;font-weight:600;color:#0A1810"><span data-ed="seite-t3">Fünf Bereiche.</span><br><span data-ed="seite-t4">Ein</span> <span style="font-family:'Instrument Serif',Georgia,serif;font-style:italic;font-weight:400;color:#1F5637" data-ed="seite-span12">Ansprechpartner</span><span data-ed="seite-t5">.</span></h2>
+      <h2 style="position:relative;margin:0;font-size:clamp(30px,5vw,72px);line-height:1;letter-spacing:-.035em;font-weight:600;color:#0A1810"><span data-ed="seite-t3">Fünf Elemente.</span><br><span data-ed="seite-t4">Ein</span> <span style="font-family:'Instrument Serif',Georgia,serif;font-style:italic;font-weight:400;color:#1F5637" data-ed="seite-span12">Ansprechpartner</span><span data-ed="seite-t5">.</span></h2>
       <p style="position:relative;margin:24px auto 0;max-width:48ch;font-size:clamp(15px,1.4vw,19px);line-height:1.55;color:#26382E;text-wrap:pretty" data-ed="seite-p9">Weg, Mauer, Beet, Wasser, Platz — bei uns aus einer Hand, von der ersten Skizze bis zum Schnitt im dritten Jahr.</p>
     </div>
 
@@ -438,12 +450,12 @@
       </div>
     </div>
 
-    <section id="rg-gal" data-screen-label="Fünf Bereiche" style="position:relative;z-index:4;padding:clamp(56px,9vh,120px) clamp(20px,5vw,68px)">
+    <section id="rg-gal" data-screen-label="Fünf Elemente" style="position:relative;z-index:4;padding:clamp(56px,9vh,120px) clamp(20px,5vw,68px)">
       <div style="max-width:1420px;margin:0 auto">
         <div data-reveal style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:clamp(22px,3.6vh,40px)">
           <div>
-            <p style="margin:0 0 13px;font-size:12px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:#2C6E49" data-ed="fuenf-bereiche-p">Fünf Bereiche</p>
-            <h2 style="margin:0;font-size:clamp(25px,3.4vw,50px);line-height:1.02;letter-spacing:-.035em;font-weight:700;max-width:20ch;color:#0F2318" data-ed="fuenf-bereiche-h2">Fünf Bereiche, eine Handschrift.</h2>
+            <p style="margin:0 0 13px;font-size:12px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:#2C6E49" data-ed="fuenf-bereiche-p">Fünf Elemente</p>
+            <h2 style="margin:0;font-size:clamp(25px,3.4vw,50px);line-height:1.02;letter-spacing:-.035em;font-weight:700;max-width:20ch;color:#0F2318" data-ed="fuenf-bereiche-h2">Fünf Elemente, eine Handschrift.</h2>
           </div>
           <p data-gal-hinweis style="margin:0;max-width:34ch;font-size:14.5px;line-height:1.55;color:#3C5145">Fahren Sie über ein Bild — es öffnet sich und zeigt, was dahinter steckt.</p>
         </div>
@@ -532,7 +544,7 @@
         <div style="position:absolute;inset:0;pointer-events:none;background:radial-gradient(80% 60% at 30% 46%,rgba(214,232,208,.52),rgba(246,249,244,0) 74%)"></div>
         <div data-flow-head style="position:absolute;left:clamp(20px,5vw,68px);top:clamp(74px,11vh,120px);z-index:3">
           <p style="margin:0 0 10px;font-size:12px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:#2C6E49" data-ed="ablauf-p">So arbeiten wir</p>
-          <h2 style="margin:0;font-size:clamp(24px,3.2vw,46px);line-height:1.02;letter-spacing:-.035em;font-weight:600;max-width:16ch;color:#0F2318" data-ed="ablauf-h2">Folgen Sie der Pflanze.</h2>
+          <h2 style="margin:0;font-size:clamp(24px,3.2vw,46px);line-height:1.02;letter-spacing:-.035em;font-weight:600;max-width:16ch;color:#0F2318"><span class="dvg-nur-breit" data-ed="ablauf-h2">Folgen Sie der Pflanze.</span><span class="dvg-nur-schmal" data-ed="ablauf-h2-schmal">Schritt für Schritt zum Garten.</span></h2>
         </div>
         <div data-flow-progress style="position:absolute;right:clamp(20px,5vw,68px);top:clamp(78px,11vh,124px);z-index:3;display:flex;align-items:center;gap:13px;padding:11px 20px;border-radius:999px;background:linear-gradient(155deg,rgba(255,255,255,.74),rgba(255,255,255,.44));backdrop-filter:blur(24px) saturate(1.6);border:1px solid rgba(255,255,255,.76);font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#3C5145">
           <span id="rg-flownum">01</span>
@@ -957,30 +969,22 @@
       </div>
     </section>
 
-    <div data-screen-label="Kinetik" style="position:relative;z-index:4;padding:clamp(30px,6vh,80px) 0 clamp(20px,4vh,50px);overflow:hidden;pointer-events:none">
-      <div id="rg-kin" style="display:flex;justify-content:center;will-change:transform">
-        <span style="font-size:clamp(56px,15vw,240px);line-height:.86;font-weight:700;letter-spacing:-.055em;white-space:nowrap;background:linear-gradient(120deg,#8ECF4F,#46761F 45%,#1B4332);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent" data-ed="kinetik-span">de Vries</span>
-      </div>
-      <div id="rg-kin2" style="display:flex;justify-content:center;margin-top:clamp(-8px,-1vh,0px);will-change:transform">
-        <span style="font-size:clamp(56px,15vw,240px);line-height:.86;font-weight:700;letter-spacing:-.055em;white-space:nowrap;background:linear-gradient(120deg,#1B4332,#46761F 55%,#8ECF4F);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent" data-ed="kinetik-span2">GaLa-Bau</span>
-      </div>
-    </div>
 
     <garden-footer active="index.html"></garden-footer>
   </div>
 </div>
 <!-- Texte von Kopf- und Fusszeile. MUSS vor den Komponenten stehen. -->
-<script src="assets/js/rahmen-texte.js?v=93"></script>
-<script src="assets/js/garden-header.js?v=93"></script>
-<script src="assets/js/garden-footer.js?v=93"></script>
-<script src="assets/js/cookie.js?v=93"></script>
+<script src="assets/js/rahmen-texte.js?v=94"></script>
+<script src="assets/js/garden-header.js?v=94"></script>
+<script src="assets/js/garden-footer.js?v=94"></script>
+<script src="assets/js/cookie.js?v=94"></script>
 <!-- three.js wird NICHT fest eingebunden: gepackt sind das 146 KB, und auf
      dem Handy soll sie nur laden, wenn jemand den Rundgang wirklich startet.
      Das Nachladen steuert assets/js/index.js (ladeTHREE). -->
-<script src="assets/js/formular.js?v=93"></script>
-<script src="assets/js/index.js?v=93"></script>
+<script src="assets/js/formular.js?v=94"></script>
+<script src="assets/js/index.js?v=94"></script>
 <!-- Seiten-Editor: laeuft NUR mit ?bearbeiten=1 UND gueltiger Anmeldung
      aus /admin/. Ohne beides beendet sich die Datei sofort. -->
-<script defer src="assets/js/editor.js?v=93"></script>
+<script defer src="assets/js/editor.js?v=94"></script>
 </body>
 </html>
