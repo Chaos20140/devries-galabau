@@ -29,7 +29,7 @@
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png?v=1">
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/outfit-600-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/outfit-400-latin.woff2" crossorigin>
-<link rel="stylesheet" href="assets/css/base.css?v=97">
+<link rel="stylesheet" href="assets/css/base.css?v=98">
 <style>
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;background:#EDF3E8;color:#10231A}
@@ -102,6 +102,54 @@
   @media (max-width:820px){
     .dvg-nur-breit{display:none}
     .dvg-nur-schmal{display:inline}
+  }
+
+  /* ===== HANDY-FASSUNG DES ABLAUFS UND DER GALERIE =====================
+     Diese Fassung stand bisher NUR im Skript (applyMobile, galerieMobil)
+     und griff damit erst NACH dem ersten Bild. Weil #rg-flow im Markup
+     520vh hoch ist, sprang dabei alles darunter nach oben:
+
+       gemessen bei 390 x 844 px
+       Abschnitt   4389 px  ->  1389 px
+       Fusszeile   18406    ->  15406      = 3000 px = 3,55 Bildschirme
+       Galerie      490 px  ->   389 px    = weitere 101 px
+
+     Ergebnis war ein Cumulative Layout Shift von 1,002 — der einzige
+     rote Messwert; Lighthouse zog die Leistung damit auf 75, obwohl
+     FCP, LCP, TBT und Speed Index alle gruen sind.
+
+     Jetzt steht dieselbe Fassung hier als Medienabfrage und gilt ab dem
+     ERSTEN Bild. Das Skript setzt anschliessend genau dieselben Werte —
+     gleicher Wert, kein Sprung. Die Regeln im Skript bleiben stehen: sie
+     werden beim Drehen des Geraets gebraucht, wenn kein Neuladen folgt.
+
+     !important ist Pflicht: Die Ausgangswerte stehen als Inline-Stil im
+     Markup und schlagen sonst jede Regel aus dem Stylesheet (Lehre aus
+     v45 und v70).
+
+     819.98px, nicht 820px: Das Skript schaltet bei "w < 820" um. Bei
+     genau 820 px waere die Seite sonst im Handy-Layout, das Skript aber
+     im Rechner-Zweig — und der Sprung waere wieder da, nur an einer
+     Stelle, an die niemand denkt. */
+  @media (max-width:819.98px){
+    #rg-flow{height:auto !important;padding:clamp(88px,12vh,116px) 0 26px !important}
+    #rg-flow [data-flow-stage]{position:static !important;height:auto !important;overflow:visible !important}
+    #rg-flow [data-flow-head]{position:static !important;margin:0 0 18px !important;padding:0 5vw !important}
+    #rg-flow [data-flow-progress]{display:none !important}
+    #rg-flow svg,#rg-flowdot{display:none !important}
+    #rg-flowtrack{position:static !important;width:100% !important;height:auto !important;
+      transform:none !important;display:flex !important;flex-direction:column !important;
+      gap:18px !important;padding:0 5vw 8px !important;border-left:none !important}
+    #rg-flow [data-step]{position:static !important;left:auto !important;top:auto !important;
+      width:auto !important;transform:none !important;opacity:1 !important}
+    #rg-flow [data-num]{position:static !important;transform:none !important;display:block !important;
+      font-size:clamp(38px,11vw,58px) !important;margin-bottom:2px !important}
+    #rg-flow [data-node],#rg-flow [data-step-in]{transform:none !important}
+
+    #rg-galrow{overflow-x:auto !important;overflow-y:hidden !important;
+      padding:4px 5vw 14px !important;margin:0 -5vw !important}
+    #rg-galrow>*{flex:0 0 78vw !important;flex-grow:0 !important;
+      height:clamp(300px,44vh,420px) !important}
   }
 </style>
 </head>
@@ -980,17 +1028,17 @@
   </div>
 </div>
 <!-- Texte von Kopf- und Fusszeile. MUSS vor den Komponenten stehen. -->
-<script src="assets/js/rahmen-texte.js?v=97"></script>
-<script src="assets/js/garden-header.js?v=97"></script>
-<script src="assets/js/garden-footer.js?v=97"></script>
-<script src="assets/js/cookie.js?v=97"></script>
+<script src="assets/js/rahmen-texte.js?v=98"></script>
+<script src="assets/js/garden-header.js?v=98"></script>
+<script src="assets/js/garden-footer.js?v=98"></script>
+<script src="assets/js/cookie.js?v=98"></script>
 <!-- three.js wird NICHT fest eingebunden: gepackt sind das 146 KB, und auf
      dem Handy soll sie nur laden, wenn jemand den Rundgang wirklich startet.
      Das Nachladen steuert assets/js/index.js (ladeTHREE). -->
-<script src="assets/js/formular.js?v=97"></script>
-<script src="assets/js/index.js?v=97"></script>
+<script src="assets/js/formular.js?v=98"></script>
+<script src="assets/js/index.js?v=98"></script>
 <!-- Seiten-Editor: laeuft NUR mit ?bearbeiten=1 UND gueltiger Anmeldung
      aus /admin/. Ohne beides beendet sich die Datei sofort. -->
-<script defer src="assets/js/editor.js?v=97"></script>
+<script defer src="assets/js/editor.js?v=98"></script>
 </body>
 </html>
