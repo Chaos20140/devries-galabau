@@ -48,7 +48,8 @@ mit Notizen zu offenen Punkten — auf einem öffentlichen Branch haben sie nich
 ### Aktuelles Deployment: GitHub Pages
 
 **Live:** <https://chaos20140.github.io/devries-galabau/>
-**Verwaltung:** <https://chaos20140.github.io/devries-galabau/admin/>
+**Künftig:** <https://devries-galabau.de/> — Vorbereitung und Reihenfolge in `UMZUG-DOMAIN.md`
+**Verwaltung:** <https://chaos20140.github.io/devries-galabau/admin/> (nach dem Umzug <https://devries-galabau.de/admin/>)
 Repository: `Chaos20140/devries-galabau`, Branch `main`, Quellordner `/` (Repository-Wurzel).
 
 Die Verwaltungsseite ist **absichtlich von nirgendwo verlinkt** und steht auf `noindex`
