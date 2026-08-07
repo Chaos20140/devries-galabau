@@ -703,10 +703,25 @@
     });
     bloeckeMeldung = el('span', 'dvg-meldung');
     bloeckeMeldung.setAttribute('role', 'status');
+    /* Weg aus der Lade. Ohne ihn kam man nur ueber denselben Knopf in der
+       Werkzeugleiste wieder heraus — der liegt hinter der Lade und wird
+       leicht uebersehen. Bei ungespeicherten Aenderungen wird gefragt,
+       sonst waere ein Fehlklick alles los. */
+    var fertig = el('button', 'dvg-knopf dvg-knopf-still', 'Fertig');
+    fertig.type = 'button';
+    fertig.addEventListener('click', function () {
+      if (JSON.stringify(bloeckeNeu) !== bloeckeStand &&
+          !window.confirm('Es gibt ungespeicherte Änderungen an den Abschnitten. ' +
+            'Schließen und verwerfen?')) return;
+      bloeckeNeu = null; bloeckeStand = null;
+      bloeckeUmschalten();
+    });
     bloeckeSpeichern = el('button', 'dvg-knopf dvg-knopf-voll', 'Speichern');
     bloeckeSpeichern.type = 'button';
     bloeckeSpeichern.addEventListener('click', bloeckeSenden);
-    leiste.appendChild(bloeckeMeldung); leiste.appendChild(bloeckeSpeichern);
+    leiste.appendChild(bloeckeMeldung);
+    leiste.appendChild(fertig);
+    leiste.appendChild(bloeckeSpeichern);
     bloecke.appendChild(leiste);
     bloeckeKnopfStand();
   }
@@ -1647,7 +1662,14 @@
       '.dvg-knopf-voll:hover:not(:disabled){background:var(--gr2)}',
       '.dvg-knopf-still{background:transparent;color:var(--ink);border-color:rgba(16,35,26,.18)}',
       '.dvg-knopf-still:hover{background:rgba(16,35,26,.05)}',
-      '.dvg-knopf:disabled{opacity:.42;cursor:not-allowed}',
+      /* Gesperrt heisst NICHT unsichtbar. opacity:.42 auf dem gefuellten
+         gruenen Knopf liess helle Schrift auf hellem Grund uebrig — der
+         Speichern-Knopf war so gut wie nicht zu sehen und wurde deshalb
+         gesucht. Jetzt ein eigener, ruhiger Farbwert bei voller Deckkraft:
+         klar erkennbar, klar inaktiv. */
+      '.dvg-knopf:disabled{cursor:not-allowed}',
+      '.dvg-knopf-still:disabled{opacity:.5}',
+      '.dvg-knopf-voll:disabled{background:#D8E3D3;color:#46583F;border-color:rgba(16,35,26,.16)}',
       '.dvg-knopf:focus-visible{outline:2px solid var(--gr2);outline-offset:2px}',
 
       /* Schublade: Stellen, die auf der Seite nicht anklickbar sind */
@@ -1696,6 +1718,14 @@
       '.dvg-ampel-rot{color:var(--rot);font-weight:600}',
       '.dvg-seo-aktionen{display:flex;align-items:center;justify-content:flex-end;gap:16px;',
       '  flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid rgba(16,35,26,.1)}',
+      /* Die Lade scrollt (max-height + overflow:auto). Ohne sticky rutschte
+         die Aktionsleiste bei mehreren Eintraegen aus dem Bild — der
+         Speichern-Knopf war dann nur zu finden, wenn man bis ganz nach
+         unten scrollte. Der negative Aussenabstand hebt die Polsterung der
+         Lade auf, damit die Leiste buendig am unteren Rand klebt. */
+      '.dvg-schublade .dvg-seo-aktionen{position:sticky;bottom:-20px;z-index:2;',
+      '  margin:14px -20px -20px;padding:14px 20px 20px;',
+      '  background:rgba(255,255,255,.97);backdrop-filter:blur(18px) saturate(1.4)}',
 
       /* Liste der frueheren Staende */
       '.dvg-stand{display:flex;align-items:center;justify-content:space-between;gap:16px;',
