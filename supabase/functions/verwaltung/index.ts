@@ -61,6 +61,7 @@ const CORS = {
    neu. Was ausgeliefert wird, ist also weiterhin fertiges HTML.
    ===================================================================== */
 import { bloeckeErzeugen, zoneSetzen, zoneInhalt, leerhinweis } from "./bloecke.mjs";
+import JSZip from "https://esm.sh/jszip@3.10.1";
 
 const GH_TOKEN = Deno.env.get("GITHUB_TOKEN") ?? "";
 const GH_REPO = "Chaos20140/devries-galabau";
@@ -549,6 +550,283 @@ async function speicher(pfad: string, init: RequestInit = {}) {
    fort — sonst waere "Rueckgaengig" nur halb wahr: der Datensatz kaeme
    zurueck, der Lebenslauf nicht. Aufgeraeumt wird bei jeder Anmeldung,
    alles aelter als 24 Stunden. Damit liegt nichts unbegrenzt herum. */
+/* =====================================================================
+   SICHERUNGEN
+   Eine Sicherung ist EINE ZIP-Datei im privaten Eimer "sicherungen":
+   der komplette Stand des Repositorys, die Aenderungsgeschichte, die
+   gespeicherten Anfragen und Bewerbungen sowie die hochgeladenen
+   Bewerbungsunterlagen.
+
+   Warum ueberhaupt? Der Seiten-Editor schreibt auf einer LIVEN Seite.
+   Git haelt zwar jede Textaenderung, aber weder die Datenbank noch die
+   Unterlagen — und genau die kann niemand neu tippen.
+
+   Aufbewahrt werden die letzten SICHERUNG_BEHALTEN Staende. Bei
+   taeglichem Rhythmus reicht das fuer einen Rueckgriff von einer Woche;
+   mehr waere vor allem Speicherplatz.
+   ===================================================================== */
+const SICHERUNG_BEHALTEN = Math.max(1, Number(Deno.env.get("SICHERUNG_BEHALTEN") ?? "7"));
+const SICHERUNG_ABSTAND_TAGE = Number(Deno.env.get("SICHERUNG_ABSTAND_TAGE") ?? "1");
+const SICHERUNG_TOKEN = Deno.env.get("SICHERUNG_TOKEN") ?? "";
+/* Obergrenze fuer die MITGESICHERTEN Bewerbungsunterlagen. Die Edge
+   Function haelt alles im Arbeitsspeicher; ohne Deckel reisst eine
+   Sicherung irgendwann das Speicherlimit — und zwar genau dann, wenn am
+   meisten drinsteckt. Lieber das Wichtige vollstaendig plus eine Liste
+   des Ausgelassenen. */
+const SICHERUNG_MAX_ANHAENGE = 40 * 1024 * 1024;
+const SICHERUNG_EIMER = "sicherungen";
+
+/* Fuehrende = + - @ entschaerfen: sonst fuehrt Excel sie als Formel aus.
+   Dieselbe Falle wie beim CSV-Export der Verwaltung (v28). */
+function csvZelle(v: unknown): string {
+  let s = v == null ? "" : (typeof v === "object" ? JSON.stringify(v) : String(v));
+  s = s.replace(/\r?\n/g, " / ");
+  if (/^[=+\-@]/.test(s)) s = "'" + s;
+  return '"' + s.replace(/"/g, '""') + '"';
+}
+function csv(zeilen: Record<string, unknown>[]): string {
+  if (!zeilen.length) return "";
+  const spalten = Object.keys(zeilen[0]);
+  return "sep=;\r\n" + spalten.map(csvZelle).join(";") + "\r\n" +
+    zeilen.map((z) => spalten.map((s) => csvZelle(z[s])).join(";")).join("\r\n");
+}
+
+/* Rohe Bytes aus dem Speicherbereich. speicher() taugt hier nicht: das
+   erwartet JSON zurueck, hier kommen Binaerdaten. */
+async function speicherBytes(pfad: string): Promise<Uint8Array | null> {
+  const r = await fetch(URL_ + "/storage/v1/object/" + pfad, {
+    headers: { apikey: DIENST, Authorization: "Bearer " + DIENST },
+  });
+  if (!r.ok) return null;
+  return new Uint8Array(await r.arrayBuffer());
+}
+
+async function sicherungBauen(art: string) {
+  const zip = new JSZip();
+  const zahl = {
+    dateien: 0, seiten: 0, assets: 0, servercode: 0,
+    verlauf: 0, anfragen: 0, bewerbungen: 0,
+    unterlagen: 0, unterlagen_ausgelassen: 0,
+  };
+
+  /* 1) Das GANZE Repository in einem Zug statt Datei fuer Datei.
+        Damit kann nichts vergessen werden — auch keine Datei, die es
+        erst kuenftig geben wird. Genommen wird der ARBEITSZWEIG: dort
+        liegt alles, main ist eine Teilmenge davon. */
+  /* ⚠ Der Pfad MUSS mit einem Schraegstrich beginnen: gh() haengt ihn
+     direkt an ".../repos/<repo>" an. Ohne ihn entsteht
+     ".../devries-galabauzipball/..." — und das ist einfach 404. */
+  const zr = await gh("/zipball/" + encodeURIComponent(BRANCHES[0]));
+  if (!zr.ok) throw new Error("Repository " + zr.status);
+  const quelle = await JSZip.loadAsync(new Uint8Array(await zr.arrayBuffer()));
+  for (const name of Object.keys(quelle.files)) {
+    const e = quelle.files[name];
+    if (e.dir) continue;
+    const rel = name.replace(/^[^/]+\//, "");   /* GitHub-Wurzelordner abschneiden */
+    if (!rel) continue;
+    zip.file("website/" + rel, await e.async("uint8array"));
+    zahl.dateien++;
+    if (/\.html$/i.test(rel)) zahl.seiten++;
+    else if (/^assets\//i.test(rel)) zahl.assets++;
+    else if (/^supabase\//i.test(rel)) zahl.servercode++;
+  }
+
+  /* 2) Der .git-Ordner selbst laesst sich ueber die API nicht holen.
+        Statt der Rohdaten die Commit-Liste als lesbare Datei — so bleibt
+        nachvollziehbar, wann was geaendert wurde. */
+  try {
+    const zeilen: string[] = [];
+    for (let seite = 1; seite <= 10; seite++) {
+      const hr = await gh("/commits?sha=" + encodeURIComponent(BRANCHES[0]) + "&per_page=100&page=" + seite);
+      if (!hr.ok) break;
+      const cs = await hr.json();
+      if (!Array.isArray(cs) || !cs.length) break;
+      for (const c of cs) {
+        const d = c.commit && c.commit.author ? String(c.commit.author.date).slice(0, 16).replace("T", " ") : "";
+        const wer = c.commit && c.commit.author ? String(c.commit.author.name) : "";
+        const txt = c.commit ? String(c.commit.message).split("\n")[0] : "";
+        zeilen.push(d + "  " + String(c.sha).slice(0, 8) + "  " + wer + "  " + txt);
+      }
+      if (cs.length < 100) break;
+    }
+    if (zeilen.length) {
+      zip.file("aenderungsgeschichte.txt",
+        "Aenderungen an der Website, neueste zuerst — " + zeilen.length + " Eintraege\n" +
+        "Vollstaendig im Repository " + GH_REPO + ".\n\n" + zeilen.join("\n"));
+      zahl.verlauf = zeilen.length;
+    }
+  } catch { /* eine Sicherung ohne Verlauf ist besser als keine */ }
+
+  /* 3) Die gespeicherten Daten — je als JSON (vollstaendig, zum
+        Zurueckspielen) und als CSV (zum Ansehen in Excel). */
+  for (const [name, tabelle] of Object.entries(TABELLEN)) {
+    const roh = await db(tabelle + "?select=*&order=eingegangen_am.asc&limit=5000");
+    const zeilen = Array.isArray(roh) ? roh as Record<string, unknown>[] : [];
+    zip.file("daten/" + name + ".json", JSON.stringify(zeilen, null, 2));
+    if (zeilen.length) zip.file("daten/" + name + ".csv", csv(zeilen));
+    if (name === "anfragen") zahl.anfragen = zeilen.length;
+    else zahl.bewerbungen = zeilen.length;
+  }
+
+  /* 4) Bewerbungsunterlagen, solange die Obergrenze haelt. Was nicht
+        mitkommt, wird NAMENTLICH aufgefuehrt — stillschweigend
+        auszulassen waere schlimmer, als es gar nicht zu versuchen. */
+  let bytes = 0;
+  const fehlt: string[] = [];
+  const rohBew = await db(TABELLEN.bewerbungen + "?select=id,name,datei,datei_name,dateien&limit=5000");
+  for (const b of (Array.isArray(rohBew) ? rohBew as Record<string, unknown>[] : [])) {
+    const liste = Array.isArray(b.dateien) && (b.dateien as unknown[]).length
+      ? b.dateien as Record<string, unknown>[]
+      : (b.datei ? [{ pfad: b.datei, name: b.datei_name ?? "unterlage.pdf" }] : []);
+    for (const d of liste) {
+      const pfad = String(d.pfad ?? "");
+      if (!pfad) continue;
+      if (bytes >= SICHERUNG_MAX_ANHAENGE) { zahl.unterlagen_ausgelassen++; fehlt.push(pfad); continue; }
+      const roh = await speicherBytes(EIMER + "/" + pfad);
+      if (!roh) { fehlt.push(pfad + "   (nicht mehr im Speicher)"); continue; }
+      if (bytes + roh.length > SICHERUNG_MAX_ANHAENGE) {
+        zahl.unterlagen_ausgelassen++; fehlt.push(pfad); continue;
+      }
+      zip.file("unterlagen/" + String(b.id) + "/" + String(d.name ?? "unterlage.pdf"), roh);
+      bytes += roh.length;
+      zahl.unterlagen++;
+    }
+  }
+  if (fehlt.length) {
+    zip.file("unterlagen/NICHT-ENTHALTEN.txt",
+      "Diese Unterlagen sind NICHT in dieser Sicherung:\n\n" + fehlt.join("\n"));
+  }
+
+  const jetzt = new Date();
+  zip.file("LIESMICH.txt", [
+    "Sicherung der Website de Vries Galabau",
+    "Erstellt am : " + jetzt.toLocaleString("de-DE", { timeZone: "Europe/Berlin" }) + " Uhr",
+    "Art         : " + art,
+    "",
+    "INHALT",
+    "  website/                  vollstaendige Kopie des Repositorys (" + zahl.dateien + " Dateien)",
+    "                              " + zahl.seiten + " Seiten, " + zahl.assets + " Dateien unter assets/,",
+    "                              " + zahl.servercode + " unter supabase/ (Serverfunktionen, Schema)",
+    "  aenderungsgeschichte.txt  wer wann was geaendert hat (" + zahl.verlauf + " Eintraege)",
+    "  daten/anfragen.*          " + zahl.anfragen + " Anfragen, als .json und .csv",
+    "  daten/bewerbungen.*       " + zahl.bewerbungen + " Bewerbungen, als .json und .csv",
+    "  unterlagen/               " + zahl.unterlagen + " Bewerbungsunterlagen" +
+      (zahl.unterlagen_ausgelassen
+        ? " (" + zahl.unterlagen_ausgelassen + " wegen Groesse ausgelassen, siehe NICHT-ENTHALTEN.txt)"
+        : ""),
+    "",
+    "NICHT ENTHALTEN — mit Absicht",
+    "  Zugangsdaten und Schluessel: Verwaltungspasswort, GitHub-Token,",
+    "  Postfach-Passwort, Supabase-Schluessel. Die liegen ausschliesslich",
+    "  in den Supabase-Secrets. In einer herunterladbaren Datei haetten sie",
+    "  nichts zu suchen — wer die Sicherung haette, haette sonst alles.",
+    "  Bitte getrennt an einem sicheren Ort notieren.",
+    "",
+    "ACHTUNG — personenbezogene Daten",
+    "  Diese Datei enthaelt Namen, Anschriften, Telefonnummern, E-Mail-",
+    "  Adressen und Bewerbungsunterlagen. Verschluesselt aufbewahren, nicht",
+    "  weitergeben, nicht laenger behalten als noetig.",
+    "",
+    "WIEDERHERSTELLEN",
+    "  Website        : Inhalt von website/ ins Repository zurueckspielen.",
+    "  Serverfunktion : supabase/functions/... erneut veroeffentlichen",
+    "                   (supabase functions deploy verwaltung --no-verify-jwt).",
+    "  Datenbank      : supabase/migrations/ anwenden, danach die Dateien",
+    "                   aus daten/ in die jeweilige Tabelle einspielen.",
+    "  Zum Schluss die Zugangsdaten als Secrets neu setzen.",
+  ].join("\n"));
+
+  const inhalt = await zip.generateAsync({
+    type: "uint8array",
+    compression: "DEFLATE",
+    compressionOptions: { level: 6 },
+  }) as Uint8Array;
+  const stempel = jetzt.toISOString().slice(0, 16).replace(/[:T]/g, "-");
+  return { inhalt, dateiname: "devries-galabau-sicherung-" + stempel + ".zip", zahl };
+}
+
+/* Legt die Sicherung ab und raeumt die ueberzaehligen weg.
+   Reihenfolge ist Absicht: erst die Datei, dann die Zeile. Scheitert die
+   Zeile, wird die Datei wieder entfernt — sonst laege eine verwaiste
+   Sicherung im Eimer, die niemand mehr findet und die trotzdem
+   personenbezogene Daten enthaelt. */
+async function sicherungAblegen(art: string) {
+  const { inhalt, dateiname, zahl } = await sicherungBauen(art);
+  const pfad = crypto.randomUUID() + "/" + dateiname;
+
+  const hoch = await fetch(URL_ + "/storage/v1/object/" + SICHERUNG_EIMER + "/" + pfad, {
+    method: "POST",
+    headers: {
+      apikey: DIENST,
+      Authorization: "Bearer " + DIENST,
+      "Content-Type": "application/zip",
+      "x-upsert": "false",
+    },
+    body: inhalt,
+  });
+  if (!hoch.ok) throw new Error("Ablegen " + hoch.status + " " + (await hoch.text()).slice(0, 120));
+
+  let zeile: Record<string, unknown>;
+  try {
+    const r = await db("galabau_sicherungen", {
+      method: "POST",
+      headers: { Prefer: "return=representation" },
+      body: JSON.stringify({ dateiname, pfad, groesse_bytes: inhalt.length, art, inhalt: zahl }),
+    });
+    zeile = (Array.isArray(r) ? r[0] : r) as Record<string, unknown>;
+  } catch (e) {
+    await fetch(URL_ + "/storage/v1/object/" + SICHERUNG_EIMER + "/" + pfad, {
+      method: "DELETE",
+      headers: { apikey: DIENST, Authorization: "Bearer " + DIENST },
+    });
+    throw e;
+  }
+
+  /* Aufraeumen. Faellt es aus, ist die Sicherung trotzdem entstanden —
+     ein voller Eimer ist das kleinere Uebel als eine fehlende Sicherung. */
+  let entfernt = 0;
+  try {
+    const alle = await db("galabau_sicherungen?select=id,pfad&order=erstellt_am.desc");
+    const zuviel = (Array.isArray(alle) ? alle as Record<string, unknown>[] : []).slice(SICHERUNG_BEHALTEN);
+    if (zuviel.length) {
+      await fetch(URL_ + "/storage/v1/object/" + SICHERUNG_EIMER, {
+        method: "DELETE",
+        headers: {
+          apikey: DIENST,
+          Authorization: "Bearer " + DIENST,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ prefixes: zuviel.map((x) => String(x.pfad)) }),
+      });
+      await db(
+        "galabau_sicherungen?id=in.(" + zuviel.map((x) => String(x.id)).join(",") + ")",
+        { method: "DELETE" },
+      );
+      entfernt = zuviel.length;
+    }
+  } catch (e) {
+    console.error("Sicherungen aufraeumen:", e instanceof Error ? e.message : e);
+  }
+  return { zeile, entfernt };
+}
+
+/* Kurzlebiger, unterschriebener Verweis. Der Eimer ist privat; ohne
+   Unterschrift kommt niemand an die Datei, auch nicht mit dem
+   oeffentlichen Schluessel. Zehn Minuten reichen zum Herunterladen und
+   sind kurz genug, dass ein weitergereichter Verweis nichts nutzt. */
+async function sicherungVerweis(pfad: string): Promise<string | null> {
+  try {
+    const r = await speicher("object/sign/" + SICHERUNG_EIMER + "/" + pfad, {
+      method: "POST",
+      body: JSON.stringify({ expiresIn: 600 }),
+    });
+    const teil = r && (r as Record<string, unknown>).signedURL;
+    return teil ? URL_ + "/storage/v1" + String(teil) : null;
+  } catch {
+    return null;
+  }
+}
+
 async function papierkorbAufraeumen(): Promise<void> {
   const liste = await speicher("object/list/" + EIMER, {
     method: "POST",
@@ -590,6 +868,48 @@ Deno.serve(async (req: Request) => {
 
   let körper: Record<string, unknown>;
   try { körper = await req.json(); } catch { return json({ fehler: "ungültig" }, 400); }
+
+  /* ---- Zeitgesteuerte Sicherung -------------------------------------
+     Steht BEWUSST vor der Sitzungs- und Passwortpruefung: Der Zeitplan
+     hat kein Passwort und soll auch keins bekommen — sonst muesste das
+     Verwaltungspasswort in der Datenbank stehen. Stattdessen ein eigenes
+     Geheimnis, das nur der Zeitplan kennt (Secret SICHERUNG_TOKEN).
+
+     Der Zeitplan darf taeglich anfragen; gesichert wird nur, wenn die
+     letzte Sicherung aelter als SICHERUNG_ABSTAND_TAGE ist. Damit holt
+     sich ein ausgefallener Lauf beim naechsten Mal von selbst nach, und
+     ein doppelt ausgeloester Lauf richtet keinen Schaden an.
+
+     Kein Zaehler der Anmeldebremse: hier wird nichts geraten, das
+     Geheimnis ist zufaellig erzeugt. Die Verzoegerung im Fehlerfall
+     bleibt trotzdem — sie kostet einen Angreifer Zeit und uns nichts. */
+  if (String(körper.was ?? "") === "sicherung-automatisch") {
+    if (!SICHERUNG_TOKEN) return json({ fehler: "nicht eingerichtet" }, 503);
+    if (!gleich(String(körper.token ?? ""), SICHERUNG_TOKEN)) {
+      await new Promise((r) => setTimeout(r, 600));
+      return json({ fehler: "nicht berechtigt" }, 401);
+    }
+    try {
+      const roh = await db("galabau_sicherungen?select=erstellt_am&order=erstellt_am.desc&limit=1");
+      const letzte = Array.isArray(roh) && roh.length
+        ? new Date(String((roh[0] as Record<string, unknown>).erstellt_am)).getTime()
+        : 0;
+      const alterTage = letzte ? (Date.now() - letzte) / 86400000 : 9999;
+      if (alterTage < SICHERUNG_ABSTAND_TAGE) {
+        return json({ ok: true, uebersprungen: true, alter_tage: Number(alterTage.toFixed(2)) });
+      }
+      const r = await sicherungAblegen("automatisch");
+      return json({ ok: true, erstellt: true, sicherung: r.zeile, entfernt: r.entfernt });
+    } catch (e) {
+      /* Den Grund MITGEBEN. Diese Antwort bekommt nur, wer das
+         Geheimnis kennt — und ohne ihn stochert man im Dunkeln:
+         diese CLI-Fassung hat keinen Befehl fuer die Protokolle der
+         Funktion (dieselbe Falle wie beim SMTP-Fehler 535). */
+      const grund = e instanceof Error ? e.message : String(e);
+      console.error("Sicherung automatisch:", grund);
+      return json({ fehler: "Sicherung fehlgeschlagen", grund }, 500);
+    }
+  }
 
   /* Gueltiges Sitzungskennzeichen? Dann kein Passwortvergleich und keine
      Zaehlung — es wird ja nichts geraten. Ein Kennzeichen zu faelschen
@@ -694,6 +1014,57 @@ Deno.serve(async (req: Request) => {
        Holt nur Zahlen, keine Datensaetze. */
     if (was === "stand") {
       return json({ ok: true, stand: await uebersicht() });
+    }
+
+    /* ---- Sicherungen ---------------------------------------------------
+       Liste mit unterschriebenem Verweis je Stand. Der Verweis wird bei
+       JEDEM Abruf neu erzeugt und gilt zehn Minuten — ein einmal
+       kopierter Link nutzt danach nichts mehr. */
+    if (was === "sicherungen") {
+      const roh = await db(
+        "galabau_sicherungen?select=id,erstellt_am,dateiname,pfad,groesse_bytes,art,inhalt" +
+        "&order=erstellt_am.desc&limit=50",
+      );
+      const zeilen = Array.isArray(roh) ? roh as Record<string, unknown>[] : [];
+      const liste = [];
+      for (const z of zeilen) {
+        liste.push({
+          id: z.id,
+          erstellt_am: z.erstellt_am,
+          dateiname: z.dateiname,
+          groesse_bytes: z.groesse_bytes,
+          art: z.art,
+          inhalt: z.inhalt,
+          verweis: await sicherungVerweis(String(z.pfad)),
+        });
+      }
+      return json({ ok: true, sicherungen: liste, behalten: SICHERUNG_BEHALTEN });
+    }
+
+    if (was === "sicherung-erstellen") {
+      const r = await sicherungAblegen("manuell");
+      return json({ ok: true, sicherung: r.zeile, entfernt: r.entfernt });
+    }
+
+    if (was === "sicherung-loeschen") {
+      const id = String(körper.id ?? "");
+      /* Kennung gegen die Form pruefen, nicht nur auf Vorhandensein:
+         der Wert wandert in einen PostgREST-Filter. */
+      if (!/^[0-9a-f-]{36}$/i.test(id)) return json({ fehler: "ungültige Kennung" }, 400);
+      const roh = await db("galabau_sicherungen?select=pfad&id=eq." + id);
+      const zeile = Array.isArray(roh) && roh.length ? roh[0] as Record<string, unknown> : null;
+      if (!zeile) return json({ fehler: "nicht gefunden" }, 404);
+      await fetch(URL_ + "/storage/v1/object/" + SICHERUNG_EIMER, {
+        method: "DELETE",
+        headers: {
+          apikey: DIENST,
+          Authorization: "Bearer " + DIENST,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ prefixes: [String(zeile.pfad)] }),
+      });
+      await db("galabau_sicherungen?id=eq." + id, { method: "DELETE" });
+      return json({ ok: true });
     }
 
     /* ---- Seiten-Editor: Texte speichern -------------------------------
