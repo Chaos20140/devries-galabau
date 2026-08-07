@@ -168,7 +168,13 @@
            Tastaturbedienung aber notwendig. */
         '.gh-link:focus-visible,.gh-item:focus-visible,.gh-big:focus-visible,.gh-tog:focus-visible,.gh-burger:focus-visible,.gh-cta:focus-visible,.gh-brand:focus-visible{outline:3px solid #1F5637;outline-offset:3px}' +
         '@media (max-width:940px){.gh-nav{display:none}.gh-burger{display:inline-flex;margin-left:auto}.gh-cta{font-size:14px;padding:13px 18px}}' +
-        '@media (max-width:560px){.gh-ctaword{display:none}.gh-cta{padding:13px 15px}.gh-wm b{font-size:17px}}' +
+        /* Unter 560 px faellt das erste Wort weg ("Kostenlos anfragen" ->
+           "anfragen") — und stand dann klein geschrieben da. ::first-letter
+           setzt genau den ersten Buchstaben gross; text-transform:capitalize
+           waere falsch, es wuerde bei mehreren Woertern jedes gross machen.
+           ::first-letter greift nur auf Block-Elementen, deshalb hier
+           inline-block — bei einem Wort ohne Folgen fuer den Umbruch. */
+        '@media (max-width:560px){.gh-ctaword{display:none}.gh-ctarest{display:inline-block}.gh-ctarest::first-letter{text-transform:uppercase}.gh-cta{padding:13px 15px}.gh-wm b{font-size:17px}}' +
         '@media (prefers-reduced-motion:reduce){.gh-mark i,.gh-cta i{animation:none}.gh-head,.gh-menu,.gh-drop,.gh-cta em{transition:none}}' +
         '</style>' +
         '<header class="gh-head" part="head">' +
@@ -184,7 +190,7 @@
             '</span>' +
           '</span></nav>' +
           '<button class="gh-burger" type="button" aria-label="Menü öffnen" aria-expanded="false"><i><b></b><b></b><b></b></i></button>' +
-          '<a class="gh-cta" href="' + cta + '"><em></em><i></i><span class="gh-ctalabel"><span class="gh-ctaword">' + esc(KNOPF_TEIL.vorn) + '</span>' + esc(KNOPF_TEIL.rest) + '</span></a>' +
+          '<a class="gh-cta" href="' + cta + '"><em></em><i></i><span class="gh-ctalabel"><span class="gh-ctaword">' + esc(KNOPF_TEIL.vorn) + '</span><span class="gh-ctarest">' + esc(KNOPF_TEIL.rest) + '</span></span></a>' +
         '</header>' +
         '<div class="gh-menu" role="dialog" aria-modal="true" aria-label="Menü">' +
           '<div class="gh-mtop">' +
