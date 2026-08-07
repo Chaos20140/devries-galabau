@@ -220,6 +220,11 @@
         bereich = z.bereich; offen = null; notizEntwurf = null; zeigeListe(false);
       } else if (z.ansicht === 'seiten') {
         offen = null; notizEntwurf = null; zeigeSeiten();
+      } else if (z.ansicht === 'sicherungen') {
+        /* false: die Liste liegt schon im Speicher. Beim Zurueckgehen
+           erneut zu laden hiesse, fuer jeden Stand einen neuen
+           unterschriebenen Verweis erzeugen zu lassen — unnoetig. */
+        offen = null; notizEntwurf = null; zeigeSicherungen(false);
       } else {
         offen = null; notizEntwurf = null; zeigeUebersicht(zaehleNeu());
       }
@@ -305,6 +310,14 @@
                 '<span class="vw-kachel__zeit">direkt auf der Seite</span>' +
               '</button>'
             : '') +
+          /* Sicherungen: am Telefon nur ansehen und herunterladen —
+             das ist sinnvoll bedienbar, anders als das Bearbeiten. */
+          '<button class="vw-kachel" data-sicherungen="1">' +
+            '<span class="vw-kachel__kopf"><span class="vw-symbol" aria-hidden="true">💾</span>' +
+            '<span class="vw-kachel__titel">Sicherungen</span></span>' +
+            '<span class="vw-kachel__zahl">Stand herunterladen</span>' +
+            '<span class="vw-kachel__zeit">automatisch jede Nacht</span>' +
+          '</button>' +
         '</div>' +
         '<p class="vw-hint vw-nurGross" style="margin-top:22px">' +
           'Die vollständige Verwaltung steht am Rechner zur Verfügung. Auf dem Telefon ' +
@@ -313,6 +326,11 @@
     $('#vw-abmelden').addEventListener('click', abmelden);
     fokusAufUeberschrift();
     startUhr();
+    var sichKnopf = document.querySelector('[data-sicherungen]');
+    if (sichKnopf) sichKnopf.addEventListener('click', function () {
+      verlaufSetz({ ansicht: 'sicherungen' });
+      zeigeSicherungen(true);
+    });
     var seitenKnopf = document.querySelector('[data-seiten]');
     if (seitenKnopf) seitenKnopf.addEventListener('click', function () {
       verlaufSetz({ ansicht: 'seiten' });
@@ -393,6 +411,160 @@
       zeigeUebersicht(zaehleNeu());
     });
     fokusAufUeberschrift();
+  }
+
+  /* ---------- Sicherungen ----------
+     Warum das hier ueberhaupt steht: Der Seiten-Editor schreibt auf einer
+     LIVEN Seite. Git haelt jede Textaenderung — aber weder die Anfragen
+     und Bewerbungen noch die hochgeladenen Unterlagen. Genau die kann
+     niemand neu tippen. */
+  var sicherungen = null;
+
+  function groesse(b) {
+    b = Number(b) || 0;
+    if (b < 1024) return b + ' B';
+    if (b < 1024 * 1024) return (b / 1024).toFixed(0) + ' KB';
+    return (b / 1024 / 1024).toFixed(1) + ' MB';
+  }
+
+  /* Der Verweis kommt zwar aus unserer eigenen Funktion, wird aber als
+     href eingesetzt. Ein Wert, der als Adresse gerendert wird, gehoert
+     geprueft — sonst haenge die Sicherheit daran, dass sich der Server
+     nie irrt. Erlaubt ist genau der Speicherbereich dieses Projekts. */
+  function verweisOk(u) {
+    return typeof u === 'string' &&
+      u.indexOf('https://pvcbgwzqjnzzpehwuywi.supabase.co/storage/v1/') === 0;
+  }
+
+  function zeigeSicherungen(neuLaden) {
+    $('#vw-app').innerHTML =
+      '<div class="vw-mitte">' +
+        '<button class="vw-zurueck" id="vw-zurueck">← Übersicht</button>' +
+        '<h1 class="vw-h1">Sicherungen</h1>' +
+        '<p class="vw-hint" style="margin:10px 0 14px;max-width:66ch">' +
+          'Eine Sicherung enthält den kompletten Stand der Website, alle Anfragen und ' +
+          'Bewerbungen sowie die hochgeladenen Unterlagen — als eine ZIP-Datei. ' +
+          'Automatisch wird <b>jede Nacht</b> gesichert; aufbewahrt werden die letzten ' +
+          '<b id="vw-behalten">sieben</b> Stände, ältere fallen weg.</p>' +
+        '<p class="vw-hint" style="margin:0 0 20px;max-width:66ch">' +
+          '<b>Bitte beachten:</b> Die Datei enthält personenbezogene Daten. Sicher ' +
+          'aufbewahren und nicht weitergeben. Zugangsdaten und Passwörter sind bewusst ' +
+          '<b>nicht</b> enthalten — die gehören getrennt notiert.</p>' +
+        '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px">' +
+          '<button class="vw-btn vw-btn--voll" id="vw-sich-neu">Jetzt sichern</button>' +
+        '</div>' +
+        '<p class="vw-hint" id="vw-sich-meldung" role="status" style="margin:0 0 18px"></p>' +
+        '<div class="vw-karte vw-karte--liste"><div class="vw-liste" id="vw-sich-liste">' +
+          '<div class="vw-zeile"><span class="vw-zeile__meta">Wird geladen …</span></div>' +
+        '</div></div>' +
+      '</div>';
+    $('#vw-zurueck').addEventListener('click', function () {
+      verlaufSetz({ ansicht: 'uebersicht' });
+      zeigeUebersicht(zaehleNeu());
+    });
+    $('#vw-sich-neu').addEventListener('click', sicherungErstellen);
+    fokusAufUeberschrift();
+    if (neuLaden || !sicherungen) ladeSicherungen();
+    else zeichneSicherungen();
+  }
+
+  function sichSage(text, istFehler) {
+    var m = $('#vw-sich-meldung');
+    if (!m) return;
+    m.textContent = text || '';
+    m.className = istFehler ? 'vw-fehler' : 'vw-hint';
+    m.setAttribute('role', istFehler ? 'alert' : 'status');
+  }
+
+  function ladeSicherungen() {
+    ruf({ was: 'sicherungen' }).then(function (a) {
+      sicherungen = a.sicherungen || [];
+      var b = $('#vw-behalten');
+      if (a.behalten && b) b.textContent = String(a.behalten);
+      zeichneSicherungen();
+    }).catch(function (f) {
+      var l = $('#vw-sich-liste');
+      if (l) {
+        l.innerHTML = '';
+        var z = document.createElement('div');
+        z.className = 'vw-zeile';
+        var t = document.createElement('span');
+        t.className = 'vw-zeile__meta';
+        t.textContent = verstaendlich(f);
+        z.appendChild(t); l.appendChild(z);
+      }
+    });
+  }
+
+  function zeichneSicherungen() {
+    var l = $('#vw-sich-liste');
+    if (!l) return;
+    if (!sicherungen.length) {
+      l.innerHTML = '<div class="vw-zeile"><span class="vw-zeile__meta">' +
+        'Noch keine Sicherung vorhanden. Mit „Jetzt sichern“ die erste anlegen — ' +
+        'sonst geschieht es automatisch in der kommenden Nacht.</span></div>';
+      return;
+    }
+    l.innerHTML = sicherungen.map(function (s) {
+      var i = s.inhalt || {};
+      var teile = [];
+      if (i.dateien) teile.push(i.dateien + ' Dateien');
+      if (i.anfragen != null) teile.push(i.anfragen + ' Anfragen');
+      if (i.bewerbungen != null) teile.push(i.bewerbungen + ' Bewerbungen');
+      if (i.unterlagen) teile.push(i.unterlagen + ' Unterlagen');
+      return '<div class="vw-zeile">' +
+        '<span class="vw-zeile__haupt">' +
+          '<span class="vw-zeile__name">' + esc(datum(s.erstellt_am)) + ' Uhr</span>' +
+          '<span class="vw-zeile__meta">' + esc(groesse(s.groesse_bytes)) + ' · ' +
+            esc(s.art === 'automatisch' ? 'automatisch' : 'von Hand') +
+            (teile.length ? ' · ' + esc(teile.join(' · ')) : '') + '</span>' +
+        '</span>' +
+        (verweisOk(s.verweis)
+          ? '<a class="vw-btn" href="' + esc(s.verweis) + '" download rel="noopener">Herunterladen</a>'
+          : '<span class="vw-zeile__meta">Verweis nicht verfügbar</span>') +
+        '<button class="vw-btn vw-btn--leer" data-sich-weg="' + esc(s.id) + '">Löschen</button>' +
+      '</div>';
+    }).join('');
+    Array.prototype.forEach.call(l.querySelectorAll('[data-sich-weg]'), function (b) {
+      b.addEventListener('click', function () {
+        /* Bewusst OHNE „Rückgängig“: Anders als bei einem Datensatz gibt
+           es hier nichts im Speicher zu halten, die Datei ist zu gross.
+           Deshalb eine Rueckfrage, die das Datum nennt. */
+        var id = b.getAttribute('data-sich-weg');
+        var s = null;
+        for (var k = 0; k < sicherungen.length; k++) {
+          if (String(sicherungen[k].id) === id) { s = sicherungen[k]; break; }
+        }
+        if (!window.confirm('Die Sicherung vom ' + (s ? datum(s.erstellt_am) : '') +
+            ' Uhr endgültig löschen? Das lässt sich nicht rückgängig machen.')) return;
+        b.disabled = true;
+        sichSage('Wird gelöscht …', false);
+        ruf({ was: 'sicherung-loeschen', id: id }).then(function () {
+          sichSage('Sicherung gelöscht.', false);
+          ladeSicherungen();
+        }).catch(function (f) {
+          b.disabled = false;
+          sichSage(verstaendlich(f), true);
+        });
+      });
+    });
+  }
+
+  function sicherungErstellen() {
+    var k = $('#vw-sich-neu');
+    if (k) { k.disabled = true; k.textContent = 'Wird erstellt …'; }
+    /* Das dauert: das ganze Repository wird geholt, gepackt und abgelegt.
+       Ohne diesen Satz haelt man es nach zehn Sekunden fuer haengen. */
+    sichSage('Die Sicherung wird erstellt. Das dauert bis zu einer Minute — bitte das Fenster offen lassen.', false);
+    ruf({ was: 'sicherung-erstellen' }).then(function (a) {
+      sichSage('Sicherung erstellt.' +
+        (a.entfernt ? ' Die ' + a.entfernt + ' ältesten wurden dabei entfernt.' : ''), false);
+      ladeSicherungen();
+    }).catch(function (f) {
+      sichSage(verstaendlich(f), true);
+    }).then(function () {
+      if (k) { k.disabled = false; k.textContent = 'Jetzt sichern'; }
+    });
   }
 
   function abmelden() {
