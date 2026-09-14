@@ -18,13 +18,15 @@
     ['gartenpflege.html', 'Pflege'],
     ['bepflanzung.html', 'Bepflanzung']
   ];
+  /* Nach Laenge sortiert, kuerzester Eintrag oben (Wunsch des Betreibers,
+     09/2026). Gleiche Reihenfolge wie in rahmen-texte.js halten. */
   const MORE_FEST = [
-    ['ueber-uns.html', 'Über uns'],
-    ['referenzen.html', 'Referenzen'],
     ['kontakt.html', 'Kontakt'],
-    ['stellenangebote.html', 'Stellenangebote'],
+    ['ueber-uns.html', 'Über uns'],
     ['impressum.html', 'Impressum'],
-    ['datenschutz.html', 'Datenschutz']
+    ['referenzen.html', 'Referenzen'],
+    ['datenschutz.html', 'Datenschutz'],
+    ['stellenangebote.html', 'Stellenangebote']
   ];
 
 
@@ -210,9 +212,10 @@
               '<summary>Leistungen<i aria-hidden="true">▾</i></summary>' +
               '<div class="gh-sub">' + MAIN.map(m => big(m[0], m[1])).join('') + '</div>' +
             '</details>' +
-            /* Direkt sichtbar, weil am haeufigsten gesucht. */
-            big('ueber-uns.html', 'Über uns') +
+            /* Direkt sichtbar, weil am haeufigsten gesucht. Nach Laenge
+               sortiert, kuerzester oben — wie das Menue "Unternehmen". */
             big('kontakt.html', 'Kontakt') +
+            big('ueber-uns.html', 'Über uns') +
             big('stellenangebote.html', 'Stellenangebote') +
             '<details class="gh-fold"' + (on('Impressum') || on('Datenschutz') ? ' open' : '') + '>' +
               '<summary>Rechtliches<i aria-hidden="true">▾</i></summary>' +

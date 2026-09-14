@@ -29,12 +29,12 @@ window.RAHMEN_TEXTE = {
     { "datei": "bepflanzung.html", "text": "Bepflanzung" }
   ],
   "menueMehr": [
-    { "datei": "ueber-uns.html", "text": "Über uns" },
-    { "datei": "referenzen.html", "text": "Referenzen" },
     { "datei": "kontakt.html", "text": "Kontakt" },
-    { "datei": "stellenangebote.html", "text": "Stellenangebote" },
+    { "datei": "ueber-uns.html", "text": "Über uns" },
     { "datei": "impressum.html", "text": "Impressum" },
-    { "datei": "datenschutz.html", "text": "Datenschutz" }
+    { "datei": "referenzen.html", "text": "Referenzen" },
+    { "datei": "datenschutz.html", "text": "Datenschutz" },
+    { "datei": "stellenangebote.html", "text": "Stellenangebote" }
   ],
   "menueMehrTitel": "Unternehmen",
   "knopf": "Kostenlos anfragen",

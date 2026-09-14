@@ -68,6 +68,33 @@
   }
   h1{animation:dvgTitel .85s cubic-bezier(.22,1,.36,1) both}
   @media (prefers-reduced-motion:reduce){h1{animation:none}}
+  /* Projektfotos: anklickbar, beim Ueberfahren leicht vergroessert
+     (Wunsch des Betreibers, 09/2026). Vergroessert wird NUR das Bild
+     im Rahmen, nicht die Karte: die Karte traegt einen Inline-transform
+     aus dem Reveal, der jede Regel von hier ueberstimmen wuerde. */
+  .ref-bild{display:block;width:100%;margin:0;padding:0;border:0;background:none;overflow:hidden;cursor:zoom-in;font:inherit;color:inherit}
+  .ref-bild img{transition:transform .7s cubic-bezier(.16,1,.3,1)}
+  /* BEWUSST ohne Medienabfrage. Im Chrome des Betreibers meldeten
+     (hover:hover) UND (any-hover:hover) false, obwohl die Maus
+     nachweislich ueber der Karte lag (:hover = true). Mit Abfrage waere
+     der Zoom dort nie erschienen. Preis auf dem Handy: ein angetipptes
+     Bild bleibt ggf. leicht vergroessert stehen — harmlos. */
+  .ref-karte:hover .ref-bild img{transform:scale(1.07)}
+  .ref-bild:focus-visible{outline:3px solid #46761F;outline-offset:-6px}
+  .ref-bild:focus-visible img{transform:scale(1.07)}
+  @media (prefers-reduced-motion:reduce){.ref-bild img{transition:none}}
+
+  /* Grosse Ansicht. An <body> gehaengt, erbt also die Schrift NICHT —
+     deshalb steht sie hier ausdruecklich. */
+  .ref-lupe{width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;background:transparent;overflow:hidden;font-family:Outfit,Helvetica,Arial,sans-serif}
+  .ref-lupe[open]{display:grid;place-items:center}
+  .ref-lupe::backdrop{background:rgba(9,22,15,.88)}
+  .ref-lupe figure{margin:0;display:grid;gap:14px;justify-items:center;padding:clamp(64px,9vh,84px) clamp(12px,3vw,40px) clamp(18px,3vh,32px);cursor:zoom-out}
+  .ref-lupe img{display:block;width:auto;height:auto;max-width:min(92vw,1100px);max-height:calc(100vh - 190px);border-radius:14px;box-shadow:0 30px 80px -30px rgba(0,0,0,.6)}
+  .ref-lupe figcaption{max-width:60ch;color:#F4F9F0;font-size:15px;line-height:1.45;text-align:center;text-wrap:pretty}
+  .ref-lupe-zu{position:fixed;top:clamp(12px,2vh,22px);right:clamp(12px,2vw,22px);width:48px;height:48px;border-radius:999px;border:1px solid rgba(255,255,255,.45);background:rgba(255,255,255,.14);color:#FFFFFF;font:500 28px/1 Outfit,Helvetica,Arial,sans-serif;cursor:pointer}
+  .ref-lupe-zu:hover{background:rgba(255,255,255,.26)}
+  .ref-lupe-zu:focus-visible{outline:3px solid #B6E85C;outline-offset:2px}
 </style>
 </head>
 <body>
@@ -100,30 +127,30 @@
     <div style="max-width:1240px;margin:0 auto">
       <h2 class="sr-only" data-ed="projekte-h2">Umgesetzte Projekte</h2>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:clamp(14px,1.6vw,22px)">
-        <a data-reveal href="https://devries-galabau.de/naturnahe-gartengestaltung-mit-rindenmulchwegen-natursteinmauern/" style="display:block;border-radius:26px;overflow:hidden;color:#12261A;background:linear-gradient(155deg,rgba(255,255,255,.72),rgba(255,255,255,.42));backdrop-filter:blur(26px) saturate(1.45);border:1px solid rgba(255,255,255,.6);box-shadow:0 26px 54px -38px rgba(12,29,20,.34)">
-          <div style="height:clamp(200px,26vh,260px);position:relative"><img src="assets/img/rg-garten-b-800.webp" srcset="assets/img/rg-garten-b-400.webp 400w, assets/img/rg-garten-b-800.webp 800w, assets/img/rg-garten-b-1600.webp 1600w" sizes="(max-width: 860px) 92vw, 46vw" alt="Naturnaher Garten mit Rindenmulchweg zwischen bepflanzten Natursteinmauern" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;display:block" data-ed-img="projekte-bild"></div>
-          <div style="padding:20px 22px 24px"><div style="font-size:16px;line-height:1.45;font-weight:600;color:#0F2318" data-ed="projekte-div">Naturnahe Gartengestaltung mit Rindenmulchwegen &amp; Natursteinmauern</div><div style="margin-top:12px;font-size:14px;font-weight:600;color:#2C6E49" data-ed="projekte-div2">Projekt ansehen →</div></div>
-        </a>
-        <a data-reveal href="https://devries-galabau.de/trockenmauer-naturstein-hangabstuetzung/" style="display:block;border-radius:26px;overflow:hidden;color:#12261A;background:linear-gradient(155deg,rgba(255,255,255,.72),rgba(255,255,255,.42));backdrop-filter:blur(26px) saturate(1.45);border:1px solid rgba(255,255,255,.6);box-shadow:0 26px 54px -38px rgba(12,29,20,.34)">
-          <div style="height:clamp(200px,26vh,260px);position:relative"><img src="assets/img/rg-garten-a-800.webp" srcset="assets/img/rg-garten-a-400.webp 400w, assets/img/rg-garten-a-800.webp 800w, assets/img/rg-garten-a-1600.webp 1600w" sizes="(max-width: 860px) 92vw, 46vw" alt="Geschichtete Trockenmauer aus Naturstein, die einen Hang im Garten abfängt" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;display:block" data-ed-img="projekte-bild2"></div>
-          <div style="padding:20px 22px 24px"><div style="font-size:16px;line-height:1.45;font-weight:600;color:#0F2318" data-ed="projekte-div3">Trockenmauer im Garten — Hang sichern mit Naturstein</div><div style="margin-top:12px;font-size:14px;font-weight:600;color:#2C6E49" data-ed="projekte-div4">Projekt ansehen →</div></div>
-        </a>
-        <a data-reveal href="https://devries-galabau.de/klinkermauer-gartendeko-rustikal/" style="display:block;border-radius:26px;overflow:hidden;color:#12261A;background:linear-gradient(155deg,rgba(255,255,255,.72),rgba(255,255,255,.42));backdrop-filter:blur(26px) saturate(1.45);border:1px solid rgba(255,255,255,.6);box-shadow:0 26px 54px -38px rgba(12,29,20,.34)">
-          <div style="height:clamp(200px,26vh,260px);position:relative"><img src="assets/img/rg-garten-c-800.webp" srcset="assets/img/rg-garten-c-400.webp 400w, assets/img/rg-garten-c-800.webp 800w, assets/img/rg-garten-c-1600.webp 1600w" sizes="(max-width: 860px) 92vw, 46vw" alt="Gartenmauer aus Klinker mit rustikalen Deko-Akzenten" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;display:block" data-ed-img="projekte-bild3"></div>
-          <div style="padding:20px 22px 24px"><div style="font-size:16px;line-height:1.45;font-weight:600;color:#0F2318" data-ed="projekte-div5">Gartenmauer mit Charakter: Klinker &amp; rustikale Akzente</div><div style="margin-top:12px;font-size:14px;font-weight:600;color:#2C6E49" data-ed="projekte-div6">Projekt ansehen →</div></div>
-        </a>
-        <a data-reveal href="https://devries-galabau.de/beeteinfassung-gestaltung-zierkies-rindenmulch/" style="display:block;border-radius:26px;overflow:hidden;color:#12261A;background:linear-gradient(155deg,rgba(255,255,255,.72),rgba(255,255,255,.42));backdrop-filter:blur(26px) saturate(1.45);border:1px solid rgba(255,255,255,.6);box-shadow:0 26px 54px -38px rgba(12,29,20,.34)">
-          <div style="height:clamp(200px,26vh,260px);position:relative"><img src="assets/img/rg-beete-einfahrt-800.webp" srcset="assets/img/rg-beete-einfahrt-400.webp 400w, assets/img/rg-beete-einfahrt-800.webp 800w, assets/img/rg-beete-einfahrt-1600.webp 1600w" sizes="(max-width: 860px) 92vw, 46vw" alt="Beete mit Zierkies und Rindenmulch als Gestaltungselement an einer Einfahrt" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;display:block" data-ed-img="projekte-bild4"></div>
-          <div style="padding:20px 22px 24px"><div style="font-size:16px;line-height:1.45;font-weight:600;color:#0F2318" data-ed="projekte-div7">Beeteinfassung mit Zierkies und Rindenmulch</div><div style="margin-top:12px;font-size:14px;font-weight:600;color:#2C6E49" data-ed="projekte-div8">Projekt ansehen →</div></div>
-        </a>
-        <a data-reveal href="https://devries-galabau.de/pflasterflaeche-einfahrt-gestalten-hochwertig-langlebig-funktional/" style="display:block;border-radius:26px;overflow:hidden;color:#12261A;background:linear-gradient(155deg,rgba(255,255,255,.72),rgba(255,255,255,.42));backdrop-filter:blur(26px) saturate(1.45);border:1px solid rgba(255,255,255,.6);box-shadow:0 26px 54px -38px rgba(12,29,20,.34)">
-          <div style="height:clamp(200px,26vh,260px);position:relative"><img src="assets/img/rg-einfahrt-pflastern-800.webp" srcset="assets/img/rg-einfahrt-pflastern-400.webp 400w, assets/img/rg-einfahrt-pflastern-800.webp 800w, assets/img/rg-einfahrt-pflastern-1600.webp 1600w" sizes="(max-width: 860px) 92vw, 46vw" alt="Frisch gepflasterte Einfahrt mit sauber verlegten Betonsteinen" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;display:block" data-ed-img="projekte-bild5"></div>
-          <div style="padding:20px 22px 24px"><div style="font-size:16px;line-height:1.45;font-weight:600;color:#0F2318" data-ed="projekte-div9">Pflasterfläche &amp; Einfahrt — hochwertig und langlebig</div><div style="margin-top:12px;font-size:14px;font-weight:600;color:#2C6E49" data-ed="projekte-div10">Projekt ansehen →</div></div>
-        </a>
-        <a data-reveal href="https://devries-galabau.de/blogs/" style="display:block;border-radius:26px;overflow:hidden;color:#12261A;background:linear-gradient(155deg,rgba(255,255,255,.72),rgba(255,255,255,.42));backdrop-filter:blur(26px) saturate(1.45);border:1px solid rgba(255,255,255,.6);box-shadow:0 26px 54px -38px rgba(12,29,20,.34)">
-          <div style="height:clamp(200px,26vh,260px);position:relative"><img src="assets/img/rg-garten-klassisch-800.webp" srcset="assets/img/rg-garten-klassisch-400.webp 400w, assets/img/rg-garten-klassisch-800.webp 800w, assets/img/rg-garten-klassisch-1600.webp 1600w" sizes="(max-width: 860px) 92vw, 46vw" alt="Angelegter Garten mit Teich, Sitzecke und gepflegtem Rasen in Salzhemmendorf" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;display:block" data-ed-img="projekte-bild6"></div>
-          <div style="padding:20px 22px 24px"><div style="font-size:16px;line-height:1.45;font-weight:600;color:#0F2318" data-ed="projekte-div11">Teich mit Sitzecke — Salzhemmendorf</div><div style="margin-top:12px;font-size:14px;font-weight:600;color:#2C6E49" data-ed="projekte-div12">Projekt ansehen →</div></div>
-        </a>
+        <article data-reveal class="ref-karte" style="display:block;border-radius:26px;overflow:hidden;color:#12261A;background:linear-gradient(155deg,rgba(255,255,255,.72),rgba(255,255,255,.42));backdrop-filter:blur(26px) saturate(1.45);border:1px solid rgba(255,255,255,.6);box-shadow:0 26px 54px -38px rgba(12,29,20,.34)">
+          <button type="button" class="ref-bild" data-lupe aria-haspopup="dialog" style="height:clamp(200px,26vh,260px);position:relative"><img src="assets/img/rg-garten-b-800.webp" srcset="assets/img/rg-garten-b-400.webp 400w, assets/img/rg-garten-b-800.webp 800w, assets/img/rg-garten-b-1600.webp 1600w" sizes="(max-width: 860px) 92vw, 46vw" alt="Naturnaher Garten mit Rindenmulchweg zwischen bepflanzten Natursteinmauern" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;display:block" data-ed-img="projekte-bild"></button>
+          <div style="padding:20px 22px 24px"><div style="font-size:16px;line-height:1.45;font-weight:600;color:#0F2318" data-ed="projekte-div">Naturnahe Gartengestaltung mit Rindenmulchwegen &amp; Natursteinmauern</div></div>
+        </article>
+        <article data-reveal class="ref-karte" style="display:block;border-radius:26px;overflow:hidden;color:#12261A;background:linear-gradient(155deg,rgba(255,255,255,.72),rgba(255,255,255,.42));backdrop-filter:blur(26px) saturate(1.45);border:1px solid rgba(255,255,255,.6);box-shadow:0 26px 54px -38px rgba(12,29,20,.34)">
+          <button type="button" class="ref-bild" data-lupe aria-haspopup="dialog" style="height:clamp(200px,26vh,260px);position:relative"><img src="assets/img/rg-garten-a-800.webp" srcset="assets/img/rg-garten-a-400.webp 400w, assets/img/rg-garten-a-800.webp 800w, assets/img/rg-garten-a-1600.webp 1600w" sizes="(max-width: 860px) 92vw, 46vw" alt="Geschichtete Trockenmauer aus Naturstein, die einen Hang im Garten abfängt" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;display:block" data-ed-img="projekte-bild2"></button>
+          <div style="padding:20px 22px 24px"><div style="font-size:16px;line-height:1.45;font-weight:600;color:#0F2318" data-ed="projekte-div3">Trockenmauer im Garten — Hang sichern mit Naturstein</div></div>
+        </article>
+        <article data-reveal class="ref-karte" style="display:block;border-radius:26px;overflow:hidden;color:#12261A;background:linear-gradient(155deg,rgba(255,255,255,.72),rgba(255,255,255,.42));backdrop-filter:blur(26px) saturate(1.45);border:1px solid rgba(255,255,255,.6);box-shadow:0 26px 54px -38px rgba(12,29,20,.34)">
+          <button type="button" class="ref-bild" data-lupe aria-haspopup="dialog" style="height:clamp(200px,26vh,260px);position:relative"><img src="assets/img/rg-garten-c-800.webp" srcset="assets/img/rg-garten-c-400.webp 400w, assets/img/rg-garten-c-800.webp 800w, assets/img/rg-garten-c-1600.webp 1600w" sizes="(max-width: 860px) 92vw, 46vw" alt="Gartenmauer aus Klinker mit rustikalen Deko-Akzenten" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;display:block" data-ed-img="projekte-bild3"></button>
+          <div style="padding:20px 22px 24px"><div style="font-size:16px;line-height:1.45;font-weight:600;color:#0F2318" data-ed="projekte-div5">Gartenmauer mit Charakter: Klinker &amp; rustikale Akzente</div></div>
+        </article>
+        <article data-reveal class="ref-karte" style="display:block;border-radius:26px;overflow:hidden;color:#12261A;background:linear-gradient(155deg,rgba(255,255,255,.72),rgba(255,255,255,.42));backdrop-filter:blur(26px) saturate(1.45);border:1px solid rgba(255,255,255,.6);box-shadow:0 26px 54px -38px rgba(12,29,20,.34)">
+          <button type="button" class="ref-bild" data-lupe aria-haspopup="dialog" style="height:clamp(200px,26vh,260px);position:relative"><img src="assets/img/rg-beete-einfahrt-800.webp" srcset="assets/img/rg-beete-einfahrt-400.webp 400w, assets/img/rg-beete-einfahrt-800.webp 800w, assets/img/rg-beete-einfahrt-1600.webp 1600w" sizes="(max-width: 860px) 92vw, 46vw" alt="Beete mit Zierkies und Rindenmulch als Gestaltungselement an einer Einfahrt" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;display:block" data-ed-img="projekte-bild4"></button>
+          <div style="padding:20px 22px 24px"><div style="font-size:16px;line-height:1.45;font-weight:600;color:#0F2318" data-ed="projekte-div7">Beeteinfassung mit Zierkies und Rindenmulch</div></div>
+        </article>
+        <article data-reveal class="ref-karte" style="display:block;border-radius:26px;overflow:hidden;color:#12261A;background:linear-gradient(155deg,rgba(255,255,255,.72),rgba(255,255,255,.42));backdrop-filter:blur(26px) saturate(1.45);border:1px solid rgba(255,255,255,.6);box-shadow:0 26px 54px -38px rgba(12,29,20,.34)">
+          <button type="button" class="ref-bild" data-lupe aria-haspopup="dialog" style="height:clamp(200px,26vh,260px);position:relative"><img src="assets/img/rg-einfahrt-pflastern-800.webp" srcset="assets/img/rg-einfahrt-pflastern-400.webp 400w, assets/img/rg-einfahrt-pflastern-800.webp 800w, assets/img/rg-einfahrt-pflastern-1600.webp 1600w" sizes="(max-width: 860px) 92vw, 46vw" alt="Frisch gepflasterte Einfahrt mit sauber verlegten Betonsteinen" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;display:block" data-ed-img="projekte-bild5"></button>
+          <div style="padding:20px 22px 24px"><div style="font-size:16px;line-height:1.45;font-weight:600;color:#0F2318" data-ed="projekte-div9">Pflasterfläche &amp; Einfahrt — hochwertig und langlebig</div></div>
+        </article>
+        <article data-reveal class="ref-karte" style="display:block;border-radius:26px;overflow:hidden;color:#12261A;background:linear-gradient(155deg,rgba(255,255,255,.72),rgba(255,255,255,.42));backdrop-filter:blur(26px) saturate(1.45);border:1px solid rgba(255,255,255,.6);box-shadow:0 26px 54px -38px rgba(12,29,20,.34)">
+          <button type="button" class="ref-bild" data-lupe aria-haspopup="dialog" style="height:clamp(200px,26vh,260px);position:relative"><img src="assets/img/rg-garten-klassisch-800.webp" srcset="assets/img/rg-garten-klassisch-400.webp 400w, assets/img/rg-garten-klassisch-800.webp 800w, assets/img/rg-garten-klassisch-1600.webp 1600w" sizes="(max-width: 860px) 92vw, 46vw" alt="Angelegter Garten mit Teich, Sitzecke und gepflegtem Rasen in Salzhemmendorf" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;display:block" data-ed-img="projekte-bild6"></button>
+          <div style="padding:20px 22px 24px"><div style="font-size:16px;line-height:1.45;font-weight:600;color:#0F2318" data-ed="projekte-div11">Teich mit Sitzecke — Salzhemmendorf</div></div>
+        </article>
       </div>
     </div>
   </section>
@@ -157,20 +184,20 @@
           <figcaption style="margin-top:18px;padding-top:14px;border-top:1px solid rgba(16,35,26,.1);font-size:13.5px;font-weight:600;color:#4A5F52">A.-K. M.</figcaption>
         </figure>
       </div>
-      <p data-reveal style="margin:22px 0 0;font-size:14px;color:#5B6F63"><span data-ed="stimmen-t">Bewertungen von Kundinnen und Kunden aus der Region.</span> <a href="https://devries-galabau.de/blogs/" style="font-weight:600;color:#2C6E49" data-ed="stimmen-a">Alle Referenzen ansehen →</a></p>
+      <p data-reveal style="margin:22px 0 0;font-size:14px;color:#5B6F63"><span data-ed="stimmen-t">Bewertungen von Kundinnen und Kunden aus der Region.</span></p>
     </div>
   </section>
 
   <garden-footer active="referenzen.html"></garden-footer>
 </div>
 <!-- Texte von Kopf- und Fusszeile. MUSS vor den Komponenten stehen. -->
-<script defer src="assets/js/rahmen-texte.js?v=100"></script>
-<script defer src="assets/js/garden-header.js?v=100"></script>
-<script defer src="assets/js/garden-footer.js?v=100"></script>
-<script defer src="assets/js/cookie.js?v=100"></script>
-<script defer src="assets/js/referenzen.js?v=100"></script>
+<script defer src="assets/js/rahmen-texte.js?v=101"></script>
+<script defer src="assets/js/garden-header.js?v=101"></script>
+<script defer src="assets/js/garden-footer.js?v=101"></script>
+<script defer src="assets/js/cookie.js?v=101"></script>
+<script defer src="assets/js/referenzen.js?v=101"></script>
 <!-- Seiten-Editor: laeuft NUR mit ?bearbeiten=1 UND gueltiger Anmeldung
      aus /admin/. Ohne beides beendet sich die Datei sofort. -->
-<script defer src="assets/js/editor.js?v=100"></script>
+<script defer src="assets/js/editor.js?v=101"></script>
 </body>
 </html>

@@ -46,6 +46,8 @@ class Component extends DCLogic {
     els.forEach(el => this.io.observe(el));
     setTimeout(() => els.forEach(el => { el.style.opacity = '1'; el.style.transform = 'none'; }), 6000);
 
+    this.lupe();
+
     const form = document.querySelector('form[data-contact]');
     if (form) form.addEventListener('submit', e => {
       e.preventDefault();
@@ -54,6 +56,76 @@ class Component extends DCLogic {
       window.location.href = 'mailto:' + ((window.dvFormular && window.dvFormular.empfaenger) || 'info@devries-galabau.de') + '?subject=' + encodeURIComponent('Anfrage zu einem Projekt') + '&body=' + encodeURIComponent(body);
     });
   }
+  /* Grosse Bildansicht fuer die Projektfotos (Wunsch des Betreibers,
+     09/2026). Vorher fuehrte "Projekt ansehen" auf alte WordPress-Adressen,
+     die seit dem Domainumzug auf diese Seite zurueckleiten — der Klick
+     bewirkte sichtbar nichts.
+     <dialog> mit showModal(): Escape, Fokusfalle und inerten Hintergrund
+     liefert der Browser selbst. Bewusst KEINE Scrollsperre (Lehre aus v33:
+     eine haengende Sperre macht die Seite unbedienbar).
+     Kein innerHTML — Titel und Alt-Text kommen nur als textContent bzw.
+     Attribut herein. */
+  lupe() {
+    const knoepfe = Array.from(document.querySelectorAll('[data-lupe]'));
+    if (!knoepfe.length || typeof HTMLDialogElement !== 'function') return;
+
+    const dlg = document.createElement('dialog');
+    dlg.className = 'ref-lupe';
+    dlg.setAttribute('aria-label', 'Projektfoto');
+    const zu = document.createElement('button');
+    zu.type = 'button';
+    zu.className = 'ref-lupe-zu';
+    zu.setAttribute('aria-label', 'Ansicht schließen');
+    zu.textContent = '×';
+    const fig = document.createElement('figure');
+    const bild = document.createElement('img');
+    bild.decoding = 'async';
+    const unter = document.createElement('figcaption');
+    fig.append(bild, unter);
+    dlg.append(zu, fig);
+    document.body.appendChild(dlg);
+
+    const titelVon = k => {
+      const karte = k.closest('article');
+      const t = karte && karte.querySelector('[data-ed]');
+      return t ? t.textContent.trim() : '';
+    };
+    /* Groesste Datei aus dem srcset. Dateinamen nicht umbauen: der
+       Seiten-Editor vergibt beim Bildwechsel neue Namen. */
+    const groesste = img => {
+      const kand = (img.getAttribute('srcset') || '').split(',')
+        .map(x => x.trim().split(/\s+/))
+        .filter(p => p[0] && /^\d+w$/.test(p[1] || ''))
+        .sort((x, y) => parseInt(y[1], 10) - parseInt(x[1], 10));
+      return kand.length ? kand[0][0] : (img.currentSrc || img.src);
+    };
+
+    let ausloeser = null;
+    dlg.addEventListener('click', () => dlg.close());
+    dlg.addEventListener('close', () => {
+      bild.removeAttribute('src');
+      if (ausloeser) ausloeser.focus({ preventScroll: true });
+    });
+
+    knoepfe.forEach(k => {
+      const titel = titelVon(k);
+      k.setAttribute('aria-label', titel ? 'Foto vergrößern: ' + titel : 'Foto vergrößern');
+      k.addEventListener('click', ev => {
+        /* Im Bearbeitungsmodus legt der Seiten-Editor Knoepfe per
+           preventDefault still — dann keine Ansicht oeffnen. */
+        if (ev.defaultPrevented || dlg.open) return;
+        const img = k.querySelector('img');
+        if (!img) return;
+        ausloeser = k;
+        bild.removeAttribute('src');
+        bild.alt = img.alt || '';
+        bild.src = groesste(img);
+        unter.textContent = titelVon(k);
+        dlg.showModal();
+      });
+    });
+  }
+
   componentWillUnmount() { if (this.io) this.io.disconnect(); }
 }
 
