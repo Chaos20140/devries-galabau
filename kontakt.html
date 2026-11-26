@@ -69,6 +69,11 @@
   }
   h1{animation:dvgTitel .85s cubic-bezier(.22,1,.36,1) both}
   @media (prefers-reduced-motion:reduce){h1{animation:none}}
+  /* Vier Kontaktwege (Telefon, E-Mail, Instagram, Standort): feste 1/2/4
+     Spalten statt auto-fit — sonst bleibt bei mittlerer Breite eine Karte
+     allein in der zweiten Reihe (3 + 1). !important wegen Inline-Stil. */
+  @media (min-width:560px){.kt-wege{grid-template-columns:repeat(2,minmax(0,1fr)) !important}}
+  @media (min-width:1100px){.kt-wege{grid-template-columns:repeat(4,minmax(0,1fr)) !important}.kt-wege [data-ed="wege-div5"]{font-size:clamp(15px,1.25vw,18px) !important}}
 </style>
 </head>
 <body>
@@ -90,7 +95,7 @@
 
   <section data-screen-label="Wege" style="position:relative;z-index:2;padding:0 clamp(20px,5vw,68px) clamp(40px,6vh,80px)">
     <div style="max-width:1240px;margin:0 auto">
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:clamp(13px,1.5vw,20px)">
+      <div class="kt-wege" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:clamp(13px,1.5vw,20px)">
         <a data-reveal href="tel:051531552" style="display:block;border-radius:24px;padding:clamp(22px,2.4vw,32px);color:#12261A;background:linear-gradient(155deg,rgba(255,255,255,.72),rgba(255,255,255,.42));backdrop-filter:blur(26px) saturate(1.45);border:1px solid rgba(255,255,255,.6);box-shadow:0 26px 54px -38px rgba(12,29,20,.34)">
           <div style="font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#46761F" data-ed="wege-div">Telefon</div>
           <div style="margin-top:12px;font-size:clamp(22px,2.4vw,30px);font-weight:700;letter-spacing:-.03em;color:#1B4332" data-ed="wege-div2">05153 1552</div>
@@ -100,6 +105,11 @@
           <div style="font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#46761F" data-ed="wege-div4">E-Mail</div>
           <div style="margin-top:12px;font-size:clamp(16px,1.6vw,20px);font-weight:600;color:#1B4332;word-break:break-word" data-ed="wege-div5">info@devries-galabau.de</div>
           <div style="margin-top:10px;font-size:14.5px;color:#4A5F52" data-ed="wege-div6">Antwort meist am nächsten Werktag</div>
+        </a>
+        <a data-reveal href="https://www.instagram.com/dv_galabau/" target="_blank" rel="noopener noreferrer" style="display:block;border-radius:24px;padding:clamp(22px,2.4vw,32px);color:#12261A;background:linear-gradient(155deg,rgba(255,255,255,.72),rgba(255,255,255,.42));backdrop-filter:blur(26px) saturate(1.45);border:1px solid rgba(255,255,255,.6);box-shadow:0 26px 54px -38px rgba(12,29,20,.34)">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#46761F" data-ed="wege-div9">Instagram</div>
+          <div style="margin-top:12px;font-size:clamp(18px,1.9vw,24px);font-weight:700;letter-spacing:-.02em;color:#1B4332;word-break:break-word" data-ed="wege-div10">@dv_galabau</div>
+          <div style="margin-top:10px;font-size:14.5px;color:#4A5F52" data-ed="wege-div11">Folgen Sie uns auf Instagram →</div>
         </a>
         <div data-reveal style="border-radius:24px;padding:clamp(22px,2.4vw,32px);background:linear-gradient(155deg,rgba(255,255,255,.72),rgba(255,255,255,.42));backdrop-filter:blur(26px) saturate(1.45);border:1px solid rgba(255,255,255,.6);box-shadow:0 26px 54px -38px rgba(12,29,20,.34)">
           <div style="font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#46761F" data-ed="wege-div7">Standort</div>
@@ -269,14 +279,14 @@
   <garden-footer active="kontakt.html"></garden-footer>
 </div>
 <!-- Texte von Kopf- und Fusszeile. MUSS vor den Komponenten stehen. -->
-<script defer src="assets/js/rahmen-texte.js?v=101"></script>
-<script defer src="assets/js/garden-header.js?v=101"></script>
-<script defer src="assets/js/garden-footer.js?v=101"></script>
-<script defer src="assets/js/cookie.js?v=101"></script>
-<script defer src="assets/js/formular.js?v=101"></script>
-<script defer src="assets/js/kontakt.js?v=101"></script>
+<script defer src="assets/js/rahmen-texte.js?v=102"></script>
+<script defer src="assets/js/garden-header.js?v=102"></script>
+<script defer src="assets/js/garden-footer.js?v=102"></script>
+<script defer src="assets/js/cookie.js?v=102"></script>
+<script defer src="assets/js/formular.js?v=102"></script>
+<script defer src="assets/js/kontakt.js?v=102"></script>
 <!-- Seiten-Editor: laeuft NUR mit ?bearbeiten=1 UND gueltiger Anmeldung
      aus /admin/. Ohne beides beendet sich die Datei sofort. -->
-<script defer src="assets/js/editor.js?v=101"></script>
+<script defer src="assets/js/editor.js?v=102"></script>
 </body>
 </html>
