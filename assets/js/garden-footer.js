@@ -173,7 +173,7 @@
             '</div>' +
             '<p class="gf-lead" style="margin:16px 0 0;font-size:14.5px;line-height:1.6;color:#3C5145;max-width:32ch">' + ABSATZ + '</p>' +
             '<div class="gf-social" style="display:flex;gap:10px;margin-top:20px">' +
-            '<a href="https://www.instagram.com/dv_devries/" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;padding:9px 16px;border-radius:999px;font-size:13px;font-weight:600;color:#1B4332;background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.7)">Instagram</a>' +
+            '<a href="https://www.instagram.com/dv_galabau/" target="_blank" rel="noopener noreferrer" aria-label="Instagram: @dv_galabau (öffnet in neuem Fenster)" style="display:inline-flex;align-items:center;padding:9px 16px;border-radius:999px;font-size:13px;font-weight:600;color:#1B4332;background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.7)">Instagram</a>' +
             '<a href="https://www.facebook.com/devriesdienstleistungen" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;padding:9px 16px;border-radius:999px;font-size:13px;font-weight:600;color:#1B4332;background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.7)">Facebook</a>' +
             '</div>' +
             '</div>' +
